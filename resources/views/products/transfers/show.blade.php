@@ -1,0 +1,252 @@
+@extends('layouts.inv')
+@section('content')
+    <!--breadcrumb-->
+    <div class="block-header pt-4">
+        <div class="row">
+            <div class="col-lg-8 col-md-8 col-sm-12">
+                
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>                            
+                    <li class="breadcrumb-item">Products & Services</li>
+                    <li class="breadcrumb-item"><a href="{{url('transfer-orders')}}">{{trans('navmenu.stock_transfer')}}</a></li>
+                    <li class="breadcrumb-item active">{{$page}}</li>
+                </ul>
+            </div>            
+            <div class="col-lg-4 col-md-4 col-sm-12 text-right">
+                
+            </div>
+        </div>
+    </div>
+    <!--end breadcrumb-->
+    <div class="row">
+        <div class="col-md-12 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="border rounded p-2 mb-1">
+                        @if(Auth::user()->can('receive-stock-transfer') || Auth::user()->can('receive-returned-stock'))
+                        @if(is_null($transorder->receive_time) && Session::get('shop_id') != $transorder->shop_id)
+                        <a href="{{ url('receive-sto-transfer/'.encrypt($transorder->id)) }}" class="btn btn-outline-success btn-sm" style="margin: 5px;"><i class="fa fa-check"></i> Receive Order</a>
+                        @endif
+                        @endif
+                        @if($transorder->status != 'Received')
+                        <a href="{{route('transfer-orders.edit', encrypt($transorder->id))}}" class="btn btn-outline-info btn-sm" style="margin: 5px;"><i class="fa fa-edit" ></i> Update</a>
+                        @else
+                        <a href="#" class="btn btn-outline-info btn-sm" style="margin: 5px;" onclick="confirmModify('<?php echo encrypt($transorder->id); ?>')"><i class="fa fa-refresh" ></i>Modify Received STO</a>
+                        @endif
+                        @if(Auth::user()->can('view-sto-value') && !$transorder->is_mix_transfer)
+                        <a href="{{ url('sto-value/'.encrypt($transorder->id)) }}" class="btn btn-success btn-sm" style="margin: 5px;">STO Value</a>
+                        @endif
+                        <a href="#" onclick="javascript:savePdf()" class="btn bg-warning btn-sm" style="margin: 5px;"><i class="fa fa-download"></i> Download PDF / <i class="fa fa-printer"></i> {{trans('navmenu.print')}}</a>
+                    </div>
+                    <div class="row g-1 print_invoice" id="print-st">
+                        <div class="col-md-12">
+                            <table class="table mb-1">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="2" style="text-align: center; background:  #2874a6;">
+                                            <h6 class="mb-0 text-uppercase" style="color: #fff;">{{$title}} @if($transorder->is_request) Request @elseif($transorder->is_return) Return @else Normal @endif</h6>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-12 border-bottom pb-0" style="border-bottom: 1px solid gray;">
+                            <table class="items mt-0">
+                                <tr>
+                                    <td style="width: 50%; padding-left: 30px;">
+                                        @if(!is_null($company->logo_url))
+                                        <figure>
+                                            <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150" style="border: 1px solid white;">
+                                        </figure>
+                                        @endif
+                                        <strong style="font-size: 14px;">{{$company->name}}</strong>
+                                    </td>
+                                    <td style="width: 50%;">
+                                        <table class="mb-0" style="width: 100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <td>{{trans('navmenu.sto_no')}} :</td>
+                                                    <td><b>{{ sprintf('%04d', $transorder->order_no)}}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{trans('navmenu.transfer_date')}} :</td>
+                                                    <td><b>{{date("d, M Y", strtotime($transorder->order_date))}}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{trans('navmenu.source_shop')}}: </td>
+                                                    <td><b>{{$source->name}}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{trans('navmenu.destin_shop')}}</td>
+                                                    <td><b>{{$destin->name}}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{trans('navmenu.reason')}}:</td>
+                                                    <td><b>{{$transorder->reason}}</b></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-12 pt-3">
+                            <p class="mb-1 text-uppercase text-center">{{trans('navmenu.transfer_items')}}</p>
+                            <table class="list-items mt-0" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">{{trans('navmenu.item_name')}}</th>
+                                        <th style="text-align: center;">{{trans('navmenu.source_stock')}}</th>
+                                        @if(!$transorder->is_mix_transfer)
+                                        <th style="text-align: center;">{{trans('navmenu.destin_stock')}}</th>
+                                        @endif
+                                        <th style="text-align: center;">{{trans('navmenu.transfer_qty')}}</th>
+                                        @if(!$transorder->is_mix_transfer)
+                                        <th style="text-align: center;">Received Qty</th>
+                                        <th style="text-align: center;">Variation</th>
+                                        <th style="text-align: center;">{{trans('navmenu.unit_cost')}}</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($orderitems as $key => $item)
+                                    <tr>
+                                        <td style="">@if(!is_null($item->product_code)){{$item->product_code}} - @endif {{$item->name}}</td>
+                                        <td style="text-align: center;">{{$item->source_stock+0}}</td>
+                                        @if(!$transorder->is_mix_transfer)
+                                        <td style="text-align: center;">{{$item->destin_stock+0}}</td>
+                                        @endif
+                                        <td style="text-align: center;">{{$item->quantity+0}}</td>
+                                        @if(!$transorder->is_mix_transfer)
+                                        <td style="text-align: center;">{{$item->rec_qty+0}}</td>
+                                        <td style="text-align: center;">{{$item->quantity-$item->rec_qty}}</td>
+                                        <td style="text-align: center;">{{number_format($item->source_unit_cost, 2, '.', ',')}}</td>
+                                        @endif
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            @if($transorder->is_mix_transfer)
+                            <p class="mb-1 text-uppercase text-center">End Product</p>
+                            <table class="list-items mt-0" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">{{trans('navmenu.item_name')}}</th>
+                                        <th style="text-align: center;">Quantity Produced</th>
+                                        <th style="text-align: center;">Unit Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($endproduct as $key => $item)
+                                    <tr>
+                                        <td style="">{{$item->name}}</td>
+                                        <td style="text-align: center;">{{number_format($item->quantity_in+0)}}</td>
+                                        <td style="text-align: center;">{{number_format($item->unit_cost, 2, '.', ',')}}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            @endif
+                        </div>
+                        <div class="col-md-12 clearfix">
+                            <p style="font-size: 10px;">
+                                @if(!is_null($transorder->on_confirm_remarks))
+                                <small><b>STO Confirm Remarks</b>: {{$transorder->on_confirm_remarks}}</small> <br>
+                                @endif
+                                @if(!is_null($transorder->on_receive_remarks))
+                                <small><b>STO Receive Remarks</b>: {{$transorder->on_receive_remarks}}</small> 
+                                @endif
+                            </p>
+                        </div>
+                        <div class="col-md-12 clearfix order-bottom " style="margin-top: 15px;">
+                            <div class="requester" style="width: 33%; float: left; padding-left: 55px;">
+                                <table>
+                                    <tr>
+                                        <td style="font-size: 10px !important;">
+                                            <span style="text-transform: uppercase; font-weight: bold;">{{trans('navmenu.stock_requested_by')}}</span><br>
+                                            {{trans('navmenu.name')}} : <strong>@if(!is_null($requester)){{$requester->first_name}} {{$requester->last_name}}@endif</strong><br>
+                                            Date <strong>@if(!is_null($transorder->created_at)){{date('d M Y H:i A', strtotime($transorder->created_at))}}@endif</strong><br>
+                                            {{trans('navmenu.signature')}} <strong>.....................</strong>
+                                        </td>
+                                    </tr>
+                                </table>                  
+                            </div>
+                            <div class="issuer" style="width: 33%; float: left; padding-left: 55px;">
+                                <table>
+                                    <tr>
+                                        <td style="font-size: 10px !important;">
+                                            <span style="text-transform: uppercase; font-weight: bold;">{{trans('navmenu.transfer_by')}}</span><br>
+                                            {{trans('navmenu.name')}} : <strong>@if(!is_null($user)){{$user->first_name}} {{$user->last_name}}@endif</strong><br>
+                                            Date <strong>@if(!is_null($transorder->created_at)){{date('d M Y H:i A', strtotime($transorder->created_at))}}@endif</strong><br>
+                                            {{trans('navmenu.signature')}} <strong>.....................</strong>
+                                        </td>
+                                    </tr>
+                                </table>                  
+                            </div>
+                            <div class="receiver" style="width: 34%; float: right; padding-left: 55px;">
+                                <table>
+                                    <tr>
+                                        <td style="font-size: 10px !important;">
+                                            <span style="text-transform: uppercase; font-weight: bold;">{{trans('navmenu.stock_received_by')}}</span><br>
+                                            {{trans('navmenu.name')}} : <strong>@if(!is_null($transorder->received_by)) {{$transorder->received_by}}@endif</strong><br>
+                                            Date <strong>@if(!is_null($transorder->receive_time)){{date('d M Y H:i A', strtotime($transorder->receive_time))}}@endif</strong><br>
+                                            {{trans('navmenu.signature')}} <strong>.....................</strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        
+        function savePdf() {
+            const element = document.getElementById("print-st");
+            var filename = "<?php echo $title.'_'.$transorder->created_at; ?>";
+            var opt = {
+                margin:       0.5,
+                filename:     filename+'.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, scrollY: 0, scrollX: 0 },
+                // Added after option to add spacing after page break
+                pagebreak: { avoid: "tr", mode: "css"},
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).toPdf().save();
+            // New Promise-based usage:
+            // html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+            //     window.open(pdf.output('bloburl'), '_blank');
+            // });
+          
+        }
+
+        function confirmModify(id) {
+            Swal.fire({
+                title: "Are you sure you want to Modify this Order",
+                text: "This will change the status of received",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: "Yes Modify",
+                cancelButtonText: "{{trans('navmenu.no')}}"
+            }).then((result) => {
+                if (result.value) {
+                    window.location.href = "{{ url('modify-received-sto') }}/"+id;
+                    Swal.fire(
+                        "Modified",
+                        "Dune",
+                        'success'
+                    )
+                }
+            })
+        }
+    </script>

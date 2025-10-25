@@ -1,0 +1,113 @@
+ @media print {
+    body * {
+      visibility: hidden;
+    }
+    #invoice-POS, #invoice-POS * {
+      visibility: visible;
+    }
+    #invoice-POS {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    #top{height: auto; margin-top: 10px;}
+    .logo {
+      margin-top: 20px !important;
+    }
+  }
+    #receipt-invoice {
+      padding: 10px;
+    }
+    #invoice-POS{
+      box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+      padding:2mm;
+      margin: 0 auto;
+      width: 80mm;
+      background: #FFF;
+/*      background-image: url('../assets/images/bg-1.png');*/
+
+      ::selection {background: #f31544; color: #FFF;}
+      ::moz-selection {background: #f31544; color: #FFF;}
+    }
+
+    h1{
+      font-size: 1.5em;
+      color: #222;
+    }
+    h2{font-size: 1.5em;}
+    h3{
+      font-size: 1.2em;
+      font-weight: 300;
+      line-height: 2em;
+    }
+
+    p{
+      font-size: .9em;
+      color: #666;
+      line-height: 1.2em;
+    }
+       
+    #top, #mid,#bot{ /* Targets all id with 'col-' */
+      border-bottom: 1px solid #EEE;
+    }
+
+    #top{height: auto; margin-top: 10px;}
+    #mid{min-height: 80px;} 
+    #bot{ 
+      min-height: 50px;
+      margin-top: 5px;
+      padding-top: 0px;
+    }
+
+    .logo {
+      margin-top: 10px;
+    }
+
+    /*figure img.invoice-logo{ 
+      height: 30px;
+      width: 70px;
+    }*/
+
+    .clientlogo{
+      float: left;
+      height: 60px;
+      width: 60px;
+      background-size: 60px 60px;
+      border-radius: 50px;
+    }
+
+    .info{
+      display: block;
+      text-align: center;        
+      margin-left: 0;
+    }
+    .title{
+      float: right;      
+    }
+    .title p{text-align: right;} 
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td{
+      padding: 5px 0 5px 15px;
+      border: 1px solid #EEE
+    }
+    .tabletitle{
+      padding: 5px;
+      font-size: .5em;
+      background: #000;
+      font-weight: 500;
+    }
+    .service{border-bottom: 1px solid #EEE;}
+    .item{width: 24mm;}
+    .itemtext{font-size: .5em;}
+
+    #legalcopy{
+      margin-top: 5mm;
+    }
+
+    #table{
+      margin-top: 0px;
+    }
