@@ -18,7 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id')->index();
             $table->unsignedBigInteger('sale_order_id')->index()->nullable();
             $table->unsignedBigInteger('pro_invoice_id')->index()->nullable();
-            $table->unsignedBigInteger('bank_detail_id')->nullable();
+            $table->unsignedBigInteger('account_id')->nullable();
+            $table->unsignedBigInteger('order_detail_id')->index()->nullable();
             $table->integer('invoice_no');
             $table->string('lpo_no')->nullable();
             $table->decimal('sale_amount', 15, 2)->nullable()->default(0);
@@ -55,7 +56,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
-            $table->foreign('bank_detail_id')->references('id')->on('accounts');
             $table->timestamps();
         });
     }

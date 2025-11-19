@@ -12,6 +12,7 @@ use App\Models\WashingPlant;
 use App\Models\StorageLocation;
 use App\Models\ProductionRun;
 use App\Models\Stock;
+use App\Models\Product;
 use App\Models\QualityTest;
 
 class ProductionRunController extends Controller
@@ -107,12 +108,16 @@ class ProductionRunController extends Controller
     public function show(string $id)
     {
         $page = 'Production Run Details';
-        $prodrun = ProductionRun::where('production_runs.id', decrypt($id))->join('storage_locations', 'storage_locations.id', '=', 'production_runs.storage_location_id')->join('users', 'users.id', '=', 'production_runs.user_id')->join('washing_plants', 'washing_plants.id', '=', 'production_runs.washing_plant_id')->select('production_runs.id as id', 'plant_name', 'location_name', 'first_name', 'last_name', 'pr_no', 'start_time', 'end_time', 'input_quantity', 'output_quantity', 'waste_water_quantity', 'status', 'remarks')->first();
+        $prodrun = ProductionRun::where('production_runs.id', decrypt($id))->join('storage_locations', 'storage_locations.id', '=', 'production_runs.storage_location_id')->join('users', 'users.id', '=', 'production_runs.user_id')->join('washing_plants', 'washing_plants.id', '=', 'production_runs.washing_plant_id')->select('production_runs.id as id', 'production_runs.shop_id as shop_id', 'plant_name', 'location_name', 'first_name', 'last_name', 'pr_no', 'start_time', 'end_time', 'input_quantity', 'output_quantity', 'waste_water_quantity', 'status', 'remarks')->first();
+        if (!is_null($prodrun)) {
+            $qualitytests = QualityTest::where('production_run_id', $prodrun->id)->join('users', 'users.id', '=', 'quality_tests.user_id')->select('quality_tests.id as id', 'test_date', 'test_type', 'result', 'passed',  'first_name', 'last_name')->get();
+            $stocks = Stock::where('production_run_id', $prodrun->id)->join('products', 'products.id', '=', 'stocks.product_id')->select('stocks.id as id', 'stock_date', 'slug', 'quantity_in', 'source')->get();
+            $sandproducts = Product::where('shop_id', $prodrun->shop_id)->select('id', 'slug')->get();
 
-        $qualitytests = QualityTest::where('production_run_id', $prodrun->id)->join('users', 'users.id', '=', 'quality_tests.user_id')->select('quality_tests.id as id', 'test_date', 'test_type', 'result', 'passed',  'first_name', 'last_name')->get();
-        $stocks = Stock::where('production_run_id', $prodrun->id)->join('products', 'products.id', '=', 'stocks.product_id')->select('stocks.id as id', 'stock_date', 'name', 'quantity_in', 'source')->get();
+            $slocations = StorageLocation::where('shop_id', $prodrun->shop_id)->where('storage_for', 'End Products')->select('id', 'location_name')->get();
 
-        return view('production.sand.prod-runs.show', compact('page', 'prodrun', 'qualitytests', 'stocks'));
+            return view('production.sand.prod-runs.show', compact('page', 'prodrun', 'qualitytests', 'stocks', 'sandproducts', 'slocations'));
+        }
     }
 
     /**

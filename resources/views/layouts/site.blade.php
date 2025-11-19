@@ -2,38 +2,38 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" ng-app="smartpos">
 
 <head>
-<title>{{ config('app.name', 'PETOPESA') }} : {{$page}}</title>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-<meta name="description" content="The All in One Accounting Software">
-<meta name="author" content="">
-<!-- CSRF Token -->
-<meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config('app.name', 'DWASAL') }} : {{$page}}</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="description" content="The All in One Accounting Software">
+    <meta name="author" content="">
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
-<!-- VENDOR CSS -->
-<link rel="stylesheet" href="{{ asset('assets/vendor/notifications/css/lobibox.min.css') }}" />
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-@yield('page-styles')
-<!-- <link rel="stylesheet" href="{{ asset('assets/vendor/chartist/css/chartist.min.css') }}"> -->
-<!-- <link rel="stylesheet" href="{{ asset('assets/vendor/chartist-plugin-tooltip/chartist-plugin-tooltip.css') }}"> -->
+    <link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> 
+    <!-- VENDOR CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/notifications/css/lobibox.min.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @yield('page-styles')
+    <!-- <link rel="stylesheet" href="{{ asset('assets/vendor/chartist/css/chartist.min.css') }}"> -->
+    <!-- <link rel="stylesheet" href="{{ asset('assets/vendor/chartist-plugin-tooltip/chartist-plugin-tooltip.css') }}"> -->
 
-<link rel="stylesheet" href="{{ asset('assets/vendor/toastr/toastr.min.css') }}">
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
-<link rel="stylesheet" href="{{ asset('assets/vendor/parsleyjs/css/parsley.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/toastr/toastr.min.css') }}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/parsleyjs/css/parsley.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
 
-<!-- Daterange Picker -->
-<link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap-daterangepicker/daterangepicker.css') }}">
-<!-- MAIN CSS -->
-<link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/color_skins.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
+    <!-- Daterange Picker -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap-daterangepicker/daterangepicker.css') }}">
+    <!-- MAIN CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/color_skins.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
 </head>
 
 <body class="theme-orange">

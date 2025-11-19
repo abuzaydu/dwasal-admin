@@ -114,6 +114,7 @@ use App\Http\Controllers\Sales\ProInvoiceController;
 use App\Http\Controllers\Sales\InvoiceItemTempController;
 use App\Http\Controllers\Sales\ServiceInvoiceItemTempController;
 use App\Http\Controllers\Sales\DeliveryNoteController;
+use App\Http\Controllers\Sales\DeliveryAddressController;
 use App\Http\Controllers\Sales\CreditNoteController;
 
 use App\Http\Controllers\Acc\AccountingDashController;
@@ -557,11 +558,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('invoice-report', [InvoiceController::class, 'invoiceReport']);
     Route::post('invoice-reports', [InvoiceController::class, 'invoiceReport']);
     Route::get('aging-report', [InvoiceController::class, 'agingReport']);
+
     //Delivery Note
+    Route::resource('delivery-addresses', DeliveryAddressController::class);
     Route::get('create-dnote/{id}', [DeliveryNoteController::class, 'create']);
     Route::get('create-dnote-pfi/{id}', [DeliveryNoteController::class, 'createFromPFI']);
     Route::post('dnote-from-pfi', [DeliveryNoteController::class, 'postDNote']);
     Route::resource('delivery-notes', DeliveryNoteController::class);
+    Route::post('update-delivery-note-item', [DeliveryNoteController::class, 'updateDNoteItem']);
+    Route::get('remove-delivery-note-item/{id}', [DeliveryNoteController::class, 'removeDNoteItem']);
     Route::get('customer-account-stmt-std/{id}', [AnSaleController::class, 'accountStmt']);
     Route::post('customer-account-stmt-std/{id}', [AnSaleController::class, 'accountStmt']);
     Route::post('set-cust-ob', [AnSaleController::class, 'setOpeningBalance']);
@@ -1349,13 +1354,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-rm-sourcings', [RMSourcingController::class, 'index']);
 
     Route::resource('sand-productions', ProductionRunController::class);
+    Route::post('f-sand-productions', [ProductionRunController::class, 'index']);
     Route::resource('quality-tests', QualityTestController::class);
 
     Route::resource('quote-requests', QuoteRequestController::class);
     Route::resource('quotations', QuotationController::class);
+
     //OrdersProcessing
     Route::resource('orders', OrderController::class);
     Route::post('f-orders', [OrderController::class, 'index']);
+    Route::get('create-order-invoice/{id}', [OrderController::class, 'createInvoice']);
     Route::resource('order-deliveries', OrderDeliveryController::class);
     Route::post('f-order-deliveries', [OrderDeliveryController::class, 'index']);
     Route::post('add-selected-item', [OrderDeliveryController::class, 'addDeliveryItem']);

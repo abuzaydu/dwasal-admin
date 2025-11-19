@@ -1,4 +1,4 @@
-@extends('layouts.adm')
+@extends('layouts.prof')
 @section('page-styles')
     <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
 @endsection

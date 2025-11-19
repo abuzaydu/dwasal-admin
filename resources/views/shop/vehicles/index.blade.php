@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.inv')
     <script>
         function showHideForm(elem) {
             var newform = document.getElementById('new-form');

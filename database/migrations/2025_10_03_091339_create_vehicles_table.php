@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('shop_id')->index();
             $table->string('plate_no');
-            $table->string('chassis_no');
+            $table->string('chassis_no')->nullable();
             $table->string('type');
+            $table->string('model')->nullable();
             $table->string('capacity')->nullable();
             $table->string('uom')->nullable();
             $table->string('status')->default('Available');

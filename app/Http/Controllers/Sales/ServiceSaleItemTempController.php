@@ -41,14 +41,14 @@ class ServiceSaleItemTempController extends Controller
         $saletemp = SaleTemp::find($id);
         $currencies = ShopCurrency::where('shop_id', $shop->id)->get();
         if (!is_null($saletemp)) {
-            $servtemps = ServiceItemTemp::where('sale_temp_id', $saletemp->id)->with('service')->get();
+            $servtemps = ServiceItemTemp::where('sale_temp_id', $saletemp->id)->join('services', 'services.id', '=', 'service_item_temps.service_id')->select('service_item_temps.id as id', 'sale_temp_id', 'service_id', 'name', 'no_of_repeatition', 'service_item_temps.price as price', 'total', 'disc_percent', 'discount', 'total_discount', 'with_vat', 'vat_amount')->get();
             $temps = array();
             foreach ($servtemps as $key => $temp) {
                 array_push($temps, [
                     'id' => $temp->id, 
                     'sale_temp_id' => $temp->sale_temp_id,
                     'service_id' => $temp->service_id,
-                    'name' => $temp->service->name,
+                    'name' => $temp->name,
                     'no_of_repeatition' => $temp->no_of_repeatition,
                     'price' => round($temp->price/$saletemp->ex_rate, 2),
                     'total' => round($temp->total/$saletemp->ex_rate, 2),
@@ -57,8 +57,6 @@ class ServiceSaleItemTempController extends Controller
                     'total_discount' => round($temp->total_discount/$saletemp->ex_rate, 2),
                     'with_vat' => $temp->with_vat,
                     'vat_amount' => round($temp->vat_amount/$saletemp->ex_rate, 2),
-                    'created_at' => $temp->created_at,
-                    'updated_at' => $temp->updated_at
                 ]);
             }
             return Response::json(['saletemp' => $saletemp, 'items' => $temps, 'currencies' => $currencies]);

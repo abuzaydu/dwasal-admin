@@ -46,8 +46,8 @@ return new class extends Migration
             $table->string('invoice_title_position')->nullable()->default('right');
             $table->string('invoice_title')->default('TAX INVOICE');
             $table->string('invoice_temp')->nullable();
-            $table->string('invoice_color')->default('#0459c6');
-            $table->string('invoice_title_color')->default('white');
+            $table->string('invoice_color')->default('#DB8700');
+            $table->string('invoice_title_color')->default('black');
             $table->boolean('show_declaration')->default(true);
             $table->boolean('show_authorization_sign')->default(true);
             $table->boolean('enable_efd')->default(false);

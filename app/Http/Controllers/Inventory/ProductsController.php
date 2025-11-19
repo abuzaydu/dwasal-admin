@@ -323,7 +323,7 @@ class ProductsController extends Controller
                     ]);
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/public/images/' . $shop->id, $product->id.'_img.'.$extension);
+                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
                     $image_path = $product->id.'_img.'.$extension;
                 }
             }
@@ -649,13 +649,13 @@ class ProductsController extends Controller
                         'image' => 'mimes:jpg,png,jpeg,webp,gif,svg|max:1024',
                     ]);
 
-                    $old_path = storage_path('/public/images/'.$shop->id.'/'.$image_path);
+                    $old_path = storage_path('/products/'.$image_path);
                     if (File::exists($old_path)) {
                         unlink($old_path);
                     }
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/public/images/' . $shop->id, $product->id.'_img.'.$extension);
+                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
                     $image_path = $product->id.'_img.'.$extension;
                 }
             }

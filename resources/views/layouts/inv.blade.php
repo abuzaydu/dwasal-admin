@@ -223,7 +223,7 @@
                             @if(!$shop->is_warehouse)
                                 <hr>
                                 <li style="padding-left: 15px;" class="text-uppercase mb-3"> Services</li>
-                                @if ($shop->business_type_id == 3 || $shop->business_type_id == 4)
+                                @if ($shop->business_type_id == 3 || $shop->business_type_id == 4 || $settings->is_manufacturing_with_service)
                                 @if (Auth::user()->can('view-service'))
                                 <li class="{{ request()->is('services') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('services') }}"><i class="fa fa-cog"></i><span>{{ trans('navmenu.services') }}</span></a></li>
                                 <li class="{{ request()->is('devices') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('devices') }}"><i class="fa fa-cog"></i><span>@if($settings->is_cm_business) Motorbikes @elseif($settings->enable_trip_logs) Vehicles @else {{trans('navmenu.devices')}} @endif</span></a></li>
@@ -234,6 +234,8 @@
                                 @if (Auth::user()->can('view-price-list'))
                                 <li class="{{ request()->is('price-list') ? 'active' : '' }}"><a href="{{ url('price-list') }}"><i class='fa fa-calculator'></i><span>{{ trans('navmenu.prices') }}</span></a></li>
                                 @endif
+
+                                <li class="{{ request()->is('vehicles') ? 'active' : '' }}"><a href="{{ url('vehicles') }}"><i class="fa fa-truck"></i> Vehicles</a></li>
                             </ul>
                         </nav>
                     </div>

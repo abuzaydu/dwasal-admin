@@ -242,7 +242,7 @@
                                     </td>
                                     <td>
                                         @if(!is_null($product->image_url))
-                                        <img src="{{ asset('storage/images/'.$shop->id.'/'.$product->image_url) }}" width="60">
+                                        <img src="{{ asset('storage/products/'.$product->image_url) }}" width="60">
                                         @endif         
                                     </td>
                                 </tr>

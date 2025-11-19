@@ -20,6 +20,7 @@ use App\Models\SupplierTransaction;
 use App\Models\PurchaseCostItem;
 use App\Jobs\StockUpdaterJob;
 use App\Models\PurchaseOrderItem;
+use App\Models\ProductionRun;
 
 class StockController extends Controller
 {
@@ -51,7 +52,33 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $stockdate = Carbon::now();
+        if (!empty($request['stock_date'])) {
+            $timenow = Carbon::now();
+            $time = date('H:i:s', strtotime($timenow));
+            $stockdate = $request['stock_date'] . ' ' . $time;
+        }
+
+        $shop = Shop::find(Session::get('shop_id'));
+        $stock = Stock::where('production_run_id', $request['production_run_id'])->where('product_id', $request['product_id'])->first();
+        if (is_null($stock)) {
+            $prodrun = ProductionRun::find($request['production_run_id']);
+            $stock = new Stock();
+            $stock->shop_id = $shop->id;
+            $stock->product_id = $request['product_id'];
+            $stock->production_run_id = $request['production_run_id'];
+            $stock->storage_location_id = $request['storage_location_id'];
+            $stock->stock_date = $stockdate;
+            $stock->quantity_in = $request['quantity_in'];
+            $stock->source = 'Production Run No. '.$prodrun->pr_no;
+            $stock->save();
+
+            dispatch(new StockUpdaterJob($shop, $stock->product_id));
+        
+            return redirect()->route('sand-productions.show', encrypt($request['production_run_id']))->with('success', 'End Product added successfully');
+        }else{
+            return redirect()->back()->with('info', 'Same End Product for this Production already exists');
+        }
     }
 
     /**

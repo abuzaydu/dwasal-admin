@@ -38,7 +38,20 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <a href="{{ route('sand-productions.create') }}" class="btn btn-primary btn-sm"><i class="bx bxs-plus-square"></i> New Production Run</a>
+                <form class="dashform row mb-0" action="{{url('f-sand-productions')}}" method="POST" id="dashform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="{{$start_date}}">
+                    <input type="hidden" name="end_date" id="end_input" value="{{$end_date}}">
+                    <!-- Date and time range -->
+                    <div class="col-sm-7">
+                        <div class="input-group mb-0">
+                            <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-sm-5">
+                        <a href="{{ route('sand-productions.create') }}" class="btn btn-primary btn-sm"><i class="bx bxs-plus-square"></i> New Production Run</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

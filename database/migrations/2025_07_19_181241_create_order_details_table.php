@@ -28,6 +28,7 @@ return new class extends Migration
             $table->datetime('exp_delivery_time')->nullable();
             $table->string('status')->default('Pending');
             $table->string('processed_by')->nullable();
+            $table->boolean('is_invoice_created')->default(false);
             $table->boolean('is_full_delivered')->default(false);
             $table->foreign('shop_id')->references('id')->on('shops');
             $table->foreign('user_id')->references('id')->on('users');

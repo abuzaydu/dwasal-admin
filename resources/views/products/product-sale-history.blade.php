@@ -7,7 +7,7 @@
     <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
-            <div class="col-lg-7 col-md-7 col-sm-12">
+            <div class="col-lg-8 col-md-8 col-sm-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>                            
                     <li class="breadcrumb-item">Products & Services</li>
@@ -15,17 +15,16 @@
                     <li class="breadcrumb-item active"><b>{{$title}}</b></li>
                 </ul>
             </div>            
-            <div class="col-lg-5 col-md-5 col-sm-12 text-right pt-0">
+            <div class="col-lg-4 col-md-4 col-sm-12 text-right pt-0">
                 <form class="dashform row g-3" action="{{ url('product-sale-history/'.encrypt($product->id)) }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="start_date" id="start_input" value="">
-                        <input type="hidden" name="end_date" id="end_input" value="">
-                        <!-- Date and time range -->
-                        <div class="form-group col-sm-12">
-                            <button type="button" class="btn btn-white btn-sm pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
-                        </div>
-                        <!-- /.form group -->
-                    </form>
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="">
+                    <input type="hidden" name="end_date" id="end_input" value="">
+                    <!-- Date and time range -->
+                    <div class="form-group col-sm-12">
+                        <button type="button" class="btn btn-white btn-sm pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

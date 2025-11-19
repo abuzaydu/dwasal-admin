@@ -1011,7 +1011,7 @@
                             var id = response[i]['id'];
                             var name = response[i]['name'];
                             var slug = response[i]['slug'];
-                            var path = "<?php echo asset('storage/images/'.$shop->id); ?>";
+                            var path = "<?php echo asset('storage/products/'); ?>";
                             var img = response[i]['img'];
                             var img_path = path+'/'+img;
                             var qty = +response[i]['in_stock'];
@@ -1214,15 +1214,6 @@
                     format     : 'yyyy-mm-dd',
                     minDate    : new Date(),
                     // maxDate    : new Date()
-                });
-            }
-
-            var isrental = "<?php echo $settings->is_rental_service; ?>";
-            if (isrental) {
-                $red.DatePickerX.init({
-                    mondayFirst: true,
-                    format     : 'yyyy-mm-dd',
-                    // minDate    : new Date(),
                 });
             }
         });

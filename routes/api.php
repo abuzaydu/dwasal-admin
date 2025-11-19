@@ -13,7 +13,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::get('product', [WelcomeController::class, 'index']);
+Route::get('product', [WelcomeController::class, 'products']);
 Route::get('product-details/{id}', [WelcomeController::class, 'productDetail']);
 Route::get('my-dashboard/{id}', [WelcomeController::class, 'clientDashboard']);
 Route::get('delivery-rate', [WelcomeController::class, 'deliveryRate']);

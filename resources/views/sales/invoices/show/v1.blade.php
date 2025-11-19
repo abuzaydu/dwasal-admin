@@ -484,7 +484,7 @@
                                 <div class="col-md-12">
                                     <table class="mt-3" style="width: 100%;">
                                         <thead>
-                                            <tr style="background: <?php echo $settings->invoice_color; ?>; color: #fff; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                                            <tr style="background: <?php echo $settings->invoice_color; ?>; color: <?php echo $settings->invoice_title_color; ?>; border-top-left-radius: 15px; border-top-right-radius: 15px;">
                                                 <th style="text-align: center; width: 3%;">#</th>
                                                 <th style="text-align: right; width: 15%; border-left: 1px solid #fff;">Code</th>
                                                 <th style="width: 45%;">Item Description</th>

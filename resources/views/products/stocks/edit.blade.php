@@ -41,11 +41,13 @@
                         if ($stock->unit_cost == 0) {
                             $unit_cost = $stock->unit_cost;
                         }?>
+                        @if(is_null($stock->production_run_id))
                         <div class="col-sm-3 pt-2">
                             <label class="form-label">{{trans('navmenu.buying_price')}}</label>
                             <input type="number" step="any" name="unit_cost" class="form-control form-control-sm mb-1" value="{{$unit_cost+0}}">
                         </div>
-
+                        @endif
+                        
                         @if($settings->enable_exp_date)
                         <div class="col-sm-12 pt-2">
                             <label for="expired" class="form-label">{{trans('navmenu.exp_date')}}</label>

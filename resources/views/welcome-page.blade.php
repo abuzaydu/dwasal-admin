@@ -2,31 +2,31 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" ng-app="smartpos">
 
 <head>
-<title>{{ config('app.name', 'DWASAL') }} : Welcome</title>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-<meta name="description" content="The All in One Accounting Software">
-<meta name="author" content="">
-<!-- CSRF Token -->
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
-<!-- VENDOR CSS -->
-<link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
+    <title>{{ config('app.name', 'DWASAL') }} : Welcome</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="description" content="The All in One Accounting Software">
+    <meta name="author" content="">
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link href="{{ asset('img/favicon.png') }}" rel="icon">
+    <link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
+    <!-- VENDOR CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
 
-<!-- MAIN CSS -->
-<link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/color_skins.css') }}">}}">
-<link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
-
+    <!-- MAIN CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/color_skins.css') }}">}}">
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
 </head>
 <body class="theme-orange">
 
     <!-- Page Loader -->
     <div class="page-loader-wrapper">
         <div class="loader">
-            <div class="m-t-30"><img src="{{ asset('assets/images/loader-5.gif') }}" width="48" height="48" alt="The 1Biz"></div>
+            <div class="m-t-30"><img src="{{ asset('assets/images/loader-5.gif') }}" width="48" height="48" alt="DWASAL"></div>
             <p>Please wait...</p>        
         </div>
     </div>
@@ -254,6 +254,17 @@
                                     <h2><i class="fa fa-bar-chart-o"></i></h2>
                                     <h6 class="text-primary"> Reporting</h6>
                                     <small>Sales Summary Reports, Inventory Reports, Expense Reports, Management Reports, Finacial Statements, etc.</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url('vehicles-dash') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
+                                    <h2><i class="fa fa-truck"></i></h2>
+                                    <h6 class="text-primary">Vehicle Management </h6>
+                                    <small>Vehicles, Trip Logs, Mileage Logs, Cost Logs</small>
                                 </div>
                             </div>
                         </a>

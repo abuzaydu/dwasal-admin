@@ -9,7 +9,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-<link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
+<link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> 
 <!-- VENDOR CSS -->
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">

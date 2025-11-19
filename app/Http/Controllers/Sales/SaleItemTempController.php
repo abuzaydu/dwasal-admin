@@ -156,7 +156,11 @@ class SaleItemTempController extends Controller
                         $saleItemTemp->quantity_sold = 1;
                     }
                     $saleItemTemp->curr_stock = $instock;
-                    $saleItemTemp->unit_cost = $request['unit_cost'];
+                    if (!empty($request['unit_cost'])) {
+                        $saleItemTemp->unit_cost = $request['unit_cost'];
+                    }else{
+                        $saleItemTemp->unit_cost = 0;
+                    }
                     $saleItemTemp->buying_price = $saleItemTemp->unit_cost*$saleItemTemp->quantity_sold;
                     $saleItemTemp->retail_price = $request['retail_price'];
                     $saleItemTemp->price = $saleItemTemp->retail_price*$saleItemTemp->quantity_sold;

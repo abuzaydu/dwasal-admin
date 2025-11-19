@@ -19,6 +19,13 @@ class WelcomeController extends Controller
         return redirect('login');
     }
 
+    public function products()
+    {
+        $products = Product::select('id', 'name', 'basic_uom', 'slug', 'image_url', 'short_desc', 'description')->get();
+
+        return response()->json($products);
+    }
+
     public function productDetail($id)
     {
         $product = Product::find(decrypt($id));

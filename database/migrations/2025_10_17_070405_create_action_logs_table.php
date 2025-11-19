@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('action_logs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('shop_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->string('action_type');
+            $table->text('log_message');
             $table->timestamps();
         });
     }

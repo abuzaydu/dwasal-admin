@@ -38,7 +38,7 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <a href="{{ route('quality-tests.create') }}" class="btn btn-primary btn-sm"><i class="bx bxs-plus-square"></i> New Quality Test</a>
+                <!-- <a href="{{ route('quality-tests.create') }}" class="btn btn-primary btn-sm"><i class="bx bxs-plus-square"></i> New Quality Test</a> -->
             </div>
         </div>
     </div>
@@ -66,7 +66,7 @@
                                 @foreach($qualitytests as $key => $qtest)
                                 <tr>
                                     <td>{{$key+1}}</td>
-                                    <td><a href="{{ route('quality-tests.show', encrypt($qtest->id))}}">{{$qtest->pr_no}}</a></td>
+                                    <td><a href="{{ route('sand-productions.show', encrypt($qtest->production_run_id))}}">{{$qtest->pr_no}}</a></td>
                                     <td>{{$qtest->test_date}}</td>
                                     <td>{{$qtest->test_type}}</td>
                                     <td>{{$qtest->result}}</td>

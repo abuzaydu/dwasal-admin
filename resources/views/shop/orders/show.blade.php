@@ -1,7 +1,31 @@
 @extends('layouts.app')
 @section('page-styles')
 @endsection
+<script>
+    
+    function confirmDelete(id) {
+        Swal.fire({
+            title: "{{ trans('navmenu.are_you_sure_delete') }}",
+            text: "{{ trans('navmenu.no_revert') }}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "{{ trans('navmenu.cancel_it') }}",
+            cancelButtonText: "{{ trans('navmenu.no') }}"
+        }).then((result) => {
+            if (result.value) {
+                document.getElementById('delete-form-' + id).submit();
+                Swal.fire(
+                    "{{ trans('navmenu.deleted') }}",
+                    "{{ trans('navmenu.cancelled') }}",
+                    'success'
+                )
+            }
+        })
+    }
 
+</script>
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-4">
@@ -17,11 +41,11 @@
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
                 <form class="row g-1" method="POST" action="{{ url('update-order-status') }}">
                 	@csrf
-                	<div class="col-md-4">
+                	<div class="col-md-3">
                 		<label class="form-label">Order Status</label>
                 	</div>
                 	<input type="hidden" name="order_id" value="{{$order->id}}">
-                	<div class="col-md-4">
+                	<div class="col-md-3">
                 		<select name="status" class="form-select form-select-sm mb-1" onchange="this.form.submit()">
                 			@foreach($statuses as $status)
                 			@if($order->status == $status)
@@ -32,8 +56,8 @@
                 			@endforeach
                 		</select>
                 	</div>
-                    <div class="col-md-4">
-                        <a href="{{ route('order-deliveries.create') }}" class="btn btn-primary btn-sm pull-right"> Create New Delivery</a>
+                    <div class="col-md-6">
+                        <a href="{{ url('create-dnote/' . encrypt($sale->id)) }}" class="btn btn-primary btn-sm pull-right"> Create New Delivery Note</a>
                     </div>
                 </form>
             </div>
@@ -45,13 +69,24 @@
         <div class="col-md-12 col-sm-12 mx-auto">
         	<div class="card">
         		<div class="card-body">
-                    <ul class="nav nav-tabs-new2">
+                    <ul class="nav nav-tabs nav-tabs-new2">
                         <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" href="#tab_0-0"><i class='fa fa-list'></i> Order Details </a>
+                            <a class="nav-link active show" data-bs-toggle="tab" href="#tab_0-0"><i class='fa fa-list'></i> Order Details </a>
                         </li>
+                        @if(!is_null($payment))
+                        @if(!is_null($sale))
                         <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#tab_1-1"><i class='fa fa-list-alt'></i> Order Processing</a>
+                            <a class="nav-link" href="{{ route('invoices.show', encrypt($sale->id)) }}"><i class="fa  fa-file-pdf-o"></i> View Invoice</a>
                         </li>
+                        @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url('create-order-invoice/'.encrypt($order->id))}}"><i class="fa fa-file-o"></i> Create Invoice</a>
+                        </li>
+                        @endif
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#tab_1-1"><i class='fa fa-list-alt'></i> Order Processing</a>
+                        </li>
+                        @endif
                     </ul>
                     <div class="tab-content py-3">
                         <div class="tab-pane fade show active" id="tab_0-0" role="tabpanel">
@@ -75,7 +110,7 @@
                                         			<tr class="table-order">
                                         				<td>
                                         					<a href="javascript:void(0)">
-                                        						<img src="{{ asset('storage/'.$item->image_url)}}" width="60" class="img-fluid blur-up lazyload" alt="">
+                                        						<img src="{{ asset('storage/products/'.$item->image_url)}}" width="60" class="img-fluid blur-up lazyload" alt="">
                                         					</a>
                                         				</td>
                                         				<td>{{$item->name}}</td>
@@ -172,74 +207,50 @@
                         <div class="tab-pane fade" id="tab_1-1" role="tabpanel">
                             <div class="bg-inner cart-section order-details-table">
                                 <div class="row g-4">
-                                    <div class="col-xl-8">
-                                        <div class="card-details-title">
-                                            <h6>Order Deliveries</h6>
-                                            <div class="p-4 border rounded">
-                                                <form class="form row g-3" method="POST" action="{{ route('order-deliveries.store')}}" enctype="multipart/form-data">
-                                                    @csrf
-                                                    <input type="hidden" name="order_detail_id" value="{{$order->id}}">
-                                                    <div class="col-md-3">
-                                                        <label class="form-label">Vehicle<span style="color: red; font-weight: bold;">*</span></label>
-                                                        <select name="vehicle_id" class="form-select form-select-sm mb-1" required>
-                                                            <option value="">--Select--</option>
-                                                            @foreach($vehicles as $key => $vehicle)
-                                                            @if($vehicles->count() == 1)
-                                                            <option value="{{$vehicle->id}}" selected>{{$vehicle->plate_no}}</option>
-                                                            @else
-                                                            <option value="{{$vehicle->id}}">{{$vehicle->plate_no}}</option>
-                                                            @endif
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6 pt-4">
-                                                        <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Create Delivery</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                        <div class="table-details">
-                                            <table class="table table-bordered" style="width: 100%;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Item Description</th>
-                                                        <th>Quantity</th>
-                                                        <th>Vehicle/Truck</th>
-                                                        <th>Time Loaded</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($orderdeliveries as $key => $oditem)
-                                                    <tr class="table-order">
-                                                        <td>{{$oditem->name}}</td>
-                                                        <td>{{$oditem->quantity+0}} {{$oditem->uom}}</td>
-                                                        <td>{{$oditem->plate_no }}</td>
-                                                        <td>{{$oditem->created_at}}</td>
-                                                        <td style="text-align: center;">
-                                                            <a href="{{route('order-deliveries.edit', encrypt($oditem->id))}}">
-                                                                <i class="fa fa-edit" style="color: blue;"></i>
-                                                            </a> | 
-                                                            <form method="POST" action="{{route('order-deliveries.destroy' , encrypt($oditem->id))}}" id="delete-form-{{$key}}" style="display: inline;"> 
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <a href="javascript:;" onclick="return confirmDelete({{$key}})">
-                                                                    <i class="fa fa-trash" style="color: red;"></i>
-                                                                </a>                        
-                                                            </form>    
-                                                        </td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-4">
-                                        
+                                    <div class="col-xl-12">
+                                        <table id="del-multiple" class="table table-striped table-bordered display nowrap" style="width:100%; font-size: 14px;">
+                                            <thead style="font-weight: bold; font-size: 14;">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>{{trans('navmenu.delivery_note_no')}}</th>
+                                                    <th>{{trans('navmenu.customer_name')}}</th>
+                                                    <th>{{trans('navmenu.comments')}}</th>
+                                                    <th>{{trans('navmenu.created_at')}}</th>
+                                                    <th>{{trans('navmenu.last_updated')}}</th>
+                                                    <th>{{trans('navmenu.actions')}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($dnotes as $index => $dnote)
+                                                <tr>
+                                                    <td>{{$dnote->id}}</td>
+                                                    <td> {{ sprintf('%04d', $dnote->note_no)}}</td>
+                                                    <td><a href="{{ route('delivery-notes.show', encrypt($dnote->id)) }}">{{$dnote->name}}</a></td>
+                                                    <td>{{$dnote->comments}}</td>
+                                                    <td>{{$dnote->created_at}}</td>
+                                                    <td>{{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $dnote->updated_at)->diffForHumans() }}</td>
+                                                    <td>
+                                                        <a href="{{ route('delivery-notes.show', encrypt($dnote->id)) }}">
+                                                            <i class="fa fa-eye"></i>
+                                                        </a> | 
+                                                        <a href="{{ route('delivery-notes.edit', encrypt($dnote->id)) }}">
+                                                            <i class="fa fa-edit" style="color: blue;"></i>
+                                                        </a> |
+                                                        <form id="delete-form-{{$index}}" method="POST" action="{{ route('delivery-notes.destroy', encrypt($dnote->id))}}" style="display: inline;">
+                                                            @csrf
+                                                            @method("DELETE")
+                                                            <a href="#" onclick="confirmDelete('<?php echo $index; ?>')"><i class="fa fa-trash" style="color: red;"></i></a>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>  
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
