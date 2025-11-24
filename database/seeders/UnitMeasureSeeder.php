@@ -50,7 +50,8 @@ class UnitMeasureSeeder extends Seeder
             'strip',
             'blister',
             'cbm',
-            'unit'
+            'unit',
+            'seats'
         );
 
         foreach ($units as $key => $value) {

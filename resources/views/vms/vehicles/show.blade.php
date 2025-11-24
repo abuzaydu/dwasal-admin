@@ -1,4 +1,4 @@
-@extends('layouts.inv')
+@extends('layouts.vms')
     <script>
         function showHideForm(elem) {
             var newform = document.getElementById('new-form');
@@ -60,8 +60,8 @@
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="icon-home"></i></a></li>   
-                    <li class="breadcrumb-item">Washed Sand Productions</li>                         
+                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
+                    <li class="breadcrumb-item">Vehicles Management</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
@@ -85,8 +85,8 @@
                                         <td>{{$vehicle->plate_no}}</td>
                                     </tr>
                                     <tr>
-                                        <th>Chassis No.</th>
-                                        <td>{{$vehicle->chassis_no}}</td>
+                                        <th>Vehicle Name</th>
+                                        <td>{{$vehicle->vehicle_name}}</td>
                                     </tr>
                                     <tr>
                                         <th>Type</th>

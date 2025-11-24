@@ -91,7 +91,6 @@ use App\Http\Controllers\Service\DeviceController;
 use App\Http\Controllers\Service\TripLogsController;
 use App\Http\Controllers\Service\GradeController;
 use App\Http\Controllers\Service\ShopServiceApiController;
-use App\Http\Controllers\Service\VehicleController;
 
 use App\Http\Controllers\Sales\SaleDashController;
 use App\Http\Controllers\Sales\CustomerController;
@@ -256,6 +255,10 @@ use App\Http\Controllers\MHC\AppointmentServiceController;
 use App\Http\Controllers\MHC\AppointmentProductController;
 use App\Http\Controllers\MHC\MedicalHistoryController;
 
+
+use App\Http\Controllers\VMS\VehicleController;
+use App\Http\Controllers\VMS\VehicleTypeController;
+use App\Http\Controllers\VMS\OwnershipController;
 
 use App\Http\Controllers\Web\RecycleBinController;
 use App\Http\Controllers\Web\ActionLogsController;
@@ -1373,7 +1376,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('card-payments', [OrderPaymentController::class, 'initiateOrder']);
     Route::post('check-payment-order-status', [OrderPaymentController::class, 'checkOrderStatus']);
 
+    Route::get('vehicles-dash', [VehicleController::class, 'dashboard']);
+    Route::post('vehicles-dash', [VehicleController::class, 'dashboard']);
     Route::resource('vehicles', VehicleController::class);
+    Route::resource('vehicle-types', VehicleTypeController::class);
+    Route::resource('ownerships', OwnershipController::class);
 
 
     // RecycleBin Routes

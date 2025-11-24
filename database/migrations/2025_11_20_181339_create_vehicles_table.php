@@ -13,17 +13,22 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('shop_id')->index();
+            $table->unsignedBigInteger('company_id')->index();
+            $table->unsignedBigInteger('vehicle_type_id')->index();
+            $table->unsignedBigInteger('ownership_id')->index();
+            $table->unsignedBigInteger('department_id')->index()->nullable();
             $table->string('plate_no');
+            $table->string('vehicle_name');
             $table->string('chassis_no')->nullable();
-            $table->string('type');
+            $table->date('reg_date')->nullable();
             $table->string('model')->nullable();
             $table->string('capacity')->nullable();
             $table->string('uom')->nullable();
             $table->string('status')->default('Available');
-            $table->string('ownership')->default('Company');
             $table->boolean('is_assigned')->default(false);
-            $table->foreign('shop_id')->references('id')->on('shops');
+            $table->foreign('company_id')->references('id')->on('companies');
+            $table->foreign('vehicle_type_id')->references('id')->on('vehicle_types');
+            $table->foreign('ownership_id')->references('id')->on('ownerships');
             $table->timestamps();
         });
     }

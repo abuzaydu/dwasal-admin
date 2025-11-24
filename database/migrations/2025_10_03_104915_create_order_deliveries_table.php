@@ -16,13 +16,13 @@ return new class extends Migration
             $table->unsignedBigInteger('shop_id')->index();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('order_detail_id')->index();
-            $table->unsignedBigInteger('vehicle_id')->index();
+            $table->unsignedBigInteger('vehicle_id')->index()->nullable();
             $table->unsignedBigInteger('delivery_address_id')->index();
             $table->string('status')->default('Loading');
             $table->text('remarks')->nullable();
             $table->foreign('shop_id')->references('id')->on('shops');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('vehicle_id')->references('id')->on('vehicles');
+            // $table->foreign('vehicle_id')->references('id')->on('vehicles');
             $table->foreign('delivery_address_id')->references('id')->on('delivery_addresses');
             $table->timestamps();
         });

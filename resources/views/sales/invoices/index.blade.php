@@ -179,8 +179,7 @@
                                                     @if (app()->getLocale() == 'en')
                                                         <span class="badge rounded-pill bg-success">{{ $sale->status }}</span>
                                                     @else
-                                                        <span
-                                                            class="badge rounded-pill bg-success">{{ trans('navmenu.paid_sale') }}</span>
+                                                        <span class="badge rounded-pill bg-success">{{ trans('navmenu.paid_sale') }}</span>
                                                     @endif
                                                 @elseif($sale->status == 'Partially Paid')
                                                     @if (app()->getLocale() == 'en')

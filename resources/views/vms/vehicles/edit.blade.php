@@ -1,48 +1,12 @@
-@extends('layouts.inv')
-    <script>
-        function showHideForm(elem) {
-            var newform = document.getElementById('new-form');
-            var newbtn = document.getElementById('new-btn');
-
-            if (elem == 'show') {
-                newform.style.display = 'block';
-                newbtn.style.display = 'none';
-            }else{
-                newform.style.display = 'none';
-                newbtn.style.display = 'block';
-            }
-        }
-
-        function confirmDelete(id){
-            Swal.fire({
-              title: "{{trans('navmenu.are_you_sure')}}",
-              text: "{{trans('navmenu.no_revert')}}",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: "{{trans('navmenu.cancel_it')}}",
-              cancelButtonText: "{{trans('navmenu.no')}}"
-            }).then((result) => {
-              if (result.value) {
-                document.getElementById('delete-form-'+id).submit();
-                Swal.fire(
-                  "{{trans('navmenu.deleted')}}",
-                  "{{trans('navmenu.cancelled')}}",
-                  'success'
-                )
-              }
-            })
-        }
-    </script>
+@extends('layouts.vms')
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="icon-home"></i></a></li>   
-                    <li class="breadcrumb-item">Washed Sand Productions</li>                         
+                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
+                    <li class="breadcrumb-item">Vehicles Managment</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            

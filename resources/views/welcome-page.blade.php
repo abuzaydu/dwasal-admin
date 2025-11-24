@@ -10,8 +10,7 @@
     <meta name="author" content="">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="{{ asset('img/favicon.png') }}" rel="icon">
-    <link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
+    <link href="{{ asset('img/icon.png') }}" rel="icon">
     <!-- VENDOR CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
@@ -264,7 +263,7 @@
                                 <div class="body text-center">
                                     <h2><i class="fa fa-truck"></i></h2>
                                     <h6 class="text-primary">Vehicle Management </h6>
-                                    <small>Vehicles, Trip Logs, Mileage Logs, Cost Logs</small>
+                                    <small>Vehicles, Legal Documents, Insurance, Maintenance, Refueling,  Trip Logs, Mileage Logs, Cost Logs</small>
                                 </div>
                             </div>
                         </a>
