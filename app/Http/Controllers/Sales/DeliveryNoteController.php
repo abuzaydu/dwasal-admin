@@ -290,7 +290,7 @@ class DeliveryNoteController extends Controller
         $user = User::find($dnote->user_id);
 
         $delivaddresses = DeliveryAddress::where('customer_id', $sale->customer_id)->get();
-        $vehicles = Vehicle::where('shop_id', Session::get('shop_id'))->get();
+        $vehicles = Vehicle::where('company_id', Session::get('company_id'))->get();
         return view('sales.delivery-notes.edit', compact('page', 'title', 'title_sw', 'dnote', 'sale', 'user', 'dnoteitems', 'vehicles', 'delivaddresses'));
     }
 
