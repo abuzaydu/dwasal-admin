@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="{{ asset('hr/assets/css/lucid-style.css') }}">
     <link rel="stylesheet" href="{{ asset('hr/assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('hr/assets/cssbundle/tuicalendar.min.css')}}">
+    <link rel="stylesheet" href="{{ asset('side/assets/css/custom.css') }}">
 </head>
 <?php
 $headercolor = Session::get('headercolor');
@@ -58,6 +59,7 @@ if (!is_null($shop)) {
                         <small>DWASAL</small>
                     </a>
                 </div>
+                
                 <div class="d-flex flex-grow-1 align-items-center">
                     <div class="flex-grow-1" id="hide-on-mobile">
                         <marquee>{{$company->name}}</marquee>
