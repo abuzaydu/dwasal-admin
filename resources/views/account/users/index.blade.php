@@ -196,9 +196,9 @@
                                         <tr>
                                             <td>{{$key+1}}</td>
                                             @if($user->id === Auth::user()->id)
-                                            <td>{{$user->name}}</td>
+                                            <td>{{$user->first_name}} {{ $user->last_name}}</td>
                                             @else
-                                            <td><a href="{{route('user-profile.show', encrypt($user->id))}}">{{$user->name}}</a></td>
+                                            <td><a href="{{route('user-profile.show', encrypt($user->id))}}">{{$user->first_name}} {{ $user->last_name}}</a></td>
                                             @endif
                                             <td>{{$user->phone}}</td>
                                             <td>
