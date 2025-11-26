@@ -163,7 +163,7 @@
                                             <a href="{{route('transfer-orders.edit', encrypt($order->id))}}">
                                                 <i class="fa fa-edit" style="color: blue;"></i>
                                              Edit </a> @if(Auth::user()->can('cancel-stock-transfer'))| 
-                                            <a href="#" class="text-warning" onclick="confirmCancel('<?php echo encrypt($order->id) ?>')"><i class="fa fa-x-circle"></i> Cancel</a> @endif @endif @if($order->is_cancelled && Auth::user()->can('cancel-stock-transfer')) | 
+                                            <a href="#" class="text-warning" onclick="confirmCancel('<?php echo encrypt($order->id) ?>')"><i class="fa fa-x-circle"></i> Cancel</a> @endif @endif @if($order->is_cancelled && Auth::user()->can('delete-stock-transfer')) | 
                                             <a href="#" class="text-success" onclick="confirmCancel('<?php echo encrypt($order->id) ?>')"><i class="fa fa-x-circle"></i> Restorre</a> |
                                             <form id="delete-form-{{$i}}" method="POST" action="{{route('transfer-orders.destroy' , encrypt($order->id))}}" style="display: inline;">
                                                 @csrf         

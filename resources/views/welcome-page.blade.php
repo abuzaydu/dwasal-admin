@@ -36,8 +36,11 @@
         <nav class="navbar navbar-fixed-top">
             <div class="container">
                 <div class="navbar-brand">
-                    <a href="{{ url('home') }}">DWASAL</a>
-                    <!-- <a href="{{ url('/home')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                 -->
+                    <a href="{{ url('home') }}">
+                        <img src="{{ asset('assets/img/icon.png') }}" width="30"> 
+                        <small>DWASAL</small>
+                    </a>
+                    <!-- <a href="{{ url('/home')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                  -->
                 </div>
                 
                 <div class="navbar-right">
