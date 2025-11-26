@@ -52,7 +52,7 @@
         <nav class="navbar navbar-fixed-top">
             <div class="container">
                 <div class="navbar-brand">
-                    <a href="{{ url('/') }}">DWASAL</a>
+                    <a href="{{ url('/home') }}">DWASAL</a>
                     <!-- <a href="{{ url('/')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                 -->
                 </div>
                 
