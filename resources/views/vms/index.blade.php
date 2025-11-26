@@ -5,8 +5,8 @@
         <div class="row">
             <div class="col-lg-6 col-md-8 col-sm-12">
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>                            
-                    <li class="breadcrumb-item">Products & Services</li>
+                    <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>  
+                    <li class="breadcrumb-item">Vehicles Managment</li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
