@@ -60,7 +60,7 @@
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                 </div>
                 <div class="navbar-brand ps-2">
-                    <a href="{{ url('my-default-page') }}">
+                    <a href="{{ url('/home') }}">
                         <img src="{{ asset('assets/img/icon.png') }}" width="30"> 
                         <small>DWASAL</small>
                     </a>
