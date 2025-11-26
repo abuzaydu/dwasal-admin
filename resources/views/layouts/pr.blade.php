@@ -25,11 +25,16 @@
     <link rel="stylesheet" href="{{ asset('hr/assets/cssbundle/tuicalendar.min.css')}}">
     <link rel="stylesheet" href="{{ asset('side/assets/css/custom.css') }}">
 </head>
+
 <?php
 $headercolor = Session::get('headercolor');
 $sidebarcolor = Session::get('sidebarcolor');
+$company = App\Models\Company::find(Session::get('company_id'));
 $shop = App\Models\Shop::find(Session::get('shop_id'));
-$settings = App\Models\Setting::where('shop_id', $shop->id)->first();
+$settings = null;
+if (!is_null($shop)) {
+    $settings = App\Models\Setting::where('shop_id', $shop->id)->first();
+}
 ?>
 
 <body id="layout" data-lucid="theme-orange">
