@@ -37,7 +37,7 @@
             <div class="container">
                 <div class="navbar-brand">
                     <a href="{{ url('home') }}">
-                        <img src="{{ asset('assets/img/icon.png') }}" width="30" height="30"> 
+                        <img src="{{ asset('assets/img/icon.png') }}" width="15" height="30"> 
                         <small>DWASAL</small>
                     </a>
                     <!-- <a href="{{ url('/home')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                  -->
