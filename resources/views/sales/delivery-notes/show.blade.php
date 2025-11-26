@@ -178,7 +178,7 @@
                                 </div>
                                 <div class="text-center col-md-6">
                                     <p><span style="text-transform: uppercase; font-size: 14px; font-weight: bold;">{{trans('navmenu.received_by')}}</span><br>
-                                        {{trans('navmenu.name')}} : @if(!is_null($dnote->received_by))<strong>{{$dnote->received_by}}</strong> @else<strong> ..................................</strong>@endif<br>
+                                        {{trans('navmenu.name')}} : @if(!empty($dnote->received_by))<strong>{{$dnote->received_by}}</strong> @else<strong> ..................................</strong>@endif<br>
                                         {{trans('navmenu.signature')}} <strong>........................</strong>
                                     </p>
                                 </div>
