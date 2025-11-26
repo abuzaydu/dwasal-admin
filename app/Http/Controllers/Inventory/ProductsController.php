@@ -798,7 +798,7 @@ class ProductsController extends Controller
                 $pchange->wholesale_price = $product->wholesale_price;
                 $pchange->save();
 
-                $prod_unit = ProductUnit::where('product_id', $product->id)->where('shop_id', $shop->id)->where('is_basic', true)->first();
+                $prod_unit = ProductUnit::where('product_id', $product->id)->where('is_basic', true)->first();
                 if (!is_null($prod_unit)) {
                     $prod_unit->unit_price = $request['new_unit_price'];
                     $prod_unit->save();
