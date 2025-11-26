@@ -147,7 +147,7 @@
                             </div>
                             <div class="col-md-8">
                                 <label>Comments: <span style="color: red;">*</span></label>
-                                <textarea class="form-control form-control-sm mb-1" rows="1" name="comments" placeholder="Enter Comments here" required>{{$dnote->comments}}</textarea>
+                                <input class="form-control form-control-sm mb-1" rows="1" name="comments" value="{{$dnote->comments}}" placeholder="Enter Comments here" required>
                             </div>
                             <div class="col-md-12">
                                 <button class="btn btn-primary btn-sm" style="margin-left: 5px;">Update</button>
