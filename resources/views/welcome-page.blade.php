@@ -206,12 +206,12 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="{{ url('settings') }}" target="_blank">
+                        <a href="{{ url('prod-dash') }}" target="_blank">
                             <div class="card">
                                 <div class="body text-center">
-                                    <h2><i class="fa fa-cog"></i></h2>
-                                    <h6 class="text-primary"> Account Settings</h6>
-                                    <small>General Settings, User Profile, Companies, Branches, Users & Roles, Delivery Settings, Invoice Settings, Recyclebin</small>
+                                    <h2><i class="fa fa-industry"></i></h2>
+                                    <h6 class="text-primary">Other Production</h6>
+                                    <small>Raw Materials, Packaging Materials, Manufacturing Overheads Costs, Labour Costs, Production Records, etc.</small>
                                 </div>
                             </div>
                         </a>
@@ -239,17 +239,6 @@
                         </a>
                     </div>
                     <div class="col-md-3">
-                        <a href="{{ url('prod-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
-                                    <h2><i class="fa fa-industry"></i></h2>
-                                    <h6 class="text-primary"> Other Production</h6>
-                                    <small>Raw Materials, Packaging Materials, Manufacturing Overheads Costs, Labour Costs, Production Records, etc.</small>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
                         <a href="{{ url('reports') }}" target="_blank">
                             <div class="card">
                                 <div class="body text-center">
@@ -267,6 +256,17 @@
                                     <h2><i class="fa fa-truck"></i></h2>
                                     <h6 class="text-primary">Vehicle Management </h6>
                                     <small>Vehicles, Legal Documents, Insurance, Maintenance, Refueling,  Trip Logs, Mileage Logs, Cost Logs</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url('settings') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
+                                    <h2><i class="fa fa-cog"></i></h2>
+                                    <h6 class="text-primary"> Account Settings</h6>
+                                    <small>General Settings, User Profile, Companies, Branches, Users & Roles, Delivery Settings, Invoice Settings, Recyclebin</small>
                                 </div>
                             </div>
                         </a>

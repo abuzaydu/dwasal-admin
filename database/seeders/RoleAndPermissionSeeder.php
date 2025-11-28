@@ -188,6 +188,8 @@ class RoleAndPermissionSeeder extends Seeder
             ['feature_id' => 15, 'name' => 'view-delivery-note', 'display_name' => 'View Delivery Note'],
             ['feature_id' => 15, 'name' => 'edit-delivery-note', 'display_name' => 'Edit Delivery Note'],
             ['feature_id' => 15, 'name' => 'delete-delivery-note', 'display_name' => 'Delete Delivery Note'],
+            ['feature_id' => 15, 'name' => 'verify-delivery-note', 'display_name' => 'Delivery Delivery Note'],
+
 
             ['feature_id' => 16, 'name' => 'create-sale-payment', 'display_name' => 'Create Sale Payments'],
             ['feature_id' => 16, 'name' => 'view-sale-payment', 'display_name' => 'View Sale Payments'],

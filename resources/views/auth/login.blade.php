@@ -11,6 +11,7 @@
                 <p class="lead">Login to your account</p>
             </div>
             <div class="body">
+                @include('flash-message')
                 <form id="contactForm" novalidate="novalidate" method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="control-group">

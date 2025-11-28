@@ -24,7 +24,6 @@ return new class extends Migration
             $table->unsignedBigInteger('vehicle_id')->nullable();
             $table->unsignedBigInteger('delivery_address_id')->nullable();
             $table->string('status')->default('Loading');
-           
         });
 
         Schema::table('delivery_addresses', function (Blueprint $table) {

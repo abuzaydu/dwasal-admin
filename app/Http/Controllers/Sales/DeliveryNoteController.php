@@ -42,7 +42,7 @@ class DeliveryNoteController extends Controller
         $title = 'Delivery Notes';
         $title_sw = 'Vidokezo vya Uwasilishaji';
         $shop = Shop::find(Session::get('shop_id'));
-        $dnotes = DeliveryNote::where('delivery_notes.shop_id', $shop->id)->orderBy('delivery_notes.created_at', 'desc')->join('an_sales', 'an_sales.id', '=', 'delivery_notes.an_sale_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('delivery_notes.id as id', 'note_no', 'delivery_notes.comments as comments', 'delivery_notes.created_at as created_at', 'delivery_notes.updated_at as updated_at', 'name')->get();
+        $dnotes = DeliveryNote::where('delivery_notes.shop_id', $shop->id)->orderBy('delivery_notes.created_at', 'desc')->join('an_sales', 'an_sales.id', '=', 'delivery_notes.an_sale_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('delivery_notes.id as id', 'note_no', 'delivery_notes.comments as comments', 'delivery_notes.created_at as created_at', 'delivery_notes.updated_at as updated_at', 'name', 'delivery_notes.status as status')->get();
 
         return view('sales.delivery-notes.index', compact('page', 'title', 'title_sw', 'dnotes'));
     }

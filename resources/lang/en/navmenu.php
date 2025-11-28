@@ -459,7 +459,7 @@
 		'select_purchase_type' => 'Select Purchase Type',
 		'cash_purchases' => 'Cash Purchases',
 		'credit_purchases' => 'Credit Purchases',
-		'delivery_note_no' => 'Delivery Note No',
+		'delivery_note_no' => 'DN No',
 		'hnt_delivery_note_no' => 'Enter Delivery note No',
 		'hnt_order_no' => 'Enter Order Number',
 		'hnt_invoice_no' => 'Enter Invoice Number',

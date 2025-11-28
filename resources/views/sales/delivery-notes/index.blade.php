@@ -57,6 +57,7 @@
                                     <th>#</th>
                                     <th>{{trans('navmenu.delivery_note_no')}}</th>
                                     <th>{{trans('navmenu.customer_name')}}</th>
+                                    <th>Status</th>
                                     <th>{{trans('navmenu.comments')}}</th>
                                     <th>{{trans('navmenu.created_at')}}</th>
                                     <th>{{trans('navmenu.last_updated')}}</th>
@@ -69,6 +70,7 @@
                                     <td>{{$dnote->id}}</td>
                                     <td> {{ sprintf('%04d', $dnote->note_no)}}</td>
                                     <td><a href="{{ route('delivery-notes.show', encrypt($dnote->id)) }}">{{$dnote->name}}</a></td>
+                                    <td>{{$dnote->status}}</td>
                                     <td>{{$dnote->comments}}</td>
                                     <td>{{$dnote->created_at}}</td>
                                     <td>{{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $dnote->updated_at)->diffForHumans() }}</td>
