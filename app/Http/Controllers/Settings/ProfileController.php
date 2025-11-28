@@ -346,6 +346,26 @@ class ProfileController extends Controller
     }
 
 
+    public function resetUserPassForm($id)
+    {
+        $page = "Change Password";
+        $user = User::find(decrypt($id));
+        $user->password = bcrypt('12345678');
+        $user->save();
+
+        return redirect()->route('user-profile.show', encrypt($user->id))->with('success', 'User Password reseted successfuly');
+    }
+
+
+    public function resetUserPass(Request $request)
+    {
+        $user = User::find($request->id);
+        
+        $this->passvalidator($request->all())->validate();
+
+        return redirect('login')->with('success', 'Hi ' . $user->name . ', User Password has been reseted successfuly. Login now');
+    }
+
     /**
      * Get a validator for an incoming registration request.
      *

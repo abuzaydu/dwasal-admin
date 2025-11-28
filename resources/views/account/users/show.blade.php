@@ -100,25 +100,32 @@
                                 </tr>
                             </tbody>
                         </table>
-                        @if($user->id != Auth::user()->id)
-                            @if(Auth::user()->can('edit-user'))
-                            <form class="mt-0" action="{{ url('change-user-role') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="user_id" value="{{ $user->id }}">
-                                <label for="shop_id" class="form-label">{{ trans('navmenu.change_user_role') }}</label>
-                                <select name="role" class="form-select form-select-sm mb-1" required onchange='this.form.submit()'>
-                                    <option value="">Select Role</option>
-                                    @foreach ($roles as $role)
-                                    @if(!is_null($urole) && $urole->id == $role->id)
-                                    <option value="{{ $role->id }}" selected>{{ $role->display_name }}</option>
-                                    @else
-                                    <option value="{{ $role->id }}">{{ $role->display_name }}</option>
-                                    @endif
-                                    @endforeach
-                                </select>
-                            </form>
+                        <div class="row g-1">
+                            <div class="col-md-6"> 
+                            @if($user->id != Auth::user()->id)
+                                @if(Auth::user()->can('edit-user'))
+                                <form class="mt-0" action="{{ url('change-user-role') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                    <label for="shop_id" class="form-label">{{ trans('navmenu.change_user_role') }}</label>
+                                    <select name="role" class="form-select form-select-sm mb-1" required onchange='this.form.submit()'>
+                                        <option value="">Select Role</option>
+                                        @foreach ($roles as $role)
+                                        @if(!is_null($urole) && $urole->id == $role->id)
+                                        <option value="{{ $role->id }}" selected>{{ $role->display_name }}</option>
+                                        @else
+                                        <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+                                        @endif
+                                        @endforeach
+                                    </select>
+                                </form>
+                                @endif
                             @endif
-                        @endif
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{url('reset-password/'.encrypt($user->id))}}" class="btn btn-warning btn-sm col-12"><i class="fa fa-key"></i><b> Reset User Password</b></a>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-12 print_invoice">
                         <h6>Stores/Shops User can Access</h6>

@@ -400,6 +400,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('update-profile', [ProfileController::class, 'updateProfile']);
     Route::get('change-password', [ProfileController::class, 'changePassForm']);
     Route::post('change-password', [ProfileController::class, 'changePass']);
+    Route::get('reset-password/{id}', [ProfileController::class, 'resetUserPassForm']);
+    Route::post('reset-password', [ProfileController::class, 'resetUserPass']);
     Route::post('change-theme', [ProfileController::class, 'changeTheme']);
     Route::resource('shops', ShopController::class);
     Route::get('add-store', [ShopController::class, 'addStore']);
