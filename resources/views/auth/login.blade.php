@@ -11,7 +11,14 @@
                 <p class="lead">Login to your account</p>
             </div>
             <div class="body">
-                @include('flash-message')
+                 @if (isset($errors) && count($errors))
+                    @foreach($errors->all() as $error)
+                    <div class="alert alert-danger alert-block">
+                        <a href="#" data-bs-dismiss="alert"><i class="fa fa-close"></i></a>
+                        <strong>{{ $error }}</strong>
+                    </div>
+                    @endforeach
+                @endif
                 <form id="contactForm" novalidate="novalidate" method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="control-group">
