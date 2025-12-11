@@ -211,7 +211,7 @@
                                                     </tr>
                                                     @else
                                                     <tr>
-                                                        <td><span style="color: orange;">Your bank details not updated. Please update your bank details <a href="{{ route('pro-invoices.edit', encrypt($sale->id)) }}">Here</a></span></td>
+                                                        <td><span style="color: orange;">Your bank details not updated. Please update your bank details <a href="{{ route('pro-invoices.edit', encrypt($invoice->id)) }}">Here</a></span></td>
                                                     </tr>
                                                     @endif
                                                 </tbody>
