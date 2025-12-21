@@ -4,7 +4,7 @@
 
     <div class="auth-box">
         <div class="top">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="Petopesa">
+            <img src="{{ asset('assets/img/logo.png') }}" alt="Dwasal">
         </div>
         <div class="card">
             <div class="header">
