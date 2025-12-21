@@ -101,7 +101,7 @@
 </script>
 @section('content')
     <!--breadcrumb-->
-    <div class="block-header pt-0">
+    <div class="block-header pt-3">
         <div class="row">
             <div class="col-lg-6 col-md-8 col-sm-12">
                 <!--  -->
@@ -114,18 +114,12 @@
             </div>            
             <div class="col-lg-6 col-md-4 col-sm-12 text-right">
                 <ul class="nav nav-tabs nav-tabs-new2">
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#sales-order-rview">Sales Order Receipt View</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#sales-order"><i class='fa fa-list-plus font-18 me-1'></i> Sales Order A4 View</a>
-                    </li> -->
                     @if(Auth::user()->can('view-invoice'))
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#invoice-view"><i class='fa fa-list-check font-18 me-1'></i> Invoice A4 View</a>
+                        <a class="nav-link active" data-bs-toggle="tab" href="#invoice-view"><i class='fa fa-list-check font-18 me-1'></i> Invoice A4 View</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#receipt-view"><i class='fa fa-list-check font-18 me-1'></i> Invoice Receipt View</a>
+                        <a class="nav-link" data-bs-toggle="tab" href="#receipt-view"><i class='fa fa-list-check font-18 me-1'></i> Invoice Receipt View</a>
                     </li>
                     @endif
                 </ul>
@@ -149,24 +143,7 @@
                             <div class="row">
                                 <div class="col-md-10">
                                     @if(Auth::user()->can('print-invoice'))
-                                    <!-- <a href="#" onclick="javascript:printInvoice()" class="btn btn-outline-primary btn-sm" style="margin-left: 2px; padding-top: 5px;"><i class="fa fa-printer"></i>Direct Print Invoice</a> -->
                                     <a id="btnPrintInvoice" class="btn btn-secondary btn-sm" style="margin-left: 2px; padding-top: 5px;"><i class="fa fa-printer"></i>Print Preview</a>
-                                    @endif 
-                                    @if(!$sale->is_paid) 
-                                    @if(Auth::user()->can('edit-invoice'))
-                                    <a class="btn btn-outline-primary btn-sm" style="margin-left: 2px; padding-top: 5px;" href="{{ route('an-sales.edit', encrypt($sale->id)) }}"><i class="fa fa-edit"></i>Update</a>
-                                    <a class="btn btn-outline-warning btn-sm" style="margin-left: 2px; padding-top: 5px;" href="{{ url('create-credit-note/'.encrypt($sale->id)) }}"><i class="fa fa-pencil"></i>Credit Note</a>
-                                    @endif
-                                    @if(Auth::user()->can('cancel-invoice'))
-                                    <form id="delete-form" method="POST" action="{{ route('an-sales.destroy', encrypt($sale->id)) }}" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <a class="btn btn-outline-danger btn-sm" href="#" title="Delete" onclick="confirmDelete()"><i class="fa fa-x" style="color: red;"></i> Cancel Invoice</a>
-                                    </form>
-                                    @endif
-                                    @if(Auth::user()->can('create-sale-payment'))
-                                    <a href="#"  class="btn btn-success btn-sm" data-toggle="modal" data-target="#payModal" data-backdrop="static" data-keyboard="false" style="margin-right: 2px; padding-top: 5px"><i class="fa fa-money"></i> {{trans('navmenu.add_payment')}}</a>
-                                    @endif 
                                     @endif
                                 </div>
                                 <div class="col-md-2">
@@ -183,7 +160,7 @@
                                     </form>
                                 </div> 
                             </div>
-                            <div id="receipt-view" class="col-md-6 mx-auto" style="border: 1px solid gray;">
+                            <div id="receipt" class="col-md-6 mx-auto" style="border: 1px solid gray;">
                                 <div class="print_invoice" id="receipt-invoice">
                                     <center id="top">
                                         <div class="header-title" style="text-align: center; print margin-bottom: 5px; margin-top: 10px;">
@@ -197,7 +174,7 @@
                                             @endif
                                         </div>
                                         <div class="info" style="text-align: center;"> 
-                                            <span class="mb-0" style="font-size: 16px;">{{$shop->name}}</span><br>
+                                            <span class="mb-0" style="font-size: 16px;">{{$company->name}}</span><br>
                                             <small style="font-size: 11px">{{$shop->short_desc}}</small>
                                         </div><!--End Info-->
                                     </center><!--End InvoiceTop-->
@@ -354,8 +331,10 @@
                                     @if(Auth::user()->can('print-invoice'))
                                     <a onclick="javascript:savePdf()" class="btn btn-outline-success btn-sm" style="margin-left: 2px; padding-top: 5px;"><i class="fa fa-download"></i> {{trans('navmenu.download')}} PDF</a>
                                     @endif
+                                    @if(!$sale->is_full_shipped)
                                     <a class="btn btn-primary btn-sm" href="{{ url('create-dnote/' . encrypt($sale->id)) }}"><i class="fa fa-file"></i> Delivery Note</a>
-                                    @if(!$sale->is_paid)
+                                    @endif
+                                    @if(!$sale->is_paid && !$sale->is_full_shipped)
                                     @if(Auth::user()->can('edit-invoice'))
                                     <a class="btn btn-outline-primary btn-sm" style="margin-left: 2px; padding-top: 5px;" href="{{ route('an-sales.edit', encrypt($sale->id)) }}"><i class="fa fa-edit"></i>Update</a>
                                     @endif 
@@ -366,10 +345,11 @@
                                         <a class="btn btn-outline-danger btn-sm" href="#" title="Delete" onclick="confirmDelete()"><i class="fa fa-x" style="color: red;"></i> Cancel Invoice</a>
                                     </form>
                                     @endif
-                                    @if(Auth::user()->can('create-sale-payment'))
+                                    @endif
+
+                                    @if(!$sale->is_paid && Auth::user()->can('create-sale-payment'))
                                     <a href="#"  class="btn btn-success btn-sm" data-toggle="modal" data-target="#payModal" data-backdrop="static" data-keyboard="false" style="margin-right: 2px; padding-top: 5px"><i class="fa fa-money"></i> {{trans('navmenu.add_payment')}}</a>
                                     @endif 
-                                    @endif
                                 </div>
                                 <div class="col-md-2">
                                     <form method="GET" action="{{route('invoices.show', encrypt($sale->id))}}" >
@@ -393,7 +373,7 @@
                                                 <td style="text-align: left; padding-left: 15px;">
                                                     @if(!is_null($company->logo_url))
                                                     <figure>
-                                                        <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="200" style="border: 1px solid white;">
+                                                        <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150" style="border: 1px solid white;">
                                                     </figure>
                                                     @endif
                                                 </td>
@@ -429,57 +409,63 @@
                                     <div class="col-md-12 customer mt-0 mb-0">
                                         <table style="width: 100%">
                                             <tr>
-                                                <td style="padding-left: 0px; width: 70%; border: 1px solid black; border-bottom-left-radius: 15px;">
+                                                <td style="padding-left: 20px; width: 60%; border: 1px solid black; border-bottom-left-radius: 15px;">
+                                                    <b>Bill To :</b>
                                                     <table>
-                                                        <tr>
-                                                            <td style="vertical-align: top; text-align: left;">
-                                                                <b>Bill To :</b>
-                                                                <table class="customer-info" style="margin-left: 15px;">
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td><span class="text-uppercase" style="font-size: 14px; font-weight: 400;">Client Name : {{$sale->name}}</span></td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td>Address:  <b>{{$sale->ph_address}}</b><br>
-                                                                            @if(!is_null($sale->contact_person))
-                                                                            Contact Person : <b><span>{{$sale->contact_person}}</span></b><br>
-                                                                            @endif
-                                                                            Mobile: <b><a href="tel:{{$sale->phone}}">{{$sale->phone}}</a></b><br>
-                                                                            Email : <a href="mailto:{{$sale->email}}" style="text-transform: lowercase;">{{$sale->email}}</a><br>
-                                                                            TIN : <b>{{$sale->tin}}</b> VRN : <b>{{$sale->vrn}}</b>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </td>
-                                                        </tr>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan="2"><span class="text-uppercase" style="font-size: 14px; font-weight: 400;">Client Name :</span> <span style="font-size: 14px; font-weight: 500;">{{$sale->name}}</span></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2"><b>Address:</b> {{$sale->ph_address}}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2">
+                                                                    <b>Contact Person :</b>
+                                                                    <span>{{$sale->contact_person}}</span>
+                                                                </td>
+                                                            </tr>  
+                                                            <tr>
+                                                                <td colspan="2"><b>Mobile : </b>{{$sale->phone}} </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2"><b>Email :</b>{{$sale->email}}</td>
+                                                            </tr>
+                                                            @if(!empty($sale->tin))
+                                                            <tr>
+                                                                <td style="width: 35%;">TIN :<b>{{$sale->tin}}</b></td>
+                                                        
+                                                                <td style="width: 65%;">VRN :<b>{{$sale->vrn}}</b></td>
+                                                            </tr>
+                                                            @endif
+                                                        </tbody>
                                                     </table>
                                                 </td>
-                                                <td style="text-align: left; width: 30%; border: 1px solid black; border-bottom-right-radius: 15px;">
+                                                <td style="text-align: left; width: 40%; border: 1px solid black; border-bottom-right-radius: 15px;">
                                                     <table class="customer-info">
                                                         <tr style="border: 1px solid gray; border-radius: 20px;">
-                                                            <td colspan="2" style="font-size: 18px; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td>
+                                                            <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="text-align: right;">Invoice Date :</td>
+                                                            <td style="width: 30%; text-align: right;">Invoice Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->time_created)) }}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="text-align: right;"> Due Date :</td>
+                                                            <td style="width: 30%; text-align: right;"> Due Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->due_date))}}</b></td>
                                                         </tr>
-                                                        @if(!is_null($sale->lpo_no))
+                                                        @if(!empty($sale->lpo_no))
                                                         <tr>
-                                                            <td style="text-align: right;">LPO No: </td>
+                                                            <td style="width: 30%; text-align: right;">LPO No: </td>
                                                             <td>{{ $sale->lpo_no }}</td>
                                                         </tr>
                                                         @endif
                                                         <tr>
-                                                            <td style="text-align: right;"> TIN:</td>
+                                                            <td style="width: 30%; text-align: right;"> TIN:</td>
                                                             <td><b>{{$shop->tin}}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="text-align: right;"> VRN:</td>
+                                                            <td style="width: 30%; text-align: right;"> VRN:</td>
                                                             <td><b>{{$shop->vrn}}</b></td>
                                                         </tr>
                                                     </table>
@@ -509,11 +495,12 @@
                                             </thead>
                                             <tbody>
                                                 <?php $tqty = 0; ?>
+                                                @if($items->count() > 0)
                                                 @foreach($items as $key => $item)
                                                 <?php
                                                     $punit = App\Models\ProductUnit::find($item->product_unit_id);
                                                     $quantity_sold = $item->quantity_sold/$punit->qty_equal_to_basic;
-                                                    $price_per_unit = $item->price_per_unit*$punit->qty_equal_to_basic;
+                                                    $price_per_unit = $item->retail_price*$punit->qty_equal_to_basic;
                                                     $unit_discount = $item->discount*$punit->qty_equal_to_basic;
                                                     $tqty += $quantity_sold;
 
@@ -542,7 +529,8 @@
                                                     @endif
                                                 </tr>
                                                 @endforeach
-     
+                                                @endif
+
                                                 <?php $tsqty = 0; ?>
                                                 @foreach($servitems as $key => $servitem)
                                                 <?php $tsqty += $servitem->qty; ?>
@@ -607,7 +595,7 @@
                                         <table style="width: 100%;">
                                             <tbody>
                                                 <tr style="border-top: 1px solid gray;">
-                                                    <td style="width: 50%">
+                                                    <td style="width: 60%">
                                                         @if($settings->show_bd)
                                                         <table style="width: 100%; font-size: 8px; padding: 0;">
                                                             <tbody>
@@ -621,7 +609,7 @@
                                                                 <tr>
                                                                     <td class="row">
                                                                         @foreach($baccounts as $bankdetail)
-                                                                        <div class="col-sm-10" style="border: 1px solid #e3e4e8;">
+                                                                        <div class="col-sm-10" style="border: 1px solid #e3e4e8; margin-bottom: 2px;">
                                                                             Bank Name : <b>{{$bankdetail->bank_name}}</b><br>
                                                                             Account Name: <b>{{$bankdetail->account_name}}</b><br>
                                                                             <?php $accnumbers = App\Models\Account::where('shop_id', $shop->id)->where('bank_name', $bankdetail->bank_name)->where('account_name', $bankdetail->account_name)->select('currency', 'account_number')->get(); ?>
@@ -643,7 +631,7 @@
                                                         </table>
                                                         @endif
                                                     </td>
-                                                    <td style="width: 50%; border: 1px solid gray;  border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                                                    <td style="width: 40%; border: 1px solid gray;  border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
                                                         <table class="mt-3" style="width: 100%;">
                                                             <tbody>
                                                                 @if($settings->show_discounts)

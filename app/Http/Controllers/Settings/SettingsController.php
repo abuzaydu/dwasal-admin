@@ -266,7 +266,7 @@ class SettingsController extends Controller
         );
 
         $colors = array(
-            '#f5b935', '#0459c6', '#f8a300', '#a99f03', '#04899e', '#389e04', '#e56806', '#7306e6', '#e50606', '#e5ac06', '#049e72', '#9e0480', '#56049e', '#dbaf61'
+            '#ff7518', '#0459c6', '#f8a300', '#a99f03', '#04899e', '#389e04', '#e56806', '#7306e6', '#e50606', '#e5ac06', '#049e72', '#9e0480', '#56049e', '#dbaf61'
         );
         return view('settings.invoice-templates', compact('page', 'title', 'settings', 'templates', 'colors'));
     }

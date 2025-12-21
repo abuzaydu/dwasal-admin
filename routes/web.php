@@ -259,6 +259,22 @@ use App\Http\Controllers\MHC\MedicalHistoryController;
 use App\Http\Controllers\VMS\VehicleController;
 use App\Http\Controllers\VMS\VehicleTypeController;
 use App\Http\Controllers\VMS\OwnershipController;
+use App\Http\Controllers\VMS\LegalDocumentController;
+use App\Http\Controllers\VMS\DocumentTypeController;
+use App\Http\Controllers\VMS\InsuranceController;
+use App\Http\Controllers\VMS\VehicleRequisitionController;
+use App\Http\Controllers\VMS\MaintenanceController;
+use App\Http\Controllers\VMS\RefuelingController;
+use App\Http\Controllers\VMS\VendorController;
+use App\Http\Controllers\VMS\PartsController;
+use App\Http\Controllers\VMS\PartCategoryController;
+use App\Http\Controllers\VMS\PartLocationController;
+use App\Http\Controllers\VMS\PartPurchaseController;
+use App\Http\Controllers\VMS\PartItemTempApiController;
+use App\Http\Controllers\VMS\PartsUsageController;
+use App\Http\Controllers\VMS\VMSExpenseController;
+
+use App\Http\Controllers\VML\VisitorController;
 
 use App\Http\Controllers\Web\RecycleBinController;
 use App\Http\Controllers\Web\ActionLogsController;
@@ -414,6 +430,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('mark-as-read', [ShopController::class, 'markAsRead']);
     // Users Management
     Route::resource('user-profile', ProfileController::class);
+    Route::post('add-user-from-employee', [ProfileController::class, 'createUser']);
     Route::get('users-and-roles', [ProfileController::class, 'usersAndRoles']);
     Route::post('users-and-roles', [ProfileController::class, 'usersAndRoles']);
     Route::resource('user-companies', CompanyController::class);
@@ -570,6 +587,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('create-dnote-pfi/{id}', [DeliveryNoteController::class, 'createFromPFI']);
     Route::post('dnote-from-pfi', [DeliveryNoteController::class, 'postDNote']);
     Route::resource('delivery-notes', DeliveryNoteController::class);
+    Route::post('f-delivery-notes', [DeliveryNoteController::class, 'index']);
     Route::post('update-delivery-note-item', [DeliveryNoteController::class, 'updateDNoteItem']);
     Route::get('remove-delivery-note-item/{id}', [DeliveryNoteController::class, 'removeDNoteItem']);
     Route::get('customer-account-stmt-std/{id}', [AnSaleController::class, 'accountStmt']);
@@ -1384,6 +1402,30 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('vehicle-types', VehicleTypeController::class);
     Route::resource('ownerships', OwnershipController::class);
 
+    Route::resource('legal-documents', LegalDocumentController::class);
+    Route::resource('insurance', InsuranceController::class);
+    Route::resource('vehicle-requisitions', VehicleRequisitionController::class);
+    Route::resource('maintenance', MaintenanceController::class);
+    Route::resource('refueling', RefuelingController::class);
+    Route::resource('vendors', VendorController::class);
+    Route::resource('parts', PartsController::class);
+    Route::get('search-part', [PartsController::class, 'autoSearch']);
+    Route::get('fetch-part', [PartsController::class, 'fetchPart']);
+    Route::resource('part-categories', PartCategoryController::class);
+    Route::resource('part-locations', PartLocationController::class);
+    Route::resource('part-purchases', PartPurchaseController::class);
+    Route::get('part-purchases/api/parttemp/{id}', [PartItemTempApiController::class, 'index']);
+    Route::resource('part-purchases/api/parttemp', PartItemTempApiController::class);
+    Route::post('part-purchases/api/update-part-purchase-temp', [PartItemTempApiController::class, 'updatePurchaseTemp']);
+    Route::post('part-purchases/ppt-purchase', [PartPurchaseController::class, 'pendingPurchase'])->name('purchases/ppt-purchase');
+    Route::get('cancel-part-purchase/{id}', [PartItemTempApiController::class, 'cancelPurchase']);
+    Route::resource('parts-usage', PartsUsageController::class);
+    Route::resource('vms-expenses', VMSExpenseController::class);
+
+    Route::get('visitors-dash', [VisitorController::class, 'dashboard']);
+    Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
+    Route::resource('visitors', VisitorController::class);
+    Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
 
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);

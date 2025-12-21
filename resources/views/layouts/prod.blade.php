@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="keyword" content="">
-    <link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> <!-- Favicon-->
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}" type="image/x-icon"> <!-- Favicon-->
     <title>{{ config('app.name', 'DWASAL') }} : {{$page}}</title>
     <!-- Application Vendor CSS URL -->
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/notifications/css/lobibox.min.css') }}" />
@@ -56,10 +56,7 @@ $settings = App\Models\Setting::where('shop_id', $shop->id)->first();
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                 </div>
                 <div class="navbar-brand ps-2">
-                    <a href="{{ url('/home') }}">
-                        <img src="{{ asset('assets/img/icon.png') }}" width="30"> 
-                        <small>DWASAL</small>
-                    </a>
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
                 </div>
                 <div class="d-flex flex-grow-1 align-items-center">
                     <div class="flex-grow-1" id="hide-on-mobile">

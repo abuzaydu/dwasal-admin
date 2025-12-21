@@ -14,10 +14,16 @@ return new class extends Migration
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id')->index();
+            $table->string('vendor_for');
             $table->string('vendor_name');
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->string('address1')->nullable();
+            $table->string('address')->nullable();
+            $table->string('bank_name')->nullable();
+            $table->string('branch_name')->nullable();
+            $table->string('swift_code')->nullable();
+            $table->string('account_number')->nullable();
+            $table->string('account_name')->nullable();
             $table->boolean('active')->default(true);
             $table->foreign('company_id')->references('id')->on('companies');
             $table->timestamps();

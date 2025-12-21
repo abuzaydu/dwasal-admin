@@ -113,7 +113,7 @@
                     </div>
                     <div class="btn-group col-sm-6" role="group">
                         <button type="button" class="btn btn-outline-danger btn-sm">{{$pendingtemps->count()}}</button>
-                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="dropdown">Pending Product <i class="fa fa-caret-down"></i></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="dropdown">Pending Purchases <i class="fa fa-caret-down"></i></button>
                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> 
                             @foreach($pendingtemps as $key => $temp) 
                             <form class="row g-3" method="POST" action="{{'pt-purchase'}}" id="ptemp-form-{{$key}}">

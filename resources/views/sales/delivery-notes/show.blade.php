@@ -31,7 +31,7 @@
                                         <td style="text-align: left; padding-left: 15px;">
                                             @if(!is_null($company->logo_url))
                                             <figure>
-                                                <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="200" style="border: 1px solid white;">
+                                                <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150" style="border: 1px solid white;">
                                             </figure>
                                             @endif
                                         </td>
@@ -65,60 +65,72 @@
                                     <tr>
                                         <td style="padding-left: 0px; width: 40%; border: 1px solid gray; border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
                                             <table>
-                                                <tr>
-                                                    <td style="vertical-align: top; text-align: left;">Client Name :<br>
-                                                        <span class="" style="font-size: 14px;">{{$sale->name}}</span><br>
-                                                        @if(!empty($sale->ph_address))Address :  {{$sale->ph_address}}<br>@endif
-                                                        @if(!empty($sale->phone))Mobile : <a href="tel:{{$sale->phone}}">{{$sale->phone}}</a><br>@endif
-                                                        @if(!empty($sale->email)) Email : <a href="mailto:{{$sale->email}}" style="text-transform: lowercase;">{{$sale->email}}</a><br>@endif
-                                                        @if(!empty($sale->tin))TIN : <b>{{$sale->tin}}</b><br>@endif @if(!empty($sale->vrn)) VRN : <b>{{$sale->vrn}}</b>@endif
-                                                    </td>
-                                                </tr>
+                                                
+                                                    <tr>
+                                                        <td colspan="2"><span class="text-uppercase" style="font-size: 14px; font-weight: 400;">Client Name :</span><span class="text-uppercase" style="font-size: 14px; font-weight: 500;">{{$sale->name}}</span></td>
+                                                    </tr>
+                                                    @if(!empty($sale->ph_address))
+                                                    <tr>
+                                                        <td>{{$sale->ph_address}}</td>
+                                                    </tr>
+                                                    @endif
+                                                    @if(!empty($sale->contact_person))
+                                                    <tr>
+                                                        <td colspan="2">
+                                                        <b>Contact Person :</b> {{$sale->contact_person}}</td>
+                                                    </tr>
+                                                    @endif
+                                                    @if(!empty($sale->phone))
+                                                    <tr>
+                                                        <td colspan="2"><b>Mobile :</b> {{$sale->phone}}</td>
+                                                    </tr>
+                                                    @endif
                                             </table>
                                         </td>
                                         <td style="width: 30%; border: 1px solid gray;">
-                                            <table>
+                                            <table width="100%;">
                                                 <tr>
-                                                    <td style="vertical-align: top; text-align: left;">Delivery To :<br>
-                                                        <span class="" style="font-size: 14px;">{{$delivaddress->plus_code}}</span><br>
-                                                        @if(!empty($delivaddress->postcode))Postcode :  {{$delivaddress->postcode}}<br>@endif
-                                                        @if(!empty($delivaddress->state)){{$delivaddress->state}}, @endif
-                                                        @if(!empty($delivaddress->country)) {{$delivaddress->country}}<br>@endif
-                                                    </td>
+                                                    <td style="vertical-align: top; text-align: left;">Delivery To :</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="" style="font-size: 14px;">{{$delivaddress->plus_code}}</span><br>
+                                                    @if(!empty($delivaddress->postcode))Postcode :  {{$delivaddress->postcode}}@endif
+                                                    @if(!empty($delivaddress->state)){{$delivaddress->state}}, @endif
+                                                    @if(!empty($delivaddress->country)) {{$delivaddress->country}}@endif</td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td style="width: 30%; border: 1px solid gray; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
-                                            <table>
+                                            <table style="width: 100%;">
                                                 <tr>
-                                                    <td style="font-size: 16px; text-align: right;">DN No  :</td>
-                                                    <td> <b>{{ sprintf('%04d', $dnote->note_no)}}</b></td>
+                                                    <td style="width: 40%; font-size: 18px !important; text-align: right;">DN No  :</td>
+                                                    <td style="font-size: 18px !important;"> <b>{{ sprintf('%04d', $dnote->note_no)}}</b></td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="text-align: right;"> Date :</td>
+                                                    <td style="width: 40%; text-align: right;">Delivery  Date :</td>
                                                     <td><b>{{ date('d F, Y', strtotime($dnote->created_at)) }}</b></td>
                                                 </tr>
                                                 @if(!is_null($proinvoice))
                                                 <tr>
-                                                    <td style="text-align: right;">PFI No: </td>
+                                                    <td style="width: 40%; text-align: right;">PFI No: </td>
                                                     <td> {{ sprintf('%04d',$proinvoice->invoice_no)}}</td>
                                                 </tr>
                                                 @endif
                                                 @if(!empty($sale->lpo_no))
                                                 <tr>
-                                                    <td style="text-align: right;">LPO No: </td>
+                                                    <td style="width: 40%; text-align: right;">LPO No: </td>
                                                     <td>{{ $sale->lpo_no }}</td>
                                                 </tr>
                                                 @endif
                                                 @if(!empty($sale->invoice_no))
                                                 <tr>
-                                                    <td style="text-align: right;">Invoice No: </td>
+                                                    <td style="width: 40%; text-align: right;">Invoice No: </td>
                                                     <td>{{ sprintf('%04d',$sale->invoice_no)}}</td>
                                                 </tr>
                                                 @endif
                                                 @if(!is_null($vehicle))
                                                 <tr>
-                                                    <td style="text-align: right;">Truck No: </td>
+                                                    <td style="width: 40%; text-align: right;">Truck No: </td>
                                                     <td>{{ $vehicle->plate_no }}</td>
                                                 </tr>
                                                 @endif
@@ -140,6 +152,7 @@
                                     </thead>
                                     <tbody>
                                         <?php $tqty = 0; ?>
+                                        @if($items->count() > 0)
                                         @foreach($items as $key => $item)
                                         <?php $tqty += $item->delivery_qty; ?>
                                         <tr style="border-bottom: 1px solid gray; border-left: 1px solid #0459c6; border-right: 1px solid #0459c6;">
@@ -150,6 +163,7 @@
                                             <td class="qty" style=" text-align: center; border-left: 1px solid gray; border-left: 1px solid gray;">{{$item->uom}}</td>
                                         </tr>
                                         @endforeach
+                                        @endif
                                         <tr class="blank_row" style="border-bottom: 1px solid gray; border-left: 1px solid #0459c6; border-right: 1px solid #0459c6;">
                                             <td colspan="3" style="" class="desc"><b></b></td>
                                             <td style=" text-align: center; border-left: 1px solid gray;" class="qty"></b></td>
@@ -166,17 +180,25 @@
                             <div class="col-md-12 invoice-footer row g-1" style="margin-top: 20px;">
                                 @if(!is_null($dnote->comments))
                                 <div class="notice text-center col-md-12">
-                                <!-- <div>COMMENTS:</div> -->
                                     <div><b>***</b>{{$dnote->comments}}<b>***</b></div>
                                 </div>
+                                <hr>
                                 @endif
-                                <div class="text-center col-md-6">
+                                <div class="text-center col-md-4">
                                     <p><span style="text-transform: uppercase; font-size: 14px; font-weight: bold;">{{trans('navmenu.issued_by')}}</span><br>
                                         {{trans('navmenu.name')}} :  @if(is_null($dnote->issued_by))<strong>{{$dnote->issued_by}}</strong> @else<strong> ..................................</strong>@endif<br>
                                         {{trans('navmenu.signature')}} <strong>.......................</strong>
                                     </p>
                                 </div>
-                                <div class="text-center col-md-6">
+                                <div class="text-center col-md-4">
+                                    @if(!empty($dnote->checked_by))
+                                    <p><span style="text-transform: uppercase; font-size: 14px; font-weight: bold;">Checked By</span><br>
+                                        Guard Name : <strong>{{$dnote->checked_by}}</strong><br>
+                                        Checked At <strong>{{ date('d/m/Y H:i:s A', strtotime($dnote->checked_at))}}</strong>
+                                    </p>
+                                    @endif
+                                </div>
+                                <div class="text-center col-md-4">
                                     <p><span style="text-transform: uppercase; font-size: 14px; font-weight: bold;">{{trans('navmenu.received_by')}}</span><br>
                                         {{trans('navmenu.name')}} : @if(!empty($dnote->received_by))<strong>{{$dnote->received_by}}</strong> @else<strong> ..................................</strong>@endif<br>
                                         {{trans('navmenu.signature')}} <strong>........................</strong>

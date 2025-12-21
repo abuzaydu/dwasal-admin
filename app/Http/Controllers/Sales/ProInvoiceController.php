@@ -433,7 +433,7 @@ class ProInvoiceController extends Controller
             $servitems = InvoiceServitem::where('pro_invoice_id', $invoice->id)->join('services', 'services.id', '=', 'invoice_servitems.service_id')->select('services.id as serv_id', 'services.name as name', 'description as description', 'price as price', 'invoice_servitems.id as id', 'invoice_servitems.repeatition as repeatition', 'invoice_servitems.cost_per_unit as cost_per_unit', 'invoice_servitems.amount as amount', 'total_discount', 'with_vat', 'tax_amount', 'invoice_servitems.time_created as time_created')->get();
 
             $services = $shop->services()->get([
-                \DB::raw('service_id as id'),
+                \DB::raw('id'),
                 \DB::raw('name'),
                 \DB::raw('price')
             ]);

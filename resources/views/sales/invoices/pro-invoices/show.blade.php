@@ -23,280 +23,313 @@
         <div class="col-md-12 mx-auto">
             <div class="card">
                 <div class="card-body">
-                    <div class="row g-1 print_invoice" id="print-invoice">
-                        <div class="col-md-12">
-                            <table style="width: 100%;">
-                                <tr>
-                                    <td style="text-align: left; padding-left: 15px;">
-                                        @if(!is_null($company->logo_url))
-                                        <figure>
-                                            <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="200" style="border: 1px solid white;">
-                                        </figure>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <table style="width: 100%;">
-                                            <tr>
-                                                <td colspan="2" style="text-align: right;">
-                                                    <strong style="font-size: 14px;">{{$company->name}}</strong><br>
-                                                    @if(!is_null($shop->short_desc))<small style="font-size: 8px !important;">{{$shop->short_desc}}</small><br>@endif
-                                                            
-                                                    <p class="invoice-address">
-                                                        {{$shop->postal_address}} {{$shop->physical_address}}<br> @if(!is_null($shop->street)){{$shop->street}},@endif @if(!is_null($shop->district)){{$shop->district}},@endif {{$shop->city}}@if(!is_null($shop->country)), {{$shop->country}}@endif <br>@if(!is_null($shop->tel) || !is_null($shop->mobile)) Tel: @if(!is_null($shop->tel))<b>{{$shop->tel}}</b> |@endif <b>{{$shop->mobile}}</b> @if(!is_null($shop->whatsapp))WhatsApp : <b>{{$shop->whatsapp}}</b>@endif<br> @endif Email: <b>{{$shop->email}}</b>@if(!is_null($shop->website)), Website: <b>{{$shop->website}}</b>@endif
-                                                    </p>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-                            <table style="width: 100%;">
-                                <tbody>
+                    <div class="print_invoice p-1" id="print-invoice">
+                        <div class="row g-1 p-2" style="border: 1px solid black;">
+                            <div class="col-md-12">
+                                <table style="width: 100%;">
                                     <tr>
-                                        <td style="background: <?php echo $settings->invoice_color; ?>; padding-left: 15px;  border-radius: 30px; text-align: center;">
-                                            <h6 class="mb-0 text-uppercase" style="color: #fff;">Proforma Invoice</h6>
+                                        <td style="text-align: left; padding-left: 15px;">
+                                            @if(!is_null($company->logo_url))
+                                            <figure>
+                                                <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150" style="border: 1px solid white;">
+                                            </figure>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <table style="width: 100%;">
+                                                <tr>
+                                                    <td colspan="2" style="text-align: right;">
+                                                        <strong style="font-size: 14px;">{{$company->name}}</strong><br>
+                                                        @if(!is_null($shop->short_desc))<small style="font-size: 8px !important;">{{$shop->short_desc}}</small><br>@endif
+                                                                
+                                                        <p class="invoice-address">
+                                                            {{$shop->postal_address}} {{$shop->physical_address}}<br> @if(!is_null($shop->street)){{$shop->street}},@endif @if(!is_null($shop->district)){{$shop->district}},@endif {{$shop->city}}@if(!is_null($shop->country)), {{$shop->country}}@endif <br>@if(!is_null($shop->tel) || !is_null($shop->mobile)) Tel: @if(!is_null($shop->tel))<b>{{$shop->tel}}</b> |@endif <b>{{$shop->mobile}}</b> @if(!is_null($shop->whatsapp))WhatsApp : <b>{{$shop->whatsapp}}</b>@endif<br> @endif Email: <b>{{$shop->email}}</b>@if(!is_null($shop->website)), Website: <b>{{$shop->website}}</b>@endif
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-12 customer mt-2 mb-0">
-                            <table style="width: 100%">
-                                <tr>
-                                    <td style="padding-left: 30px;">
-                                        <table>
-                                            <tr>
-                                                <td style="vertical-align: top;">Customer :</td>
-                                                <td>
-                                                    <span class="text-uppercase" style="font-size: 14px;">{{$customer->name}}</span><br>
-                                                    {{$customer->postal_address}} <br>{{ $customer->street}} {{$customer->physical_address}}<br>
-                                                    Mobile: <a href="tel:{{$customer->phone}}">{{$customer->phone}}</a><br> Email : <a href="mailto:{{$customer->email}}" style="text-transform: lowercase;">{{$customer->email}}</a><br>
-                                                    TIN : <b>{{$customer->tin}}</b><br> VRN : <b>{{$customer->vrn}}</b>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td style="text-align: left;">
-                                        <table>
-                                            <tr style="border: 1px solid gray; border-radius: 20px;">
-                                                <td colspan="2" style="font-size: 16px; text-align: center;">PFI No  : <b>{{ sprintf('%04d',$invoice->invoice_no)}}</b></td>
-                                            </tr>
-                                            <tr>
-                                                <td style="text-align: right;">
-                                                    Date :<br>
-                                                    Due Date :<br>
-                                                    RFQ No:<br>
-                                                    <br>
-                                                    TIN:<br>
-                                                    VRN:<br>
-                                                </td>
-                                                <td>
-                                                    <b>{{ date('d F, Y', strtotime($invoice->time_created)) }}<br>
-                                                    {{ date('d F, Y', strtotime($invoice->due_date))}}<br>{{ $invoice->ref_no }}</b><br><br>
-                                                    {{$shop->tin}}<br>
-                                                    {{$shop->vrn}}
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-12">
-                            <table class="" style="width: 100%; border-radius: 15px;">
-                                <thead>
-                                    <tr style="background: <?php echo $settings->invoice_color; ?>; color: #fff; border-top-left-radius: 15px; border-top-right-radius: 15px;">
-                                        <th style="text-align: center;">#</th>
-                                        <th style="text-align: center; border-left: 1px solid #fff; text-align: right;">Code</th>
-                                        <th style="">Description</th>
-                                        <th style="text-align: center; border-left: 1px solid #fff;">Qty</th>
-                                        @if($items->count() > 0)
-                                        <th style="text-align: center; border-left: 1px solid #fff;">UOM</th>
-                                        @endif
-                                        <th style="text-align: center; border-left: 1px solid #fff;">Rate</th>
-                                        <th style="text-align: right; border-left: 1px solid #fff;">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php $tqty = 0; ?>
-                                    @if($items->count() > 0)
-                                    @foreach($items as $key => $item)
-                                    <?php
-                                        $punit = App\Models\ProductUnit::find($item->product_unit_id);
-                                        $quantity = $item->quantity/$punit->qty_equal_to_basic;
-                                        $price_per_unit = $item->price_per_unit*$punit->qty_equal_to_basic;
-                                        $unit_discount = $item->discount*$punit->qty_equal_to_basic;
-                                        $tqty += $item->quantity;
-                                        
-                                        $slug = str_replace($item->name, '', $item->slug);
-                                    ?>
-                                    <tr style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
-                                        <td style="text-align: center;">{{$key+1}}</td>
-                                        <td style="text-align: right; border-left: 1px solid gray; border-left: 1px solid gray;">@if(!is_null($item->product_code)){{$item->product_code}}@endif</td>
-                                        <td class="desc" style="">{{$item->name}} @if($slug != '')- {{$slug}}@endif</td>
-                                        <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$quantity+0}}</td>
-                                        <td style="border-left: 1px solid gray; text-align: center;">{{$punit->unit_name}}</td>
-                                        <td class="unit" style="border-left: 1px solid gray; text-align: center;">{{number_format($item->cost_per_unit, 2, '.', ',') }}</td>
-                                        <td class="total" style=" border-left: 1px solid gray; text-align: right;">{{number_format($item->amount, 2, '.', ',') }}</td>
-                                    </tr>
-                                    @endforeach
-                                    @endif
-                                    @if($servitems->count() >0)
-                                    @foreach($servitems as $key => $item)
-                                    <?php $tqty += $item->repeatition; ?>
-                                    <tr style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
-                                        <td style="text-align: center;">{{$key+1}}</td>
-                                        <td style="text-align: right; border-left: 1px solid gray;">{{$item->code}}</td>
-                                        <td class="desc"><b>{{$item->name}}</b><br><small>{{$item->description}}</small></td>
-                                        <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$item->repeatition}}</td>
-                                        @if($items->count() > 0)
-                                        <td style="border-left: 1px solid gray;text-align: center;">Unit(s)</td>
-                                        @endif
-                                        <td class="unit" style="border-left: 1px solid gray; text-align: center;">{{number_format($item->cost_per_unit, 2, '.', ',') }}</td>
-                                        <td class="total" style="border-left: 1px solid gray; text-align: right;">{{number_format($item->amount, 2, '.', ',') }}</td>
-                                    </tr>
-                                    @endforeach
-                                    @endif
-                                    <tr class="blank_row" style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
-                                        <td colspan="3" style="" class="desc"></td>
-                                        <td class="qty" style="border-left: 1px solid gray; text-align: center;"></td>
-                                        @if($items->count() > 0)
-                                        <td style="border-left: 1px solid gray; text-align: center;"></td>
-                                        @endif
-                                        <td style="border-left: 1px solid gray; text-align: center;" class="unit"></td>
-                                        <td class="total" style=" border-left: 1px solid gray; text-align: right;"></td>
-                                    </tr>
-                                    <tr class="" style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
-                                        <td colspan="3" style="" class="desc">Total</td>
-                                        <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$tqty}}</td>
-                                        @if($items->count() > 0)
-                                        <td style="border-left: 1px solid gray; text-align: center;"></td>
-                                        @endif
-                                        <td style="border-left: 1px solid gray; text-align: center;" class="unit"></td>
-                                        <td class="total" style="border-left: 1px solid gray; text-align: right;">{{number_format($subtotal, 2, '.', ',')}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-12">
-                            <table style="width: 100%;">
-                                <tbody>
-                                    <tr style="border-top: 1px solid gray;">
-                                        <td style="width: 75%">
-                                            @if($settings->show_bd)
-                                            <table style="width: 100%; font-size: 8px; padding: 0;">
+                                </table>
+                                <table style="width: 100%;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="background: <?php echo $settings->invoice_color; ?>; padding-left: 15px;  border-radius: 30px; text-align: center;">
+                                                <h6 class="mb-0 text-uppercase" style="color: #fff;">Proforma Invoice</h6>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-12 customer mt-0 mb-0">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td style="padding-left: 30px; width: 70%;">
+                                            <b>PFI To :</b>
+                                            <table class="customer-info" style="margin-left: 15px;">
                                                 <tbody>
                                                     <tr>
-                                                        <td style="background: <?php echo $settings->invoice_color; ?>; padding-left: 15px;   border-radius: 0px; text-align: left;">
-                                                            <h6 class="mb-0 text-uppercase" style="color: <?php echo $settings->invoice_title_color; ?>;">Bank Details</h6>
-                                                        </td>
-                                                        <!-- <td>Payment Options :</td> -->
+                                                        <td colspan="2"><span class="text-uppercase" style="font-size: 14px; font-weight: 400;">Client Name :</span> <span style="font-size: 14px; font-weight: 500;">{{$customer->name}}</span></td>
                                                     </tr>
-                                                    @if($baccounts->count() > 0)
                                                     <tr>
-                                                        <td class="row">
-                                                            @foreach($baccounts as $bankdetail)
-                                                            <div class="col-sm-6" style="border: 1px solid #e3e4e8;">
-                                                                Bank Name : <b>{{$bankdetail->bank_name}}</b><br>
-                                                                Account Name: <b>{{$bankdetail->account_name}}</b><br>
-                                                                <?php $accnumbers = App\Models\Account::where('shop_id', $shop->id)->where('bank_name', $bankdetail->bank_name)->where('account_name', $bankdetail->account_name)->select('currency', 'account_number')->get(); ?>
-                                                                @foreach($accnumbers as $account)
-                                                                Account No : @if(!is_null($account->currency)) {{$account->currency}} : @endif <b>{{$account->account_number}}</b><br>
+                                                        <td colspan="2"><b>Address:</b> {{$customer->physical_address}}</td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td colspan="2"><b>Contact Person :</b> {{$customer->contact_person}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2"><b>Mobile : </b>{{$customer->phone}} </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2"><b>Email :</b>{{$customer->email}}</td>
+                                                    </tr>
+                                                    @if(!empty($customer->tin))
+                                                    <tr>
+                                                        <td style="width: 35%;">TIN :<b>{{$customer->tin}}</b></td>
+                                                
+                                                        <td style="width: 65%;">VRN :<b>{{$customer->vrn}}</b></td>
+                                                    </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td style="text-align: left; width: 30%;">
+                                            <table style="width: 100%;">
+                                                <tr style="border: 1px solid gray; border-radius: 20px;">
+                                                    <td colspan="2" style="font-size: 16px; text-align: center;">PFI No  : <b>{{ sprintf('%04d',$invoice->invoice_no)}}</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: right;">
+                                                        <b>Date :</b>
+                                                    </td>
+                                                    <td style="width: 60%; border-bottom: 0px dotted black;">{{ date('d F, Y', strtotime($invoice->created_at)) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: right;">
+                                                        <b>Due Date :</b>
+                                                    </td>
+                                                    <td style="width: 60%; border-bottom: 0px dotted black;">{{ date('d F, Y', strtotime($invoice->due_date))}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: right;">
+                                                        <b>RFQ No:</b>
+                                                    </td>
+                                                    <td style="width: 60%; border-bottom: 0px dotted black;">{{ $invoice->ref_no}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: right;">
+                                                        <b>TIN:</b>
+                                                    </td>
+                                                    <td style="width: 60%; border-bottom: 0px dotted black;">{{$shop->tin}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: right;">
+                                                        <b>VRN:</b>
+                                                    </td>
+                                                    <td style="width: 60%; border-bottom: 0px dotted black;">{{$shop->vrn}}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-12 mt-0">
+                                <table class="" style="width: 100%; border-radius: 15px;">
+                                    <thead>
+                                        <tr style="background: <?php echo $settings->invoice_color; ?>; color: #fff; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                                            <th style="text-align: center;">#</th>
+                                            <th style="text-align: center; border-left: 1px solid #fff; text-align: right;">Code</th>
+                                            <th style="">Description</th>
+                                            <th style="text-align: center; border-left: 1px solid #fff;">Qty</th>
+                                            @if($items->count() > 0)
+                                            <th style="text-align: center; border-left: 1px solid #fff;">UOM</th>
+                                            @endif
+                                            <th style="text-align: center; border-left: 1px solid #fff;">Rate</th>
+                                            <th style="text-align: right; border-left: 1px solid #fff;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $tqty = 0; ?>
+                                        @if($items->count() > 0)
+                                        @foreach($items as $key => $item)
+                                        <?php
+                                            $punit = App\Models\ProductUnit::find($item->product_unit_id);
+                                            $quantity = $item->quantity/$punit->qty_equal_to_basic;
+                                            $price_per_unit = $item->price_per_unit*$punit->qty_equal_to_basic;
+                                            $unit_discount = $item->discount*$punit->qty_equal_to_basic;
+                                            $tqty += $item->quantity;
+                                            
+                                            $slug = str_replace($item->name, '', $item->slug);
+                                        ?>
+                                        <tr style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
+                                            <td style="text-align: center;">{{$key+1}}</td>
+                                            <td style="text-align: right; border-left: 1px solid gray; border-left: 1px solid gray;">@if(!is_null($item->product_code)){{$item->product_code}}@endif</td>
+                                            <td class="desc" style="">{{$item->name}} @if($slug != '')- {{$slug}}@endif</td>
+                                            <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$quantity+0}}</td>
+                                            <td style="border-left: 1px solid gray; text-align: center;">{{$punit->unit_name}}</td>
+                                            <td class="unit" style="border-left: 1px solid gray; text-align: center;">{{number_format($item->cost_per_unit, 2, '.', ',') }}</td>
+                                            <td class="total" style=" border-left: 1px solid gray; text-align: right;">{{number_format($item->amount, 2, '.', ',') }}</td>
+                                        </tr>
+                                        @endforeach
+                                        @endif
+                                        @if($servitems->count() >0)
+                                        @foreach($servitems as $key => $item)
+                                        <?php $tqty += $item->repeatition; ?>
+                                        <tr style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
+                                            <td style="text-align: center;">{{$key+1}}</td>
+                                            <td style="text-align: right; border-left: 1px solid gray;">{{$item->code}}</td>
+                                            <td class="desc"><b>{{$item->name}}</b><br><small>{{$item->description}}</small></td>
+                                            <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$item->repeatition}}</td>
+                                            @if($items->count() > 0)
+                                            <td style="border-left: 1px solid gray;text-align: center;">Unit(s)</td>
+                                            @endif
+                                            <td class="unit" style="border-left: 1px solid gray; text-align: center;">{{number_format($item->cost_per_unit, 2, '.', ',') }}</td>
+                                            <td class="total" style="border-left: 1px solid gray; text-align: right;">{{number_format($item->amount, 2, '.', ',') }}</td>
+                                        </tr>
+                                        @endforeach
+                                        @endif
+                                        <tr class="blank_row" style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
+                                            <td colspan="3" style="" class="desc"></td>
+                                            <td class="qty" style="border-left: 1px solid gray; text-align: center;"></td>
+                                            @if($items->count() > 0)
+                                            <td style="border-left: 1px solid gray; text-align: center;"></td>
+                                            @endif
+                                            <td style="border-left: 1px solid gray; text-align: center;" class="unit"></td>
+                                            <td class="total" style=" border-left: 1px solid gray; text-align: right;"></td>
+                                        </tr>
+                                        <tr class="" style="border-bottom: 1px solid gray; border-left: 1px solid <?php echo $settings->invoice_color; ?>; border-right: 1px solid <?php echo $settings->invoice_color; ?>;">
+                                            <td colspan="3" style="" class="desc">Total</td>
+                                            <td class="qty" style="border-left: 1px solid gray; text-align: center;">{{$tqty}}</td>
+                                            @if($items->count() > 0)
+                                            <td style="border-left: 1px solid gray; text-align: center;"></td>
+                                            @endif
+                                            <td style="border-left: 1px solid gray; text-align: center;" class="unit"></td>
+                                            <td class="total" style="border-left: 1px solid gray; text-align: right;">{{number_format($subtotal, 2, '.', ',')}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-12 mt-0">
+                                <table style="width: 100%;">
+                                    <tbody>
+                                        <tr style="border-top: 1px solid gray;">
+                                            <td style="width: 60%">
+                                                @if($settings->show_bd)
+                                                <table style="width: 100%; font-size: 8px; padding: 0;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td style="background: <?php echo $settings->invoice_color; ?>; padding-left: 15px;   border-radius: 0px; text-align: left;">
+                                                                <h6 class="mb-0 text-uppercase" style="color: <?php echo $settings->invoice_title_color; ?>;">Bank Details</h6>
+                                                            </td>
+                                                            <!-- <td>Payment Options :</td> -->
+                                                        </tr>
+                                                        @if($baccounts->count() > 0)
+                                                        <tr>
+                                                            <td class="row">
+                                                                @foreach($baccounts as $bankdetail)
+                                                                <div class="col-sm-10" style="border: 1px solid #e3e4e8; margin-bottom: 2px;">
+                                                                    Bank Name : <b>{{$bankdetail->bank_name}}</b><br>
+                                                                    Account Name: <b>{{$bankdetail->account_name}}</b><br>
+                                                                    <?php $accnumbers = App\Models\Account::where('shop_id', $shop->id)->where('bank_name', $bankdetail->bank_name)->where('account_name', $bankdetail->account_name)->select('currency', 'account_number')->get(); ?>
+                                                                    @foreach($accnumbers as $account)
+                                                                    Account No : @if(!is_null($account->currency)) {{$account->currency}} : @endif <b>{{$account->account_number}}</b><br>
+                                                                    @endforeach
+                                                                    Branch name/Code : <b>{{$bankdetail->branch_name}}</b><br>
+                                                                    Swift : <b>{{$bankdetail->swift_code}}</b>
+                                                                </div>
                                                                 @endforeach
-                                                                Branch name/Code : <b>{{$bankdetail->branch_name}}</b><br>
-                                                                Swift : <b>{{$bankdetail->swift_code}}</b>
-                                                            </div>
-                                                            @endforeach
-                                                        </td>
-                                                    </tr>
-                                                    @else
-                                                    <tr>
-                                                        <td><span style="color: orange;">Your bank details not updated. Please update your bank details <a href="{{ route('pro-invoices.edit', encrypt($invoice->id)) }}">Here</a></span></td>
-                                                    </tr>
-                                                    @endif
-                                                </tbody>
-                                            </table>
-                                            @endif
-                                        </td>
-                                        <td style="width: 25%; border: 1px solid gray;  border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-                                            <table class="mt-0" style="width: 100%;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td></td>
-                                                        <td class="unit" style=" text-align: right;">{{trans('navmenu.total')}} (Excl.Tax):</td>
-                                                        <td class="total" style=" text-align: right;"><b>{{number_format($subtotal, 2, '.', ',')}}</b></td>
-                                                    </tr>
-                                                    @if($total_discount > 0)
-                                                    <tr>
-                                                        <td></td>
-                                                        <td class="unit" style=" text-align: right;">{{trans('navmenu.discount')}}:</td>
-                                                        <td class="total" style=" text-align: right;">{{number_format($total_discount, 2, '.', ',')}}</td>
-                                                    </tr>
-                                                    @endif
-                                                    @if($settings->is_vat_registered)
-                                                    <tr>
-                                                        <td></td>
-                                                        <td class="unit" style=" text-align: right;">TAX {{$settings->tax_rate}}%:</td>
-                                                        <td class="total" style=" text-align: right;">{{number_format($tax, 2, '.', ',')}}</td>
-                                                    </tr>
-                                                    @endif
-                                                    <tr>
-                                                        <td></td>
-                                                        <th class="unit" style="text-align: right;"><b>{{trans('navmenu.total')}} (Inc.Tax) ({{$defcurr->code}}):</b></th>
-                                                        <th class="total" style="text-align: right;"><b>{{number_format(($grandtotal-$total_discount)+$tax, 2, '.', ',')}}</b></th>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-12">
-                            <table style="width: 100%;">
-                                <tbody>
-                                    <tr style="border-top: 1px solid <?php echo $settings->invoice_color; ?>; border-bottom: 2px solid <?php echo $settings->invoice_color; ?>; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-                                        <td style="width: 65%;">
-                                            <div class="notice col-md-12">
-                                                <div><b>DECLARATION</b>:</div>
-                                                <div>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</div>
-                                            </div>
-                                            @if(!is_null($invoice->notes))
-                                            <div class="notice col-md-12 pt-3">
-                                                <div>NOTE:</div>
-                                                <div>{!! $invoice->notes !!}</div>
-                                            </div>
-                                            @endif
-                                        </td>
-                                        <td style="width: 35%; border-left: 1px solid gray;">
-                                            <div class="text-center">
-                                                <span style="font-size: 14px; font-weight: bold;">For {{$company->name}}</span><br>
-                                                @if(!is_null($shop->stamp))
-                                                <figure>
-                                                    <img class="invoice-logo" src="{{asset('storage/stamps/'.$shop->stamp)}}" alt="" width="80">
-                                                </figure>
+                                                            </td>
+                                                        </tr>
+                                                        @else
+                                                        <tr>
+                                                            <td><span style="color: orange;">Your bank details not updated. Please update your bank details <a href="{{ route('pro-invoices.edit', encrypt($invoice->id)) }}">Here</a></span></td>
+                                                        </tr>
+                                                        @endif
+                                                    </tbody>
+                                                </table>
                                                 @endif
-                                                <br>
-                                                <b>-----------------------------------------</b><br>
-                                                <b>Authorized Signatory</b>
-                                            </div>
-                                        </td>
+                                            </td>
+                                            <td style="width: 40%; border: 1px solid gray;  border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                                                <table class="mt-0" style="width: 100%;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="unit" style=" text-align: left;">{{trans('navmenu.total')}} (Excl.Tax):</td>
+                                                            <td class="total" style=" text-align: right;"><b>{{number_format($subtotal, 2, '.', ',')}}</b></td>
+                                                        </tr>
+                                                        @if($total_discount > 0)
+                                                        <tr>
+                                                            <td class="unit" style=" text-align: left;">{{trans('navmenu.discount')}}:</td>
+                                                            <td class="total" style=" text-align: right;">{{number_format($total_discount, 2, '.', ',')}}</td>
+                                                        </tr>
+                                                        @endif
+                                                        <tr>
+                                                            <td class="unit" style=" text-align: left;">TAX {{$settings->tax_rate+0}}%:</td>
+                                                            <td class="total" style=" text-align: right;">{{number_format($tax, 2, '.', ',')}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="unit" style="text-align: left; width: 50%;"><b>{{trans('navmenu.total')}} (Inc.Tax) ({{$defcurr->code}}):</b></th>
+                                                            <th style="text-align: right; border-bottom: 2px dotted black; width: 50%;"><b>{{number_format(($grandtotal-$total_discount)+$tax, 2, '.', ',')}}</b></th>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-12">
+                                <table style="width: 100%;">
+                                    <tbody>
+                                        <tr style="border-top: 1px solid <?php echo $settings->invoice_color; ?>; border-bottom: 2px solid <?php echo $settings->invoice_color; ?>; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+                                            <td style="width: 65%;">
+                                                <div class="notice col-md-12">
+                                                    <div><b>DECLARATION</b>:</div>
+                                                    <div>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</div>
+                                                </div>
+                                                @if(!is_null($invoice->notes))
+                                                <div class="notice col-md-12 pt-3">
+                                                    <div>NOTE:</div>
+                                                    <div>{!! $invoice->notes !!}</div>
+                                                </div>
+                                                @endif
+                                            </td>
+                                            <td style="width: 35%; border-left: 1px solid gray;">
+                                                <div class="text-center">
+                                                    <span style="font-size: 14px; font-weight: bold;">For {{$company->name}}</span><br>
+                                                    @if(!is_null($shop->stamp))
+                                                    <figure>
+                                                        <img class="invoice-logo" src="{{asset('storage/stamps/'.$shop->stamp)}}" alt="" width="80">
+                                                    </figure>
+                                                    @endif
+                                                    <br>
+                                                    <b>-----------------------------------------</b><br>
+                                                    <b>Authorized Signatory</b>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if(!is_null($invoice->terms_and_conditions))
+                            <div class="col-md-12">
+                                <label class="form-label">Terms & Conditions</label>
+                                {!! $invoice->terms_and_conditions !!}
+                            </div>
+                            @endif
+                            @if($settings->show_end_note && !is_null($settings->invoice_end_note))
+                            <div class="col-md-12 mx-auto text-center">
+                                <table style="width: 100%;">
+                                    <tr style="background: <?php echo $settings->invoice_color; ?>; border-top: 1px solid <?php echo $settings->invoice_color; ?>; border-bottom: 2px solid <?php echo $settings->invoice_color; ?>; border-bottom-left-radius: 45px; border-bottom-right-radius: 45px;">
+                                        <td style="text-align: center; font-size: 16px !important; font-style: italic; color: <?php echo $settings->invoice_title_color; ?>;"><b>{{$settings->invoice_end_note}}.</b></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                </table>
+                            </div>
+                            @endif
                         </div>
-                        @if(!is_null($invoice->terms_and_conditions))
-                        <div class="col-md-12">
-                            <label class="form-label">Terms & Conditions</label>
-                            {!! $invoice->terms_and_conditions !!}
-                        </div>
-                        @endif
-                        @if($settings->show_end_note)
-                        <div class="col-md-12 text-center" style="border-top: 1px solid gray;">This is an electronic Invoice and is valid without the signature and seal.</div>
-                        @endif
                     </div>
                     
                     <div class="row g-1 mt-4">

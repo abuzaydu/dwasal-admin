@@ -8,6 +8,7 @@ use Session;
 use Auth;
 use DB;
 use Log;
+use \Carbon\Carbon;
 use App\Models\Company;
 use App\Models\Shop;
 use App\Models\User;
@@ -36,15 +37,31 @@ class DeliveryNoteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Delivery Notes';
         $title = 'Delivery Notes';
         $title_sw = 'Vidokezo vya Uwasilishaji';
-        $shop = Shop::find(Session::get('shop_id'));
-        $dnotes = DeliveryNote::where('delivery_notes.shop_id', $shop->id)->orderBy('delivery_notes.created_at', 'desc')->join('an_sales', 'an_sales.id', '=', 'delivery_notes.an_sale_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('delivery_notes.id as id', 'note_no', 'delivery_notes.comments as comments', 'delivery_notes.created_at as created_at', 'delivery_notes.updated_at as updated_at', 'name', 'delivery_notes.status as status')->get();
+        
+        $now = Carbon::now();
+        $start = $now->startOfDay();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        $is_post_query = false;
+        
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
 
-        return view('sales.delivery-notes.index', compact('page', 'title', 'title_sw', 'dnotes'));
+        $shop = Shop::find(Session::get('shop_id'));
+        $dnotes = DeliveryNote::where('delivery_notes.shop_id', $shop->id)->whereBetween('delivery_notes.created_at', [$start, $end])->orderBy('delivery_notes.created_at', 'desc')->join('an_sales', 'an_sales.id', '=', 'delivery_notes.an_sale_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('delivery_notes.id as id', 'note_no', 'delivery_notes.comments as comments', 'delivery_notes.created_at as created_at', 'delivery_notes.updated_at as updated_at', 'name', 'delivery_notes.status as status')->get();
+
+        return view('sales.delivery-notes.index', compact('page', 'title', 'title_sw', 'dnotes', 'is_post_query', 'start_date', 'end_date'));
     }
 
     /**
@@ -83,21 +100,33 @@ class DeliveryNoteController extends Controller
                 $dnote->note_no = $noteno;
                 $dnote->save();
 
+                $delcount = 0;
                 foreach ($dnotes as $key => $value) {
                     $invqty = AnSaleItem::where('an_sale_id', $sale->id)->where('product_id', $value->product_id)->sum('quantity_sold');
                     if ($value->qty < $invqty) {
                         $delqty = $invqty-$value->delivery_qty;
-                        Log::info($value->delivery_qty);
-                        $dnoteitem = new DeliveryNoteItem();
-                        $dnoteitem->delivery_note_id = $dnote->id;
-                        $dnoteitem->product_id = $value->product_id;
-                        $dnoteitem->delivery_qty = $delqty;
-                        $dnoteitem->uom = $value->uom;
-                        $dnoteitem->save();
+                        if ($delqty > 0) {
+                            $dnoteitem = new DeliveryNoteItem();
+                            $dnoteitem->delivery_note_id = $dnote->id;
+                            $dnoteitem->product_id = $value->product_id;
+                            $dnoteitem->delivery_qty = $delqty;
+                            $dnoteitem->uom = $value->uom;
+                            $dnoteitem->save();
+
+                            $delcount++;
+                        }
                     }
                 }
 
-                return redirect()->route('delivery-notes.edit', encrypt($dnote->id))->with('info', 'Delivery Note initialised successfully. Please update and confirm the Delivery quantities');
+                if ($delcount > 0) {
+                    return redirect()->route('delivery-notes.edit', encrypt($dnote->id))->with('info', 'Delivery Note initialised successfully. Please update and confirm the Delivery quantities');
+                }else{
+
+                    $sale->is_full_shipped = true;
+                    $sale->save();
+                    
+                    return redirect()->back()->with('info', 'Invoice is full shipped');
+                }
             }else{
                 $user = Auth::user();
                 $maxno = DeliveryNote::where('shop_id', $shop->id)->orderBy('created_at', 'desc')->first();
@@ -210,7 +239,7 @@ class DeliveryNoteController extends Controller
      */
     public function show($id)
     {
-        $page = 'Delivery Notes';
+        $page = 'Delivery Note';
         $title = 'Delivery Note';
         $title_sw = 'Kidokezo cha Uwasilishaji';
 
@@ -229,7 +258,7 @@ class DeliveryNoteController extends Controller
             $items = [];
             $proinvoice = null;
             if (!is_null($dnote->an_sale_id)) {
-                $sale = AnSale::where('an_sales.id', $dnote->an_sale_id)->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('customers.name as name', 'customers.cust_no as cust_no', 'customers.postal_address as po_address', 'customers.physical_address as ph_address', 'customers.street as street', 'customers.email as email', 'customers.phone as phone', 'customers.tin as tin', 'customers.vrn as vrn', 'an_sales.id as id', 'an_sales.invoice_no as invoice_no', 'lpo_no', 'an_sales.time_created as time_created', 'pro_invoice_id')->first();
+                $sale = AnSale::where('an_sales.id', $dnote->an_sale_id)->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('customers.name as name', 'customers.cust_no as cust_no', 'customers.postal_address as po_address', 'customers.physical_address as ph_address', 'customers.street as street', 'customers.email as email', 'contact_person', 'customers.phone as phone', 'customers.tin as tin', 'customers.vrn as vrn', 'an_sales.id as id', 'an_sales.invoice_no as invoice_no', 'lpo_no', 'an_sales.time_created as time_created', 'pro_invoice_id')->first();
                 
                 $items = DeliveryNoteItem::where('delivery_note_id', $dnote->id)->join('products', 'products.id', '=', 'delivery_note_items.product_id')->get([
                     DB::raw('slug'),
@@ -281,7 +310,7 @@ class DeliveryNoteController extends Controller
      */
     public function edit($id)
     {
-        $page = 'Delivery Notes';
+        $page = 'Edit Delivery Note';
         $title = 'Edit Delivery Note';
         $title_sw = 'Hariri Kidokezo cha Uwasilishaji';
         $dnote = DeliveryNote::find(decrypt($id));

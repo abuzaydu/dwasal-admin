@@ -40,7 +40,18 @@
                 </ul>
             </div>            
             <div class="col-lg-6 col-md-4 col-sm-12 text-right">
-                
+                <form class="dashform row g-1" action="{{ url('f-delivery-notes') }}" method="POST" id="stockform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="">
+                    <input type="hidden" name="end_date" id="end_input" value="">
+                    <!-- Date and time range -->
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-default pull-right" id="reportrange">
+                            <span><i class="fa fa-calendar"></i></span>
+                            <i class="fa fa-caret-down"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -92,10 +103,10 @@
                             </tbody>  
                         </table>
                     </div>
-                    <form id="frm-example" action="{{url('delete-multiple-dnotes')}}" method="POST">
+                    <!-- <form id="frm-example" action="{{url('delete-multiple-dnotes')}}" method="POST">
                         @csrf
                         <button id="submitButton" class="btn btn-danger btn-sm">{{trans('navmenu.delete_selected')}}</button>
-                    </form>
+                    </form> -->
                 </div>
             </div>
         </div>

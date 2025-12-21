@@ -159,7 +159,7 @@
                 <input type="hidden" name="start_date" id="start_input" value="">
                 <input type="hidden" name="end_date" id="end_input" value="">
                 <!-- Date and time range -->
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="input-group">
                         <button type="button" class="btn btn-white btn-sm" id="reportrange">
                             <span><i class="fa fa-calendar"></i></span>

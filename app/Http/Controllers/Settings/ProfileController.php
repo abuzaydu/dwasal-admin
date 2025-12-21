@@ -23,6 +23,7 @@ use App\Models\BusinessType;
 use App\Models\BusinessSubType;
 use App\Models\SubscriptionType;
 use App\Models\BankDetail;
+use App\Models\Employee;
 
 
 class ProfileController extends Controller
@@ -109,7 +110,10 @@ class ProfileController extends Controller
                 'hr-dash' => 'HR Dashboard',
             );
 
-            return view('account.users.create', compact('page', 'title', 'title_sw', 'roles', 'defaultpages'));
+
+            $employees = Employee::where('company_id', $company->id)->select('id', 'fname', 'lname')->get();
+
+            return view('account.users.create', compact('page', 'title', 'title_sw', 'roles', 'defaultpages', 'employees'));
         }
     }
 
@@ -157,6 +161,44 @@ class ProfileController extends Controller
             $usertheme->save();
             $message = 'User was added successfully';
             return redirect('users-and-roles')->with('success', $message);
+        }
+    }
+
+    public function createUser(Request $request)
+    {
+        $employee = Employee::find($request['employee_id']);
+        if (!is_null($employee)) {    
+            $company = Company::find(Session::get('company_id'));
+            $user = User::where('phone', $employee->mobile)->first();
+            if (!is_null($user)) {
+                $company->users()->attach($user);
+                $message = 'User was added successfully';
+                return redirect('users-and-roles')->with('success', $message);
+            }else{
+                $country_code = '255';
+                $user = new User();
+                $user->email = $employee->email;
+                $user->password = bcrypt('12345678');
+                $user->first_name = $employee->fname;
+                $user->last_name = $employee->lname;
+                $user->phone = $employee->mobile;
+                $user->country = 'Tanzania';
+                $user->default_page = $request['default_page'];
+                $user->save();
+
+                $company->users()->attach($user, ['is_default' => true]);
+
+                $role = Role::find($request['role']);
+                $user->assignRole($role);
+                            
+                $usertheme = new UserTheme();
+                $usertheme->user_id = $user->id;
+                $usertheme->header_color = '#2874a6';
+                $usertheme->sidebar_background = 'sidebarcolor1';
+                $usertheme->save();
+                $message = 'User was added successfully';
+                return redirect('users-and-roles')->with('success', $message);
+            }
         }
     }
 

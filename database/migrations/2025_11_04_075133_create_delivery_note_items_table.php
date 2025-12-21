@@ -23,7 +23,7 @@ return new class extends Migration
         Schema::table('delivery_notes', function (Blueprint $table) {
             $table->unsignedBigInteger('vehicle_id')->nullable();
             $table->unsignedBigInteger('delivery_address_id')->nullable();
-            $table->string('status')->default('Loading');
+            $table->string('status')->default('Loaded');
         });
 
         Schema::table('delivery_addresses', function (Blueprint $table) {

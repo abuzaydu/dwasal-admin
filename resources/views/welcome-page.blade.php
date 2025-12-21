@@ -10,7 +10,7 @@
     <meta name="author" content="">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="{{ asset('img/icon.png') }}" rel="icon">
+    <link href="{{ asset('assets/img/favicon.png') }}" rel="icon">
     <!-- VENDOR CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/font-awesome/css/font-awesome.min.css') }}">
@@ -36,11 +36,7 @@
         <nav class="navbar navbar-fixed-top">
             <div class="container">
                 <div class="navbar-brand">
-                    <a href="{{ url('home') }}">
-                        <!-- <img src="{{ asset('assets/img/icon.png') }}" width="15" height="30">  -->
-                        <small>DWASAL</small>
-                    </a>
-                    <!-- <a href="{{ url('/home')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                  -->
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
                 </div>
                 
                 <div class="navbar-right">
@@ -256,6 +252,17 @@
                                     <h2><i class="fa fa-truck"></i></h2>
                                     <h6 class="text-primary">Vehicle Management </h6>
                                     <small>Vehicles, Legal Documents, Insurance, Maintenance, Refueling,  Trip Logs, Mileage Logs, Cost Logs</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url('visitors-dash') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
+                                    <h2><i class="fa fa-group"></i></h2>
+                                    <h6 class="text-primary">Visitors Management </h6>
+                                    <small>Visitors Logs & Analysis </small>
                                 </div>
                             </div>
                         </a>

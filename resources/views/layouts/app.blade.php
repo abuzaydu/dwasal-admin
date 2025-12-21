@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="keyword" content="">
-    <link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> <!-- Favicon-->
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}" type="image/x-icon"> <!-- Favicon-->
     <title>{{ config('app.name', 'DWASAL') }} : {{$page}}</title>
     <!-- Application Vendor CSS URL -->
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/notifications/css/lobibox.min.css') }}" />
@@ -60,10 +60,7 @@
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                 </div>
                 <div class="navbar-brand ps-2">
-                    <a href="{{ url('/home') }}">
-                        <img src="{{ asset('assets/img/icon.png') }}" width="30"> 
-                        <small>DWASAL</small>
-                    </a>
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
                 </div>
                 <div class="d-flex flex-grow-1 align-items-center">
                     <div class="flex-grow-1" id="hide-on-mobile">
@@ -195,7 +192,8 @@
                                 <li class="{{ request()->is('pos') ? 'active' : '' }}"><a href="{{ url('pos') }}"><i class='fa fa-calculator'></i><span>Point Of Sale</span></a></li>
                                 @endif
                                 @if (Auth::user()->can('view-invoice') || Auth::user()->can('view-all-invoice'))
-                                <li class="{{ request()->is('an-sales') || request()->is('delivery-notes') || request()->is('credit-notes') ? 'active' : '' }}"><a href="{{ url('an-sales') }}"><i class='fa fa-file'></i><span>{{ trans('navmenu.invoices') }}</span></a></li>
+                                <li class="{{ request()->is('an-sales') || request()->is('credit-notes') ? 'active' : '' }}"><a href="{{ url('an-sales') }}"><i class='fa fa-file'></i><span>{{ trans('navmenu.invoices') }}</span></a></li>
+                                <li class="{{ request()->is('delivery-notes') ? 'active' : '' }}"><a href="{{ url('delivery-notes') }}"><i class='fa fa-file-pdf-o'></i><span>{{ trans('navmenu.delivery_notes') }}</span></a></li>
                                 <li class="{{ request()->is('pro-invoices')  ? 'active' : '' }}"><a href="{{ url('pro-invoices') }}"><i class='fa fa-file-o'></i><span>{{ trans('navmenu.pro_invoice') }}</span></a></li>
                                 @endif
                                 @if($shop->businees_type_id != 3 && Auth::user()->can('view-sales-return'))
@@ -380,7 +378,7 @@
         }
     }
     
-    if ($page == 'Home' || $page == 'Orders' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'Proforma Invoices' || $page == 'Quote Requests' || $page == 'Quotations' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
+    if ($page == 'Home' || $page == 'Orders' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'Proforma Invoices' || $page == 'Delivery Notes' || $page == 'Quote Requests' || $page == 'Quotations' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
         $is_post = $is_post_query;
         $startdate = $start_date;
         $enddate = $end_date;

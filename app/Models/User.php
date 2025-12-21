@@ -91,4 +91,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(ProductMadeApiTemp::class);
     }
+
+    public function routeNotificationForFcm($notification)
+    {
+        return $this->fcm_token; // Replace with the actual field that stores the user's FCM token
+    }
 }

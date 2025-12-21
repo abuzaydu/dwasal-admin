@@ -496,7 +496,7 @@ class PurchasesController extends Controller
                             $stock->source = 'Purchased';
                         }
                         
-$stock->stock_date = $now;
+                        $stock->stock_date = $now;
                         $stock->expire_date = $item->expire_date;
                         $stock->save();
                         $product = $shop->products()->where('id', $product->id)->first();
@@ -766,8 +766,7 @@ $stock->stock_date = $now;
 
         $items = Stock::where('purchase_id', $purchase->id)->get();
         foreach ($items as $key => $stock) {
-            
-$stock->stock_date = $purchase->time_created;
+            $stock->stock_date = $purchase->time_created;
             $stock->save();
         }
 
@@ -956,7 +955,7 @@ $stock->stock_date = $purchase->time_created;
                     $stock->source = 'Purchased';
                 }
                 
-$stock->stock_date = $purchase->time_created;
+                $stock->stock_date = $purchase->time_created;
                 $stock->save();
 
                 $product = $shop->products()->where('id', $product->id)->first();
@@ -970,7 +969,7 @@ $stock->stock_date = $purchase->time_created;
                 // Update Sale Items with Actual Stock used
                 $this->updateSaleItems($product, $shop);
 
-                $pitems = Stock::where('time_created', $purchase->time_created)->where('shop_id', $shop->id)->get();
+                $pitems = Stock::where('purchase_id', $purchase->id)->get();
                 $total_amount = 0;
                 foreach ($pitems as $key => $item) {
                     $total_amount += ($item->quantity_in*$item->unit_cost);

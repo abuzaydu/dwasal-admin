@@ -3,7 +3,7 @@
 @section('content')
     <div class="auth-box">
         <div class="top">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="Lucid">
+            <a href="{{ url('/')}}"><img src="{{ asset('assets/img/logo.png') }}" alt="Dwasal"></a>
         </div>
         <div class="card">
             <div class="header">

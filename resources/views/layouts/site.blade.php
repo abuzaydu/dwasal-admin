@@ -11,7 +11,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> 
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}" type="image/x-icon"> 
     <!-- VENDOR CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/notifications/css/lobibox.min.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -52,8 +52,7 @@
         <nav class="navbar navbar-fixed-top">
             <div class="container">
                 <div class="navbar-brand">
-                    <a href="{{ url('home') }}">DWASAL</a>
-                    <!-- <a href="{{ url('/home')}}"><img src="{{ asset('assets/images/logo.png') }}" alt="DWASAL" class="img-responsive logo" style="width: 150px; height: 50px;"></a>                 -->
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
                 </div>
                 
                 <div class="navbar-right">

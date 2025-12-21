@@ -4,15 +4,33 @@ namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Session;
+use App\Models\Company;
+use App\Models\PartUsage;
 
-class LegalDocController extends Controller
+
+class PartsUsageController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware(['auth']);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $page = 'Parts Management';
+        $company = Company::find(Session::get('company_id'));
+        $parts = Part::where('company_id', $company->id)->get();
+
+        return view('vms.parts.index', compact('page', 'parts'));
     }
 
     /**

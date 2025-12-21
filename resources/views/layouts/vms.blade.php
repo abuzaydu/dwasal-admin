@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="keyword" content="">
-    <link rel="icon" href="{{ asset('assets/img/icon.png') }}" type="image/x-icon"> <!-- Favicon-->
+    <link rel="icon" href="{{ asset('assets/img/favicon.png') }}" type="image/x-icon"> <!-- Favicon-->
     <title>{{ config('app.name', 'DWASAL') }} : {{$page}}</title>
     <!-- Application Vendor CSS URL -->
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/notifications/css/lobibox.min.css') }}" />
@@ -60,10 +60,7 @@
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                 </div>
                 <div class="navbar-brand ps-2">
-                    <a href="{{ url('/home') }}">
-                        <img src="{{ asset('assets/img/icon.png') }}" width="30"> 
-                        <small>DWASAL</small>
-                    </a>
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
                 </div>
                 <div class="d-flex flex-grow-1 align-items-center">
                     <div class="flex-grow-1" id="hide-on-mobile">
@@ -190,6 +187,16 @@
                                 <li class="{{ request()->is('insurance') ? 'active' : '' }}"><a href="{{ url('insurance') }}"><i class="fa fa-file-o"></i> Insurance</a></li>
                                 <li class="{{ request()->is('maintenance') ? 'active' : '' }}"><a href="{{ url('maintenance') }}"><i class="fa fa-car"></i> Maintenance</a></li>
                                 <li class="{{ request()->is('refueling') ? 'active' : '' }}"><a href="{{ url('refueling') }}"><i class="fa fa-filter"></i> Refueling</a></li>
+                                <li class="{{ request()->is('parts') || request()->is('parts-usage') || request()->is('part-purchases') ? 'mm-active active' : '' }}">
+                                    <a class="has-arrow" href="#Employees"><i class="fa fa-cogs"></i><span>Parts Inventory</span></a>
+                                    <ul class="list-unstyled">
+                                        <li><a href="{{ url('parts') }}" class="{{ request()->is('parts') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Parts</a></li>
+                                        <li><a href="{{ url('part-purchases') }}" class="{{ request()->is('part-purchases') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Purchases</a></li>
+                                        <li><a href="{{ url('parts-usage') }}" class="{{ request()->is('parts-usage') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Parts Usage</a></li>
+                                    </ul>
+                                </li>
+                                <li class="{{ request()->is('vms-expenses') ? 'active' : '' }}"><a href="{{ url('vms-expenses') }}"><i class="fa fa-credit-card"></i> Expenses</a></li>
+                                <li class="{{ request()->is('vendors') ? 'active' : '' }}"><a href="{{ url('vendors') }}"><i class="fa fa-group"></i> Vendors</a></li>
                             </ul>
                         </nav>
                     </div>

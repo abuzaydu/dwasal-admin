@@ -7,6 +7,7 @@ use App\Http\Controllers\WelcomeController;
 
 use App\Http\Controllers\AppAPI\AuthenticateController;
 use App\Http\Controllers\AppAPI\TruckScanController;
+use App\Http\Controllers\AppAPI\VisitorsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,7 +33,21 @@ Route::group(['middleware' => 'cors'], function () {
             return response()->json(['error' => false]);
         });
 
+        Route::post('store-token', [AuthenticateController::class, 'storeFCMToken']);
+
         Route::post('truck-order-details', [TruckScanController::class, 'orderDeliveryDetails']);
+        Route::post('confirm-delivery-check', [TruckScanController::class, 'guradCheckConfirm']);
+        Route::post('my-delivery-notes', [TruckScanController::class, 'dailyDeliveryCheckList']);
+        Route::post('delivery-note-info', [TruckScanController::class, 'deliveryNoteInfo']);
+
+
+        Route::post('visitors', [VisitorsController::class, 'index']);
+        Route::post('hosters', [VisitorsController::class, 'create']);
+        Route::post('create-visitor', [VisitorsController::class, 'store']);
+        Route::post('visitor-photo', [VisitorsController::class, 'visitorPhoto']);
+        Route::post('update-visitor', [VisitorsController::class, 'update']);
+        Route::post('visitor-check-in', [VisitorsController::class, 'visitorCheckIn']);
+        Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
     });
 });
 

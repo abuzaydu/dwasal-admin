@@ -13,8 +13,6 @@ use App\Models\Department;
 
 class VehicleController extends Controller
 {
-
-
     /**
      * Create a new controller instance.
      *
@@ -39,7 +37,7 @@ class VehicleController extends Controller
     {
         $page = 'Vehicles';
         $units = UnitMeasure::select('unit_name')->get();
-        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->get();
+        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->get();
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
         $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
@@ -68,6 +66,7 @@ class VehicleController extends Controller
             $vehicle->ownership_id = $request['ownership_id'];
             $vehicle->department_id = $request['department_id'];
             $vehicle->plate_no = $request['plate_no'];
+            $vehicle->vehicle_name = $request['vehicle_name'];
             $vehicle->chassis_no = $request['chassis_no'];
             $vehicle->capacity = $request['capacity'];
             $vehicle->uom = $request['uom'];
@@ -85,7 +84,7 @@ class VehicleController extends Controller
     {
         $page = 'Vehicle Details';
         $codetype = 'QRCODE';
-        $vehicle = Vehicle::where('vehicles.id', decrypt($id))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->first();
+        $vehicle = Vehicle::where('vehicles.id', decrypt($id))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name', 'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->first();
         return view('vms.vehicles.show', compact('page', 'vehicle', 'codetype'));
     }
 
@@ -97,7 +96,10 @@ class VehicleController extends Controller
         $page = 'Edi Vehicle Details';
         $units = UnitMeasure::select('unit_name')->get();
         $vehicle = Vehicle::find(decrypt($id));
-        return view('vms.vehicles.edit', compact('page', 'vehicle', 'units'));
+        $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
+        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
+        $departments = Department::where('company_id', Session::get('company_id'))->get();
+        return view('vms.vehicles.edit', compact('page', 'vehicle', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
@@ -111,6 +113,7 @@ class VehicleController extends Controller
             $vehicle->ownership_id = $request['ownership_id'];
             $vehicle->department_id = $request['department_id'];
             $vehicle->plate_no = $request['plate_no'];
+            $vehicle->vehicle_name = $request['vehicle_name'];
             $vehicle->chassis_no = $request['chassis_no'];
             $vehicle->capacity = $request['capacity'];
             $vehicle->uom = $request['uom'];
@@ -130,10 +133,11 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::find(decrypt($id));
         if (!is_null($vehicle)) {
-            $orderdeliveries = OrderDelivery::where('vehicle_id', $vehicle->id)->count();
+            $orderdeliveries = DeliveryNode::where('vehicle_id', $vehicle->id)->count();
             if ($orderdeliveries > 0) {
                 return redirect()->back()->with('info', "Vehicle with Order details can't be deleted");
             }else{
+                $vehicle->delete();
                 return redirect('vehicles')->with('success', 'Vehicle deleted successfully');
             }
         }

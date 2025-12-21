@@ -176,6 +176,18 @@
             <div class="card">
                 <div class="card-body row">
                     <div class="col-md-8">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th style="text-align: center; vertical-align: middle;"><h5>{{$product->slug}}</h5></th>
+                                    <td style="text-align: center;">
+                                        @if(!is_null($product->image_url))
+                                        <img src="{{ asset('storage/products/'.$product->image_url) }}" width="60">
+                                        @endif  
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                         <table class="table table-striped" style="width: 100%;">
                             <tbody>
                                 <tr>
@@ -241,9 +253,7 @@
                                         </button>
                                     </td>
                                     <td>
-                                        @if(!is_null($product->image_url))
-                                        <img src="{{ asset('storage/products/'.$product->image_url) }}" width="60">
-                                        @endif         
+                                                
                                     </td>
                                 </tr>
                             </tbody>

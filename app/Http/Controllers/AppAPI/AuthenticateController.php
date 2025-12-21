@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AppAPI;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
+use App\Models\User;
 use Log;
 
 class AuthenticateController extends Controller
@@ -86,5 +87,19 @@ class AuthenticateController extends Controller
                 'type' => 'bearer',
             ]
         ]);
+    }
+
+    public function storeFCMToken(Request $request)
+    {
+        // Log::info($request);
+        $user = User::find($request['user_id']);
+        if (!is_null($user)) {
+            $user->fcm_token = $request['fcm_token'];
+            $user->save();
+
+            return response()->json(['statusCode' => 200, 'message' => 'FCM Token stored Successfully']);
+        }else {
+            return response()->json(['statusCode' => 400, 'message' => 'User not found']);
+        }
     }
 }
