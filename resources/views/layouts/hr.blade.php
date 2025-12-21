@@ -54,7 +54,7 @@ if (!is_null($shop)) {
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                 </div>
                 <div class="navbar-brand ps-2">
-                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="100"></a>
+                    <a href="{{ url('/home')}}"><img src="{{ asset('assets/img/logo-2.png') }}" alt="DWASAL" class="img-responsive logo" width="80"></a>
                 </div>
                 
                 <div class="d-flex flex-grow-1 align-items-center">
