@@ -472,7 +472,7 @@
                             var name = response[i]['name'];
                             var slug = response[i]['slug'];
                             var qty = +response[i]['in_stock'];
-                            var path = "<?php echo asset('storage/images/'.$shop->id); ?>";
+                            var path = "<?php echo asset('storage/products/'); ?>";
                             var img = response[i]['img'];
                             var img_path = path+'/'+img;
                             if (img != null) {

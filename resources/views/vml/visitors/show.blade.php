@@ -67,6 +67,12 @@
                                         <th>Time Out</th>
                                         <td>@if(!empty($visitor->time_out)) {{date('d/m/Y h:i:s A', strtotime($visitor->time_out)) }}@endif</td>
                                     </tr> 
+                                    <tr>
+                                        <th>Came In With</th>
+                                        <td>{{$visitor->came_in_with}}</td>
+                                        <th>Came Out With</th>
+                                        <td>{{$visitor->came_out_with}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

@@ -82,7 +82,7 @@ class StockUpdaterJob implements ShouldQueue
             if ($instock > ($stock_in-$stock_out)) {
                 $stocks = Stock::where('product_id', $product->id)->where('shop_id', $this->shop->id)->where('is_deleted',false)->orderBy('stock_date', 'desc')->get();
                 $redqty = $instock-($stock_in-$stock_out);
-                Log::info('Reduce qty '.$product->name.'  = '.$redqty);
+                // Log::info('Reduce qty '.$product->name.'  = '.$redqty);
                 foreach ($stocks as $key => $stock) {
                     $reduced = 0;
                     if ($redqty > 0) {
@@ -103,7 +103,7 @@ class StockUpdaterJob implements ShouldQueue
             }elseif ($instock < ($stock_in-$stock_out)) {
                 $stocks = Stock::where('product_id', $product->id)->where('shop_id', $this->shop->id)->where('is_deleted', false)->orderBy('stock_date', 'desc')->get();
                 $addqty = -($instock-($stock_in-$stock_out));
-                Log::info('Add qty '.$product->name.'  = '.$addqty);
+                // Log::info('Add qty '.$product->name.'  = '.$addqty);
                 foreach ($stocks as $key => $stock) {
                     $remqty = ($stock->quantity_in-$stock->quantity_out);
                     if ($addqty > 0) {

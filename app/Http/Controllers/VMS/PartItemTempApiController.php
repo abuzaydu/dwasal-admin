@@ -50,11 +50,12 @@ class PartItemTempApiController extends Controller
                 }
             }
 
+            Log::info($request);
             $partPurchaseTemp->vendor_id = $request['vendor_id'];
             $partPurchaseTemp->pp_date = $request['pp_date'];
             $partPurchaseTemp->purchase_type = $request['purchase_type'];
             $partPurchaseTemp->pay_type = $request['pay_type'];
-            $partPurchaseTemp->currency = $request['currency'];
+            $partPurchaseTemp->currency = $request['currency']; 
             $partPurchaseTemp->ex_rate_mode = $request['ex_rate_mode'];
             $partPurchaseTemp->local_ex_rate = $local_ex_rate;
             $partPurchaseTemp->foreign_ex_rate = $foreign_ex_rate;

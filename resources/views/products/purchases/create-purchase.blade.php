@@ -456,36 +456,13 @@
 
 @endsection
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function(){
-            $.ajax({
-                url:"{{ url('purchases/api/pitem') }}",
-                type:'GET',
-                success:function (response) {
-                    // $('#product_list').html(data);
-                    var len = response.length;
-                    $("#searchResult").empty();
-                    for( var i = 0; i<len; i++){
-                        var id = response[i]['id'];
-                        var name = response[i]['name'];
-                        var qty = +response[i]['in_stock'];
-                        if (qty > 0) {
-                            $("#searchResult").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'>"+name+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-redo' aria-hidden='true'></span></span></div></li>");
-                        }else{
-                            $("#searchResult").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'>"+name+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-redo' aria-hidden='true'></span></span></div></li>");
-                        }
-                    }
-
-                    // binding click event to li
-                    $("#searchResult li").bind("click",function(){
-                        addOrderTemp(this);
-                    });
-                }
-            });
-
+            // $('#search-form').on('submit', function(e){
+                // e.preventDefault();
             $('#search_key').on('keyup',function () {
-                var query = $(this).val();
+                var query = $('#search_key').val();
                 $.ajax({
                     url:"{{ url('search-product') }}",
                     type:'GET',
@@ -493,20 +470,24 @@
                     success:function (response) {
                         // $('#product_list').html(data);
                         var len = response.length;
-                        $("#searchResult").empty();
+                        $("#searchResult3").empty();
                         for( var i = 0; i<len; i++){
                             var id = response[i]['id'];
                             var name = response[i]['name'];
+                            var slug = response[i]['slug'];
                             var qty = +response[i]['in_stock'];
-                            if (qty > 0) {
-                                $("#searchResult").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'>"+name+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-redo' aria-hidden='true'></span></span></div></li>");
+                            var path = "<?php echo asset('storage/products/'); ?>";
+                            var img = response[i]['img'];
+                            var img_path = path+'/'+img;
+                            if (img != null) {
+                                $("#searchResult3").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'><img src='"+img_path+"' width='60'>"+slug+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-arrow-right' aria-hidden='true'></span></span></div></li>");
                             }else{
-                                $("#searchResult").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'>"+name+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-redo' aria-hidden='true'></span></span></div></li>");
+                                $("#searchResult3").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'><div class='col-sm-11'>"+slug+"</div><div class='col-sm-1'><span class='badge bg-success rounded-pill'><span class='fa fa-arrow-right' aria-hidden='true'></span></span></div></li>");
                             }
                         }
 
                         // binding click event to li
-                        $("#searchResult li").bind("click",function(){
+                        $("#searchResult3 li").bind("click",function(){
                             addOrderTemp(this);
                         });
 
@@ -514,10 +495,52 @@
                 })
             });
 
-            $('#empty-search').on('click', function(){
-                $("#search_key").val('');
-                $("#searchResult").empty();
+            $('#scanner_input').focus();
+            $('#scanner_input').on('change', function() {
+                var query = $('#scanner_input').val();
+                var purchase_temp_id = '<?php echo $purchasetemp->id; ?>';
+                $.ajax({
+                    url:"{{ url('grn-fetch-by-barcode') }}",
+                    type:'GET',
+                    data:{'barcode':query, purchase_temp_id: purchase_temp_id},
+                    success:function (response) {
+                        $('#scanner_input').val('');
+                        $('#scanner_input').focus();
+                        if (response.status == 400) {
+                            alert(response.msg)
+                            console.log(response);
+                            $('#bermsg').append('<div class="alert alert-danger hideit alertSuc">'+response.msg+'</div >');
+                            setTimeout(function() {
+                                $('.hideit').fadeOut('slow', function() {
+                                    $(this).remove();
+                                });
+                            }, 1300);
+                        }
+                        angular.element(document.getElementById('mycontroller')).scope().getData();
+                    }
+                });
             });
+            $('.empty-search').on('click', function(){
+                console.log('')
+                $("#search_key").val('');
+                $("#searchResult3").empty();
+            });
+
+            $('#btn-submit').on('click', function(e){
+                e.preventDefault();
+                var supplier = document.getElementById('supplier_id').value;
+                var items = document.getElementById('no_items').value;
+                if (supplier == '?') {
+                    $('#ermsg').append('<div class="alert alert-danger hideit alertSuc">Please select a Supplier</div >');
+                    setTimeout(function() {
+                        $('.hideit').fadeOut('slow', function() {
+                            $(this).remove();
+                        });
+                    }, 1300);
+                }else{
+                    document.getElementById('stockform').submit();
+                }
+            })
         });
 
         function addOrderTemp(element) {
@@ -530,11 +553,15 @@
                 success:function (response) {
                     var item = response;
                     angular.element(document.getElementById('mycontroller')).scope().addStockTemp(item);
+                    setTimeout(function(){
+                        $("#search_key").val('');
+                        $("#searchResult3").empty();
+                    }, 2000);
                 }
             })   
         }
 
-    </script>   
+    </script> 
 
     <link rel="stylesheet" href="{{ asset('css/DatePickerX.css') }}">
     <script src="{{ asset('js/DatePickerX.min.js') }}"></script>

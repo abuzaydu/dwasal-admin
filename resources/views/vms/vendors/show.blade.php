@@ -108,7 +108,7 @@
           cancelButtonText: "{{trans('navmenu.no')}}"
         }).then((result) => {
           if (result.value) {
-            window.location.href="{{url('del-acc-pv/')}}/"+id;
+            window.location.href="{{url('del-vendor-acc-pv/')}}/"+id;
             Swal.fire(
               "{{trans('navmenu.deleted')}}",
               "{{trans('navmenu.cancelled')}}",
@@ -130,7 +130,7 @@
           cancelButtonText: "{{trans('navmenu.no')}}"
         }).then((result) => {
           if (result.value) {
-            window.location.href="{{url('del-supp-trans/')}}/"+id;
+            window.location.href="{{url('del-vendor-trans/')}}/"+id;
             Swal.fire(
               "{{trans('navmenu.deleted')}}",
               "{{trans('navmenu.cancelled')}}",
@@ -153,22 +153,18 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <form class="dashform row g-3"  action="{{ url('vendor-account-stmt/'.encrypt($vendor->id))}}" method="POST">
-                @csrf
-                <input type="hidden" name="id" value="{{$vendor->id}}">
-                <input type="hidden" name="start_date" id="start_input" value="">
-                <input type="hidden" name="end_date" id="end_input" value="">
-                <!-- Date and time range -->
-                <div class="col-md-12">
-                    <div class="input-group">
-                        <button type="button" class="btn btn-white btn-sm" id="reportrange">
+                <form class="dashform row g-1" action="{{ url('vendor-account-stmt/'.encrypt($vendor->id))}}" method="POST" id="stockform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="">
+                    <input type="hidden" name="end_date" id="end_input" value="">
+                    <!-- Date and time range -->
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-default pull-right" id="reportrange">
                             <span><i class="fa fa-calendar"></i></span>
                             <i class="fa fa-caret-down"></i>
                         </button>
                     </div>
-                </div>
-                <!-- /.form group -->
-            </form>
+                </form>
             </div>
         </div>
     </div>
@@ -336,7 +332,7 @@
                                         @foreach($transactions as $index => $trans)
                                         <?php $balance += ($trans->amount-($trans->payment+$trans->adjustment)); ?>
                                         <tr>
-                                            <td style="text-align: center;">{{date('F, j Y', strtotime($trans->date))}}</td>
+                                            <td style="text-align: center;">{{date('d M, Y', strtotime($trans->date))}}</td>
                                             @if(!is_null($trans->invoice_no))
                                                 <td style="text-align: center;"><a href="{{url('purchase-items/'.encrypt($trans->purchase_id))}}">{{ sprintf('%04d', $trans->invoice_no)}}</a></td>
                                             @else
@@ -387,13 +383,14 @@
                                         @foreach($invtrans as $index => $trans)
                                         <?php $balance += ($trans->amount-($trans->payment+$trans->adjustment)); ?>
                                         <tr>
-                                            <td style="text-align: center;">{{date('F, j Y', strtotime($trans->date))}}</td>
+                                            <td style="text-align: center;">{{date('d M, Y', strtotime($trans->date))}}</td>
                                             @if(!is_null($trans->invoice_no))
                                                 @if($trans->invoice_no == 'OB')
                                                 <td style="text-align: center;"><a href="#" data-bs-toggle="modal" data-bs-target="#obModal" data-backdrop="static" data-keyboard="false"> {{$trans->invoice_no}}</a></td>
                                                 @else
-                                                    @if(!is_null(App\Models\Purchase::where('shop_id', $shop->id)->where('vendor_id', $vendor->id)->where('invoice_no', $trans->invoice_no)->first()))
-                                                    <td style="text-align: center;"><a href="{{url('purchase-items/'.encrypt(App\Models\Purchase::where('shop_id', $shop->id)->where('vendor_id', $vendor->id)->where('invoice_no', $trans->invoice_no)->first()->id))}}">{{ sprintf('%04d', $trans->invoice_no)}}</a></td>
+                                                    <?php $purchase = App\Models\PartPurchase::find($trans->part_purchase_id); ?>
+                                                    @if(!is_null($purchase))
+                                                    <td style="text-align: center;"><a href="{{url('purchase-items/'.encrypt($purchase->id))}}">{{ sprintf('%04d', $trans->invoice_no)}}</a></td>
                                                     @else
                                                     <td style="text-align: center;"> - </td>
                                                     @endif
@@ -403,7 +400,7 @@
                                             @endif
                                             <td style="text-align: center;">{{number_format($trans->amount, 2, '.', ',')}}</td>
                                             <td style="text-align: center;">
-                                            @if(is_null(App\Models\Purchase::where('id', $trans->purchase_id)->where('shop_id', $shop->id)->where('vendor_id', $vendor->id)->first()))
+                                            @if(is_null(App\Models\Purchase::find($trans->part_purchase_id)))
                                             <a href="#" onclick="confirmDeleteTrans('<?php echo encrypt($trans->id) ?>')" style="color: red;"><i class="fa fa-trash"></i> Delete</a>
                                             @endif
                                             </td>

@@ -33,7 +33,7 @@
               cancelButtonText: "{{trans('navmenu.no')}}"
             }).then((result) => {
               if (result.value) {
-                window.location.href="{{url('cancel-purchase')}}/"+id;
+                window.location.href="{{url('cancel-production')}}/"+id;
                 Swal.fire(
                   "{{trans('navmenu.deleted')}}",
                   "{{trans('navmenu.cancelled')}}",
@@ -104,17 +104,6 @@
             </div>            
             <div class="col-lg-6 col-md-6 col-sm-12 text-right">
                 <div class="row mb-1">
-                    @if($shop->business_type_id != 1)
-                    <div class="col-sm-6 d-lg-flex mb-1 gap-1">
-                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#supplierModal"><i class="fa fa-user-plus"></i>{{trans('navmenu.new_supplier')}}</button>
-                        <button type="button" class="btn btn-primary btn-sm"   data-toggle="modal" data-target="#productModal">
-                            <i class="fa fa-plus mr-1"></i>
-                            {{trans('navmenu.new_product')}}
-                        </button>
-                    </div>
-                    @else
-                    <div class="col-md-6"></div>
-                    @endif
                     <div class="btn-group col-sm-6" role="group">
                         <button type="button" class="btn btn-outline-danger btn-sm">{{$pendingtemps->count()}}</button>
                         <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="dropdown">Pending Product <i class="fa fa-caret-down"></i></button>
@@ -158,22 +147,7 @@
                         </form>
                     </div>
                     <div class="p-4 border rounded">
-                        <form class="row g-1 needs-validation" name="stockform" method="POST" action="{{route('purchases.store')}}" onsubmit="return validateform(this)" ng-if="purchasetemp">
-                            @csrf
-                            <input type="hidden" name="purchase_temp_id" placeholder="" value="{{$purchasetemp->id}}" class="form-control form-control-sm mb-3">
-                            <input type="hidden" name="is_production" value="1">
-                            <input type="hidden" name="supplier_id" id="supplier_id" required class="form-control form-control-sm mb-1" value="{{$purchasetemp->supplier_id}}">
-                            <div class="col-sm-3">
-                                <label class="form-label"> Production Date </label>
-                                <div class="inner-addon left-addon">
-                                    <i class="myaddon fa fa-calendar"></i>
-                                    <input type="text" name="purchase_date" id="purchase_date" value="{{$purchasetemp->purchase_date}}" placeholder="{{trans('navmenu.pick_date')}}" class="form-control form-control-sm mb-3">
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="comments" class="col-sm-3 form-label">{{trans('navmenu.comments')}}</label>
-                                <textarea rows="1" class="form-control form-control-sm mb-3" name="comments" id="comments" ng-model="purchasetemp.comments"></textarea>
-                            </div>
+                        <div class="row g-1">
                             <div class="col-md-12">
                                 <table class="table table-responsive table-striped display nowrap" style="width: 100%; display: block; overflow: scroll; overflow: auto;">
                                     <tr>
@@ -217,6 +191,23 @@
                                     </tr>
                                 </table>
                             </div>
+                        </div>
+                        <form class="row g-1 needs-validation" name="stockform" method="POST" action="{{route('purchases.store')}}" onsubmit="return validateform(this)" ng-if="purchasetemp">
+                            @csrf
+                            <input type="hidden" name="purchase_temp_id" placeholder="" value="{{$purchasetemp->id}}" class="form-control form-control-sm mb-3">
+                            <input type="hidden" name="is_production" value="1">
+                            <input type="hidden" name="supplier_id" id="supplier_id" required class="form-control form-control-sm mb-1" value="{{$purchasetemp->supplier_id}}">
+                            <div class="col-sm-3">
+                                <label class="form-label"> Production Date </label>
+                                <div class="inner-addon left-addon">
+                                    <i class="myaddon fa fa-calendar"></i>
+                                    <input type="text" name="purchase_date" id="purchase_date" value="{{$purchasetemp->purchase_date}}" placeholder="{{trans('navmenu.pick_date')}}" class="form-control form-control-sm mb-3">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="comments" class="col-sm-3 form-label">{{trans('navmenu.comments')}}</label>
+                                <textarea rows="1" class="form-control form-control-sm mb-3" name="comments" id="comments" ng-model="purchasetemp.comments"></textarea>
+                            </div>
                             <div class="col-sm-12">
                                 <button type="submit" name="myButton" class="btn btn-success btn-sm">{{trans('navmenu.btn_submit')}}</button>
                                 <button onclick="confirmCancel('<?php echo encrypt($purchasetemp->id); ?>')" type="button" class="btn btn-warning btn-sm" style="margin-left: 5px;">{{trans('navmenu.btn_cancel')}}</button>
@@ -227,111 +218,6 @@
         </div>
         </div>      
     </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="supplierModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">New Supplier</h4>
-                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form class="form-validate" method="POST" action="{{route('suppliers.store')}}">
-                    <div class="modal-body row">
-                    @csrf
-                        <input type="hidden" name="supplier_for" value="Stock">
-                        <div class="col-md-6 pt-2">
-                              <label class="form-label">Supplier Name</label>
-                              <input id="register-username" type="text" name="name" required placeholder="Please enter supplier name" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                              <label class="form-label">Phone number</label>
-                              <input id="register-username" type="text" name="contact_no" placeholder="Please enter supplier mobile number" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                              <label class="form-label">Email Address</label>
-                              <input id="register-email" type="text" name="email" placeholder="Please enter supplier email address" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                              <label class="form-label">Address</label>
-                              <input id="address" type="text" name="address" placeholder="Please enter supplier address" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label for="account" class="form-label">Account Number</label>
-                            <input type="text" class="form-control form-control-sm mb-1" id="account_number" name="account_number" placeholder="Account Number">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label for="account" class="form-label">Account Name</label>
-                            <input type="text" class="form-control form-control-sm mb-1" id="account_name" name="account_name" placeholder="Account Name">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label for="swift_code" class="form-label">Swift Code</label>
-                            <input type="text" class="form-control form-control-sm mb-1" id="swift_code" name="swift_code" placeholder="Swift Code">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label for="bank_name" class="form-label">Bank Name</label>
-                            <input type="text" class="form-control form-control-sm mb-1" id="bank_name" name="bank_name" placeholder="Bank Name">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label for="bank_name" class="form-label">Branch Name</label>
-                            <input type="text" class="form-control form-control-sm mb-1" id="branch_name" name="branch_name" placeholder="Branch Name">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn btn-success btn-sm">Save</button>
-                        <button type="button" class="btn btn-warning btn-sm" data-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">{{trans('navmenu.new_product')}}</h4>
-                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>   
-                </div>
-                <form class="form-validate" method="POST" action="{{ route('products.store')}}">
-                    <div class="modal-body row">
-                        @csrf
-                        <input type="hidden" name="from-purch" value="1">
-                        <div class="col-md-6 pt-2">
-                            <label class="form-label">{{trans('navmenu.product_name')}} <span style="color: red; font-weight: bold;">*</span></label>
-                            <input id="name" type="text" name="name" required placeholder="{{trans('navmenu.hnt_product_name')}}" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label class="form-label">{{trans('navmenu.basic_uom')}} <span style="color: red; font-weight: bold;">*</span></label>
-                            <select class="form-select form-select-sm mb-1" name="basic_uom" required style="width: 100%;">
-                                @foreach($units as $key => $unit)
-                                <option>{{$unit->unit_name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label class="form-label">{{trans('navmenu.product_code')}}</label>
-                            <input id="name" type="text" name="product_code" placeholder="{{trans('navmenu.hnt_product_code')}}" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label class="form-label">{{trans('navmenu.location')}}</label>
-                            <input id="location" type="text" name="location" placeholder="{{trans('navmenu.hnt_location')}} (Optional)" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6 pt-2">
-                            <label class="form-label">{{trans('navmenu.selling_per_unit')}}</label>
-                            <input id="unit_price" type="number" min="0" name="retail_price" placeholder="{{trans('navmenu.hnt_selling_price')}}" class="form-control form-control-sm mb-1">
-                        </div>
-                    </div>                    
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success btn-sm">Save</button>
-                        <button type="button" data-dismiss="modal" class="btn btn-warning btn-sm">{{trans('navmenu.btn_cancel')}}</button>
-                        {{-- <button type="button" class="btn btn-warning btn-sm" data-dismiss="modal">Cancel</button> --}}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
 @endsection
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -354,7 +240,7 @@
                             var name = response[i]['name'];
                             var slug = response[i]['slug'];
                             var qty = +response[i]['in_stock'];
-                            var path = "<?php echo asset('storage/images/'.$shop->id); ?>";
+                            var path = "<?php echo asset('storage/products/'); ?>";
                             var img = response[i]['img'];
                             var img_path = path+'/'+img;
                             if (img != null) {

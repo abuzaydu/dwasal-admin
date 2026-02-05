@@ -61,9 +61,21 @@ class LoginController extends Controller
     public function authenticated($request, $user)
     {
 
-        if ($user->roles()->count() == 0 || !$user->is_active) {
+        if ($user->roles()->count() == 0) {
+            if (!$user->is_active) {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
+            }
             return view('errors.401');
         }else{
+            if (!$user->is_active) {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
+                return view('errors.401');
+            }
+            
             $usertheme = UserTheme::where('user_id', $user->id)->first();
             if (!is_null($usertheme)) {
                 Session::put('theme_style', $usertheme->theme_style);

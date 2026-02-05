@@ -175,7 +175,7 @@
                             var id = response[i]['id'];
                             var name = response[i]['name'];
                             var slug = response[i]['slug'];
-                            var path = "<?php echo asset('storage/images/'.$shop->id); ?>";
+                            var path = "<?php echo asset('storage/products/'); ?>";
                             var img = response[i]['img'];
                             var img_path = path+'/'+img;
                             // console.log(img_path);

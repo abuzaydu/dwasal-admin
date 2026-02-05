@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.prof')
 @section('page-styles')
     <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css') }}" rel="stylesheet" />

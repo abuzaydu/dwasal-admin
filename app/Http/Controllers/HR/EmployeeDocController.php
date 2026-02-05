@@ -58,8 +58,7 @@ class EmployeeDocController extends Controller
         ]);
 
         if($request->type == "Passport"){
-
-            $user = User::where('employee_id' , $emp->id)->first();
+            $user = User::where('employee_id', $emp->id)->first();
             if(!is_null($user)){
                 $user->user_photo = $link;
                 $user->save();

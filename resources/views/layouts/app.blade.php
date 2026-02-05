@@ -505,6 +505,30 @@
                     .columns.adjust();
             });
         });
+        // Prevent Double Submits
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', (e) => {
+            // Prevent if already submitting
+            if (form.classList.contains('is-submitting')) {
+              e.preventDefault();
+              console.info('Successive submit suppressed');
+            }else {
+            
+                // Add a visual indicator to show the user it is submitting
+                form.classList.add('is-submitting');
+                form.submit();
+            }
+          });
+        });
+
+
+        // Extra snippet here to also prevent form submissions the first submit
+        // as a viewer of this demo would otherwise be guided to outside of CodePen …
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', e => {
+            e.preventDefault();
+          });
+        });
     </script>
     @yield('page-scripts')
 </body>

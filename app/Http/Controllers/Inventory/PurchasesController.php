@@ -212,8 +212,8 @@ class PurchasesController extends Controller
 
      public function createProduction()
     {
-        $page = 'New Purchase';
-        $title = 'New Purchase';
+        $page = 'New Production';
+        $title = 'New Production';
         $title_sw = 'Uzalishaji Mapya';
         $units = UnitMeasure::select('unit_name')->get();
 
@@ -488,7 +488,7 @@ class PurchasesController extends Controller
                         $stock->purchase_id = $purchase->id;
                         $stock->shop_id = $shop->id;
                         $stock->quantity_in = $item->quantity_in;
-                        $stock->unit_cost = $item->unit_cost;
+                        $stock->supp_unit_cost = $item->unit_cost;
                         $stock->unit_cost = $stock->unit_cost+$unit_ac;
                         if ($shop->business_type_id == 1) {
                             $stock->source = 'Production Batch No. '.$purchase->grn_no;

@@ -103,10 +103,10 @@
                 return total;
             }
 
-            $scope.selecteditems = function(list) {
+            $scope.selectedItems = function(list) {
                 var items=0;
                 angular.forEach(list , function(newparttemp){
-                    items+1;
+                    items++;
                 });
                 return items;
             }

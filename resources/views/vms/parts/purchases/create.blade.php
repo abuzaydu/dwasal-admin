@@ -3,24 +3,7 @@
     <script type="text/javascript" src="{{asset('js/angular-1-8-3.min.js')}}"></script>
     <script type="text/javascript" src="{{asset('js/parts.js')}}"></script>
     <script>
-        function validateform(form) {
-            var items = document.stockform.no_items.value;
-            if (items == 0) {
-                // alert('Please select at least one item to continue.');
-                Swal.fire(
-                  'Nothing To Submit!',
-                  'Please select at least one item to continue.',
-                  'info'
-                )
-                return false;
-            }
-
-            form.myButton.disabled = true;
-            form.myButton.value = "Please wait...";
-            return true;
-            
-        }
-
+        
         function confirmCancel(id) {
             Swal.fire({
               title: "{{trans('navmenu.are_you_sure')}}",
@@ -90,7 +73,6 @@
         }
     </script>
 @section('content')
-
     <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
@@ -153,13 +135,12 @@
                                     <label class="form-label">Purchase Date</label>
                                     <div class="inner-addon left-addon">
                                         <i class="myaddon fa fa-calendar"></i>
-                                        <input type="text" name="pp_date" id="pp_date" ng-model="purchasetemp.pp_date" placeholder="{{trans('navmenu.pick_date')}}" class="form-control form-control-sm mb-3">
+                                        <input type="text" name="pp_date" id="pp_date" placeholder="{{trans('navmenu.pick_date')}}" value="{{$purchasetemp->pp_date}}" class="form-control form-control-sm mb-3">
                                     </div>
-                                </div>
-                                @if(Auth::user()->can('view-purchase-cost'))    
+                                </div>   
                                 <div class="col-sm-2" id="purchase_type_field">
                                     <label class="form-label">{{trans('navmenu.purchase_type')}} <span style="color: red;">*</span></label>
-                                    <select name="purchase_type" id="purchase_type" ng-model="purchasetemp.purchase_type" ng-change="updatePurchaseTempInfo(purchasetemp)" onchange="wegPurchaseType(this)" class="form-select form-select-sm mb3">
+                                    <select name="purchase_type" id="purchase_type" onchange="wegPurchaseType(this)" class="form-select form-select-sm mb3" required>
                                         <option value="">{{trans('navmenu.select_purchase_type')}}</option>
                                         <option value="cash">{{trans('navmenu.cash_purchases')}}</option>
                                         <option value="credit">{{trans('navmenu.credit_purchases')}}</option>
@@ -196,14 +177,13 @@
                                     <input id="local-ex-rate" type="number" min="0" step="any" name="local_ex_rate" class="form-control form-control-sm mb-3" string-to-number ng-model="purchasetemp.local_ex_rate" ng-blur="updatePurchaseTempInfo(purchasetemp)">
                                 </div>
                                 @endif
-                                @endif
                             </div>
                             <div class="row mb-1">
                                 <div class="col-sm-8">
                                     <label class="form-label">{{trans('navmenu.search_tap')}}</label>
                                     <div class="input-group mb-0">
                                         <input type="text" class="form-control form-control-sm mb-1" id="search_key" placeholder="Search Part" autocomplete="off" aria-label="Recipient's username" aria-describedby="button-addon2">
-                                        <a class="empty-search" id="button-addon2"><i class='fa fa-close'></i></a>
+                                        <a class="btn btn-danger btn-sm empty-search mb-1" id="button-addon2"><i class='fa fa-close'></i></a>
                                     </div>
                                     <ul id="searchResult3" class="list-group"></ul>
                                 </div>
@@ -243,7 +223,7 @@
                                 </div>
                             </div>
                             <div class="row mb-1">
-                                <input type="hidden" name="" id="no_items" value="@{{selecteditems(parttempitems)}}">
+                                <input type="hidden" name="" id="no_items" value="@{{selectedItems(parttempitems)}}">
                                 <div class="col-sm-6">
                                     <label for="comments" class="form-label">{{trans('navmenu.comments')}}</label>
                                     <textarea rows="1" class="form-control form-control-sm mb-3" name="comments" id="comments" ng-model="purchasetemp.comments"></textarea>
@@ -433,9 +413,24 @@
             $('#btn-submit').on('click', function(e){
                 e.preventDefault();
                 var vendor = document.getElementById('vendor_id').value;
+                var ptype = document.getElementById('purchase_type').value;
                 var items = document.getElementById('no_items').value;
                 if (vendor == '?') {
                     $('#ermsg').append('<div class="alert alert-danger hideit alertSuc">Please select a vendor</div >');
+                    setTimeout(function() {
+                        $('.hideit').fadeOut('slow', function() {
+                            $(this).remove();
+                        });
+                    }, 1300);
+                }else if (ptype == '') {
+                    $('#ermsg').append('<div class="alert alert-danger hideit alertSuc">Please select Purchase type</div >');
+                    setTimeout(function() {
+                        $('.hideit').fadeOut('slow', function() {
+                            $(this).remove();
+                        });
+                    }, 1300);
+                }else if (items == 0) {
+                    $('#ermsg').append('<div class="alert alert-danger hideit alertSuc">Please select at least one Item</div >');
                     setTimeout(function() {
                         $('.hideit').fadeOut('slow', function() {
                             $(this).remove();

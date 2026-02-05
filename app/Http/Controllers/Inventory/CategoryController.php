@@ -107,7 +107,7 @@ class CategoryController extends Controller
         $title = 'Category Details';
         $title_sw = 'Maelezo ya Jamii ya Bidhaa';
         $shop = Shop::find(Session::get('shop_id'));
-        $products = $shop->products()->select('id', 'product_code', 'name', 'slug')->get();
+        $products = $shop->products()->select('id', 'product_code', 'slug as name', 'slug')->get();
 
         $category = Category::find(decrypt($id));
         $cat_products = null;
@@ -116,22 +116,24 @@ class CategoryController extends Controller
         $prods = [];
         if ($category->children->count() > 0) {
             if ($category->products()->count() > 0) {
-                $ctproducts = $category->products()->select('products.id as id', 'product_code', 'name', 'basic_uom', 'in_stock')->get();
+                $ctproducts = $category->products()->select('products.id as id', 'product_code', 'slug as name', 'basic_uom')->get();
                 foreach ($ctproducts as $key => $value) {
                     array_push($prods, $value);
                 }
             }
 
-            foreach ($category->catProducts() as $key => $value) {
-               $ctproduct = $shop->products()->where('id', $value['id'])->select('products.id as id', 'product_code', 'name', 'basic_uom', 'in_stock')->first();
-               if (!is_null($ctproduct)) {
-                   array_push($prods, $ctproduct);
-               }
+            $subcats = $category->children()->get();
+
+            foreach ($subcats as $key => $subcat) {
+               $ctproducts = $subcat->products()->select('products.id as id', 'product_code', 'slug as name', 'basic_uom')->get();
+                foreach ($ctproducts as $key => $value) {
+                    array_push($prods, $value);
+                }
             }
             
             $cat_products = $prods;
         }else{
-            $cat_products = $category->products()->select('products.id as id', 'product_code', 'name', 'basic_uom', 'in_stock')->get();
+            $cat_products = $category->products()->select('products.id as id', 'product_code', 'slug as name', 'basic_uom')->get();
         }
         
         // return $cat_products;

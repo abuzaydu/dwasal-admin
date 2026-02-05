@@ -200,10 +200,12 @@
                                 <li class="{{ request()->is('purchases') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('purchases') }}"><i class='fa fa-shopping-cart'></i><span>{{trans('navmenu.purchases')}}</span></a></li>
                                 @endif
                                 @if($shop->business_type_id == 1)
+                                @if(!$settings->use_production_module)
                                 <li class="{{ request()->is('productions') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('productions') }}"><i class='fa fa-list-ul'></i><span> Productions </span></a></li>
                                 @endif
                                 @endif
-                                @if($shop->business_type_id != 1)
+                                @endif
+                                @if($shop->business_type_id != 1 || $settings->is_manuf_with_merch)
                                 @if(Auth::user()->can('view-purchase-order'))
                                 <li class="{{ request()->is('purchase-orders') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('purchase-orders') }}">
                                 <i class='fa fa-list'></i><span>{{ trans('navmenu.purchase_orders') }}</span></a></li>
@@ -228,11 +230,10 @@
                                 @endif
                             @endif
 
+                                <hr>
                                 @if (Auth::user()->can('view-price-list'))
                                 <li class="{{ request()->is('price-list') ? 'active' : '' }}"><a href="{{ url('price-list') }}"><i class='fa fa-calculator'></i><span>{{ trans('navmenu.prices') }}</span></a></li>
                                 @endif
-
-                                <li class="{{ request()->is('vehicles') ? 'active' : '' }}"><a href="{{ url('vehicles') }}"><i class="fa fa-truck"></i> Vehicles</a></li>
                             </ul>
                         </nav>
                     </div>
@@ -524,6 +525,30 @@
                 $($.fn.dataTable.tables(true)).DataTable()
                     .columns.adjust();
             });
+        });
+        // Prevent Double Submits
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', (e) => {
+            // Prevent if already submitting
+            if (form.classList.contains('is-submitting')) {
+              e.preventDefault();
+              console.info('Successive submit suppressed');
+            }else {
+            
+                // Add a visual indicator to show the user it is submitting
+                form.classList.add('is-submitting');
+                form.submit();
+            }
+          });
+        });
+
+
+        // Extra snippet here to also prevent form submissions the first submit
+        // as a viewer of this demo would otherwise be guided to outside of CodePen …
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', e => {
+            e.preventDefault();
+          });
         });
     </script>
     @yield('page-scripts')

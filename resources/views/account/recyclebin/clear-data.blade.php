@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.prof')
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-1">

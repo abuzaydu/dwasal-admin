@@ -164,7 +164,7 @@
                                     <input type="text" name="remarks" value="{{$plc->remarks}}" placeholder="Enter Your Remarks" class="form-control form-control-sm mb-3" required>
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="submit" name="submit" class="btn btn-success btn-sm float-end">
+                                    <button type="submit" name="myButton" class="btn btn-success btn-sm">{{trans('navmenu.btn_submit')}}</button>
                                     <a href="{{ url('prod-labour-costs') }}" class="btn btn-warning btn-sm float-end" style="margin-right: 5px;">Cancel</a>
                                 </div>
                             </form>

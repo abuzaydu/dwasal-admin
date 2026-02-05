@@ -184,13 +184,17 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Department <span style="color: red; font-weight: bold;">*</span></label>
-                            <select id="unit" name="ownership_id" class="form-select form-select-sm mb-1" required>
+                            <label class="form-label">Department </label>
+                            <select id="unit" name="ownership_id" class="form-select form-select-sm mb-1">
                                 <option value="">--Select--</option>
                                 @foreach($departments as $key => $dept)
                                 <option value="{{ $dept->id }}">{{$dept->name}}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">The items he/she came in with</label>
+                            <input type="text" name="came_in_with" class="form-control form-control-sm mb-1" placeholder="Enter Visitor Items Eg. Laptops, Phone, ...">
                         </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Add</button>

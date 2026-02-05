@@ -270,8 +270,10 @@ use App\Http\Controllers\VMS\PartsController;
 use App\Http\Controllers\VMS\PartCategoryController;
 use App\Http\Controllers\VMS\PartLocationController;
 use App\Http\Controllers\VMS\PartPurchaseController;
+use App\Http\Controllers\VMS\PartPurchaseItemController;
 use App\Http\Controllers\VMS\PartItemTempApiController;
 use App\Http\Controllers\VMS\PartsUsageController;
+use App\Http\Controllers\VMS\PartUsageItemController;
 use App\Http\Controllers\VMS\VMSExpenseController;
 
 use App\Http\Controllers\VML\VisitorController;
@@ -749,6 +751,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('purchases/api/update-purchase-temp', [StockItemTempApiController::class, 'updatePurchaseTemp']);
     Route::post('purchases/pt-purchase', [PurchasesController::class, 'pendingPurchase'])->name('purchases/pt-purchase');
     Route::get('cancel-purchase/{id}', [StockItemTempApiController::class, 'cancelPurchase']);
+    Route::get('cancel-production/{id}', [StockItemTempApiController::class, 'cancelProduction']);
     Route::post('f-purchases', [PurchasesController::class, 'index']);
     Route::resource('purchases', PurchasesController::class);
     Route::get('productions', [PurchasesController::class, 'index1']);
@@ -1408,18 +1411,34 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('maintenance', MaintenanceController::class);
     Route::resource('refueling', RefuelingController::class);
     Route::resource('vendors', VendorController::class);
+    Route::post('vendor-account-stmt/{id}', [VendorController::class, 'show']);
+    Route::post('vendor-acc-payments', [VendorController::class, 'accPayments']);
+    Route::get('del-vendor-acc-pv/{id}', [VendorController::class, 'deletePayment']);
+    Route::get('del-vendor-trans/{id}', [VendorController::class, 'deleteTrans']);
     Route::resource('parts', PartsController::class);
+    Route::get('verify-av-qty/{id}', [PartsController::class, 'verifyAvQty']);
     Route::get('search-part', [PartsController::class, 'autoSearch']);
     Route::get('fetch-part', [PartsController::class, 'fetchPart']);
     Route::resource('part-categories', PartCategoryController::class);
     Route::resource('part-locations', PartLocationController::class);
     Route::resource('part-purchases', PartPurchaseController::class);
+    Route::post('f-part-purchases', [PartPurchaseController::class, 'index']);
+    Route::resource('part-purchase-items', PartPurchaseItemController::class);
+    Route::get('pp-items/{id}', [PartPurchaseController::class, 'items']);
     Route::get('part-purchases/api/parttemp/{id}', [PartItemTempApiController::class, 'index']);
     Route::resource('part-purchases/api/parttemp', PartItemTempApiController::class);
     Route::post('part-purchases/api/update-part-purchase-temp', [PartItemTempApiController::class, 'updatePurchaseTemp']);
     Route::post('part-purchases/ppt-purchase', [PartPurchaseController::class, 'pendingPurchase'])->name('purchases/ppt-purchase');
     Route::get('cancel-part-purchase/{id}', [PartItemTempApiController::class, 'cancelPurchase']);
+    Route::post('delete-multiple-part-purchases', [PartPurchaseController::class, 'deleteMultiple']);
+
     Route::resource('parts-usage', PartsUsageController::class);
+    Route::post('f-parts-usage', [PartsUsageController::class, 'index']);
+    Route::resource('parts-usage-items', PartUsageItemController::class);
+    Route::post('update-pu-item', [PartUsageItemController::class, 'update']);
+    Route::post('reject-part-usage', [PartsUsageController::class, 'rejectPURequest']);
+    Route::get('parts-usage/approve-part-usage/{id}', [PartsUsageController::class, 'approvePURequest']);
+    Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
     Route::resource('vms-expenses', VMSExpenseController::class);
 
     Route::get('visitors-dash', [VisitorController::class, 'dashboard']);

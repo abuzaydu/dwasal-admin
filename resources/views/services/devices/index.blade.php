@@ -166,8 +166,8 @@
                                 <input id="name" type="text" name="device_number" required placeholder="{{trans('navmenu.hnt_device_number')}}" class="form-control form-control-sm mb-1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">@if($settings->is_cm_business) Chasis No. @elseif($settings->enable_trip_logs) Vehicle Type/Name @else{{trans('navmenu.device_name')}}@endif <span style="color: red; font-weight: bold;">*</span></label>
-                                <input id="name" type="text" name="device_name" required placeholder="{{trans('navmenu.hnt_device_name')}}" class="form-control form-control-sm mb-1">
+                                <label class="form-label">@if($settings->is_cm_business) Chasis No. @elseif($settings->enable_trip_logs) Vehicle Type/Name @else{{trans('navmenu.device_name')}}@endif </label>
+                                <input id="name" type="text" name="device_name" placeholder="{{trans('navmenu.hnt_device_name')}}" class="form-control form-control-sm mb-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">@if($settings->enable_trip_logs) Vehicle Cost @else {{trans('navmenu.device_cost')}}@endif</label>

@@ -29,7 +29,7 @@ class CorrectionTempController extends Controller
      */
     public function index()
     {
-        $temps = CorrectionTemp::where('correction_temps.shop_id', Session::get('shop_id'))->where('user_id', Auth::user()->id)->join('products', 'products.id', '=', 'correction_temps.product_id')->select('correction_temps.id as id', 'name', 'correction_qty')->get();
+        $temps = CorrectionTemp::where('correction_temps.shop_id', Session::get('shop_id'))->where('user_id', Auth::user()->id)->join('products', 'products.id', '=', 'correction_temps.product_id')->select('correction_temps.id as id', 'slug as name', 'correction_qty')->get();
         return response()->json($temps);
     }
 

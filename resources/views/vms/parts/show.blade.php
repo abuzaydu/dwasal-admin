@@ -66,7 +66,7 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                
+                <a href="{{ url('verify-av-qty/'.encrypt($part->id)) }}" class="btn btn-success btn-sm"> Verify Available Quantity</a>
             </div>
         </div>
     </div>
@@ -87,8 +87,8 @@
                                         <td>{{$part->part_name}}</td>
                                     </tr>
                                     <tr>
-                                        <th>Description.</th>
-                                        <td>{{$part->av_qty}} {{$part->uom}}</td>
+                                        <th>Available Qty.</th>
+                                        <td>{{$part->av_qty+0}} {{$part->uom}}</td>
                                         <th>Status</th>
                                         <td>
                                             @if($part->active)
@@ -115,13 +115,13 @@
                             </ul>
                             <div class="tab-content pt-2">
                                 <div class="tab-pane fade show active" id="tab_0" role="tabpanel">
-                                    <div class="table-responsive" id="vehicle-list">
-                                        <table id="vehicles" class="table table-striped display nowrap" style="width: 100%;">
+                                    <div class="table-responsive" id="part-list">
+                                        <table id="parts" class="table table-striped display nowrap" style="width: 100%;">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
                                                     <th>Date</th>
-                                                    <th>Quantity</th>
+                                                    <th style="text-align: center;">Quantity</th>
                                                     <th>Unit Price</th>
                                                     <th>Total Price</th>
                                                 </tr>
@@ -130,10 +130,10 @@
                                                 @foreach($ppitems as $key => $item)
                                                 <tr>
                                                     <td>{{$key+1}}</td>
-                                                    <td>{{$vehicle->date}}</a></td>
-                                                    <td>{{$vehicle->pp_qty}}</td>
-                                                    <td>{{number_format($vehicle->unit_price, 2, '.', ',') }}</td>
-                                                    <td>{{number_format($vehicle->total_price, 2, '.', ',') }}</td>
+                                                    <td>{{$item->date}}</a></td>
+                                                    <td style="text-align: center;">{{$item->pp_qty+0}}</td>
+                                                    <td>{{number_format($item->unit_price, 2, '.', ',') }}</td>
+                                                    <td>{{number_format($item->total_price, 2, '.', ',') }}</td>
                                                 </tr>
                                                 @endforeach
                                             </tbody>
@@ -142,7 +142,7 @@
                                 </div>
                                 <div class="tab-pane fade" id="tab_1">
                                     <div class="table-responsive">
-                                        <table id="vehicle-types" class="table table-striped display nowrap" style="width: 100%;">
+                                        <table id="part-types" class="table table-striped display nowrap" style="width: 100%;">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>

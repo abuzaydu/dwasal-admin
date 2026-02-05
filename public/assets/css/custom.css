@@ -648,3 +648,36 @@ i{
     font-weight: 600;
 }
 
+form button[type="submit"] {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(0,128,0,1);
+  color: white;
+  border: 0;
+  padding: 0.5em 0.7em;
+}
+
+form.is-submitting button[type="submit"] {
+  background-color: rgba(0,128,0,0.7);
+  outline: 0;
+}
+
+form.is-submitting button[type="submit"]::before {
+  position: absolute;
+  content: '';
+  height: 0.2em;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: green;
+  animation: move 1s linear infinite; 
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

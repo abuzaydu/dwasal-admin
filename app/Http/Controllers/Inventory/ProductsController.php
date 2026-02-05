@@ -431,8 +431,16 @@ class ProductsController extends Controller
         if ($validator->fails()) {
             return \Redirect::to('products')->withErrors($validator);
         } else {
-            Excel::import(new ProductsImport, request()->file('file'));
-            return redirect('products')->with('success', 'All good!');
+            $import = new ProductsImport;
+            Excel::import($import, request()->file('file'));
+            $insertedRows = $import->getRowCount();
+            // if ($insertedRows > 0) {
+                $message = 'Products uploaded Finished';
+                return redirect('products')->with('info', $message);
+            // }else{
+            //     $message = 'No Product uploaded. Please check Your file, Make sure your column titles match the sample file provided';
+            //     return redirect('products')->with('info', $message);
+            // }
         }
     }
 
@@ -730,12 +738,22 @@ class ProductsController extends Controller
         $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-        if ($sales > 0 || $transfers > 0 || $stocks->count() > 1) {
+        if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
             $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
             Log::info($message);
             return redirect()->back()->with('info', $message);
         }else{ 
-            $shop->products()->detach($product);
+            $stocks = Stock::where('product_id', $product->id)->get();
+            foreach ($stocks as $key => $value) {
+                $value->delete();
+            }
+            foreach ($shop->categories()->get() as $key => $category) {
+                $catprod = $category->products()->where('product_id', $product->id)->first();
+                if (!is_null($catprod)) {
+                    $category->products()->detach($catprod);
+                }
+            }
+            $product->delete();
             $message = 'You have successfully removed this product from your product list!';
             return redirect()->back()->with('success', $message);
         }
@@ -755,17 +773,21 @@ class ProductsController extends Controller
                 $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-                if ($sales > 0 || $transfers > 0 || $stocks->count() > 1) {
+                if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
                     $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
                     Log::info($message);
                 }else{
-                    $shop->products()->detach($product);
+                    $stocks = Stock::where('product_id', $product->id)->get();
+                    foreach ($stocks as $key => $value) {
+                        $value->delete();
+                    }
                     foreach ($shop->categories()->get() as $key => $category) {
                         $catprod = $category->products()->where('product_id', $product->id)->first();
                         if (!is_null($catprod)) {
                             $category->products()->detach($catprod);
                         }
                     }
+                    $product->delete();
                 }
             }
             $success = 'Products were  successfully removed from your product list!';

@@ -219,9 +219,6 @@
                                     <label class="form-label">{{ trans('navmenu.product_image') }} (Optional)</label>
                                     <input name="image" class="form-control form-control-sm mb-1" type="file" />
                                 </div>
-
-                                @if($settings->allow_more_product_desc)
-                                <span>Detailed Descriptions (<span class="text-danger">For Fields that require units Enter value with its unit eg 6mm, 350ml, 10ft e.t.c.</span>)</span>
                                 <div class="col-sm-2">
                                     <label class="form-label">Brand</label>
                                     <select class="form-select form-select-sm mb-1" name="brand">
@@ -231,6 +228,8 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @if($settings->allow_more_product_desc)
+                                <span>Detailed Descriptions (<span class="text-danger">For Fields that require units Enter value with its unit eg 6mm, 350ml, 10ft e.t.c.</span>)</span>
                                 <div class="col-sm-2">
                                     <label class="form-label">Model</label>
                                     <input type="text" name="model" class="form-control form-control-sm mb-1" placeholder="Enter Model">

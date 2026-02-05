@@ -131,6 +131,7 @@ class StockController extends Controller
         $stock->product_id = $request['product_id'];
         $stock->quantity_in = $request['quantity_in'];
         $stock->unit_cost = $request['unit_cost'];
+        $stock->supp_unit_cost = $request['unit_cost'];
         $stock->expire_date = $request['exp_date'];
         $stock->save();
 

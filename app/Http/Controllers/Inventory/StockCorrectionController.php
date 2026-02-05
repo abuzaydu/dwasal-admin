@@ -101,6 +101,7 @@ class StockCorrectionController extends Controller
                 if($stock_in == 0 && $in_stock < 0){
                     $in_stock = 0;
                 }
+                
                 $correction = new StockCorrection();
                 $correction->shop_id = $temp->shop_id;
                 $correction->user_id = $temp->user_id;

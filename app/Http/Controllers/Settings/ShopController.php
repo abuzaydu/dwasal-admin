@@ -301,7 +301,7 @@ class ShopController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+     public function update(Request $request, $id)
     {
         Session::forget('shop_name');
         $shop = Shop::find(decrypt($id));
@@ -333,7 +333,7 @@ class ShopController extends Controller
         }
         $shop->is_hq = $request['is_hq'];
 
-        $location = null;
+        $location = $shop->logo_location;
         if ($request->hasFile('image')) {
             //  Let's do everything here
             if ($request->file('image')->isValid()) {
@@ -351,11 +351,30 @@ class ShopController extends Controller
                 $request->image->storeAs('/public/logos', $shop->id.'_logo.'.$extension);
                 $location = $shop->id.'_logo.'.$extension;
             }
-        }else{
-            $location = $shop->logo_location;
+        }
+
+        $stamp = $shop->stamp;
+        if ($request->hasFile('stamp')) {
+            //  Let's do everything here
+            if ($request->file('stamp')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'stamp' => 'mimes:jpeg,jpg,png|max:1014',
+                ]);
+
+                $stamp_path = storage_path('/public/stamps/'.$shop->stamp);
+                if (File::exists($stamp_path)) {
+                    unlink($stamp_path);
+                }
+
+                $extension = $request->stamp->extension();
+                $request->stamp->storeAs('/public/stamps', $shop->id.'_stamp.'.$extension);
+                $stamp = $shop->id.'_stamp.'.$extension;
+            }
         }
         
         $shop->logo_location = $location;
+        $shop->stamp = $stamp;
         $shop->save();
 
         Session::put('shop_name', $shop->name);

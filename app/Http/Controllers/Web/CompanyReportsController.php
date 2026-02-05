@@ -26,6 +26,7 @@ use App\Models\Category;
 use App\Models\ServCategory;
 use App\Models\AnSale;
 use App\Models\AnSaleItem;
+use App\Models\SaleReturnItem;
 use App\Models\ServiceSaleItem;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
@@ -206,7 +207,22 @@ class CompanyReportsController extends Controller
                         $netsales_amount += $tnetsales;
                     }
 
-                    array_push($netmrev, ['month' => date('m-Y',strtotime($month['date'])), 'amount' => $netsales_amount]);
+
+                    $mshopreturns = SaleReturnItem::join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')->join('an_sales', 'an_sales.id', '=', 'sale_returns.an_sale_id')->where('an_sales.shop_id', $shop->id)->whereBetween('an_sales.time_created', [$firstday, $lastday])->join('an_sale_items', 'an_sale_items.an_sale_id', '=', 'an_sales.id')->where('category_id', $scat->id)->get([
+                        \DB::raw('SUM(sale_return_items.price) as return_price'),
+                        \DB::raw('SUM(sale_return_items.total_discount) as return_discount'),
+                        \DB::raw('SUM(sale_return_items.tax_amount) as return_tax_amount')
+                    ]);
+
+                    $tnetreturn_amt = 0;
+                    foreach ($mshopreturns as $key => $sr) {
+                        $treturns = ($sr->return_price-$sr->return_discount)+$sr->return_tax_amount;
+                        $tnetreturn_amt += $treturns;
+                    }
+
+                    $netsalesamount = $netsales_amount-$tnetreturn_amt;
+
+                    array_push($netmrev, ['month' => date('m-Y',strtotime($month['date'])), 'amount' => $netsalesamount]);
 
 
                     $mshopcos = AnSaleItem::where('shop_id', $shop->id)->where('is_deleted', false)->whereBetween('time_created', [$firstday, $lastday])->where('category_id', $scat->id)->sum('buying_price');
@@ -245,7 +261,21 @@ class CompanyReportsController extends Controller
                         $netsales_amount += $tnetsales;
                     }
 
-                    array_push($up_netmrev, ['month' => date('m-Y',strtotime($month['date'])), 'amount' => $netsales_amount]);
+                    $mshopreturns = SaleReturnItem::join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')->join('an_sales', 'an_sales.id', '=', 'sale_returns.an_sale_id')->where('an_sales.shop_id', $shop->id)->whereBetween('an_sales.time_created', [$firstday, $lastday])->join('an_sale_items', 'an_sale_items.an_sale_id', '=', 'an_sales.id')->where('category_id', null)->get([
+                        \DB::raw('SUM(sale_return_items.price) as return_price'),
+                        \DB::raw('SUM(sale_return_items.total_discount) as return_discount'),
+                        \DB::raw('SUM(sale_return_items.tax_amount) as return_tax_amount')
+                    ]);
+
+                    $tnetreturn_amt = 0;
+                    foreach ($mshopreturns as $key => $sr) {
+                        $treturns = ($sr->return_price-$sr->return_discount)+$sr->return_tax_amount;
+                        $tnetreturn_amt += $treturns;
+                    }
+
+                    $netsalesamount = $netsales_amount-$tnetreturn_amt;
+
+                    array_push($up_netmrev, ['month' => date('m-Y',strtotime($month['date'])), 'amount' => $netsalesamount]);
 
                     $mshopcos = AnSaleItem::where('shop_id', $shop->id)->where('is_deleted', false)->whereBetween('time_created', [$firstday, $lastday])->where('category_id', null)->sum('buying_price');
 

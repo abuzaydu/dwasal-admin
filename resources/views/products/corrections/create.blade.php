@@ -41,14 +41,15 @@
     <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
-            <div class="col-lg-6 col-md-8 col-sm-12">
+            <div class="col-lg-8 col-md-8 col-sm-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>                            
                     <li class="breadcrumb-item">Products & Services</li>
+                    <li class="breadcrumb-item"><a href="{{ url('stock-corrections')}}">Stock Corrections</a></li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
-            <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+            <div class="col-lg-4 col-md-4 col-sm-12 text-right">
             </div>
         </div>
     </div>
@@ -101,7 +102,7 @@
                                     </table>
                                 </div>
                                 <div class="col-md-12 mt-2">  
-                                    <button type="submit" class="btn btn-success btn-sm mb-1"><i class="fa fa-plus" ></i>{{trans('navmenu.btn_submit')}}
+                                    <button type="submit" class="btn btn-success btn-sm mb-1"><i class="fa fa-plus" ></i> {{trans('navmenu.btn_submit')}}
                                         </button>
                                     <a onclick="confirmCancel()" class="btn btn-warning btn-sm mr-1 card-subtitle" id="btn-cancel"><i class="fa fa-x"></i>{{trans('navmenu.btn_cancel')}}</a>
                                 </div>
@@ -132,7 +133,7 @@
                         $("#searchResult3").empty();
                         for( var i = 0; i<len; i++){
                             var id = response[i]['id'];
-                            var name = response[i]['name'];
+                            var name = response[i]['slug'];
                             $("#searchResult3").append("<li class='list-group-item d-flex justify-content-between align-items-center' value='"+id+"'>"+name+"<span class='badge bg-success rounded-pill'> <i class='fa fa-arrow-right' aria-hidden='true'></i></span></li>");
                         }
 

@@ -25,13 +25,14 @@ use App\Models\AnSaleItem;
 use App\Models\ProdDamage;
 use App\Models\TransferOrderItem;
 use App\Models\SaleReturnItem;
+use App\Jobs\StockUpdaterJob;
 use Log;
 
 class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, WithEvents
 {
      use Importable, RegistersEventListeners;
 
-
+    private $rows = 0;
     public static function beforeImport(BeforeImport $event)
     {
         $worksheet = $event->reader->getActiveSheet();
@@ -55,9 +56,9 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
         $company = Company::find(Session::get('company_id'));
         $shop = Shop::find(Session::get('shop_id'));
         $now = Carbon::now();
-        if (array_key_exists('name', $row) && array_key_exists('basic_unit', $row) && array_key_exists('in_stock', $row) && array_key_exists('retail_retail_price', $row) && array_key_exists('unit_cost', $row)) {
-                        
-            if (is_null($row['name']) || is_null($row['basic_unit'])) {
+        if (array_key_exists('name', $row) && array_key_exists('basic_uom', $row) && array_key_exists('in_stock', $row) && array_key_exists('retail_price', $row) && array_key_exists('unit_cost', $row)) {
+            
+            if (is_null($row['name']) || is_null($row['basic_uom'])) {
                 return null;
             }else{
                 $slug = $row['name'];
@@ -95,11 +96,11 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
                     $slug .= ' - '.$row['weight'];
                 }
 
-                $product = Product::where('slug', $slug)->where('basic_unit', $row['basic_unit'])->where('company_id', $company->id)->first();
+                $product = Product::where('slug', $slug)->where('basic_uom', $row['basic_uom'])->where('shop_id', $shop->id)->first();
 
                 $unit_cost = (float)$row['unit_cost'];
-                $retail_price = (float)$row['retail_retail_price'];
-                $wholesaleprice = (float)$row['wholesale_retail_price'];
+                $retail_price = (float)$row['retail_price'];
+                $wholesaleprice = (float)$row['wholesale_price'];
                 $expire_date = $row['expire_date'];
                     
                 $quantity_in = 0;
@@ -109,9 +110,9 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
 
                 if (is_null($product)) {
                     $product = new Product();
-                    $product->company_id = $company->id;
+                    $product->shop_id = $shop->id;
                     $product->name = $row['name'];
-                    $product->basic_unit = $row['basic_unit'];
+                    $product->basic_uom = $row['basic_uom'];
                     $product->slug = $slug;
                     $product->save();
 
@@ -152,58 +153,49 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
                     }
                     
                     if ($quantity_in > 0) {
-                        $stock = Stock::create([
-                            'shop_id' => $shop->id,
-                            'product_id' => $product->id,
-                            'quantity_in' => $quantity_in,
-                            'unit_cost' => $unit_cost,
-                            'source' => 'Circle Counting',
-                            'expire_dates' => $expire_date,
-                            'time_created' => $now
-                        ]);
+                        $stock = new Stock();
+                        $stock->shop_id = $shop->id;
+                        $stock->product_id = $product->id;
+                        $stock->quantity_in = $quantity_in;
+                        $stock->unit_cost = $unit_cost;
+                        $stock->source = 'Circle Counting';
+                        $stock->expire_date = $expire_date;
+                        $stock->stock_date = $now;
+                        $stock->save();
 
-                        $shop_product = $shop->products()->where('product_id', $product->id)->first();
-                        if (!is_null($shop_product)) {
-
-                            $stock_in = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->where('is_deleted', false)->sum('quantity_in');
-                            $sold = AnSaleItem::where('product_id', $product->id)->where('shop_id', $shop->id)->where('is_deleted', false)->sum('quantity_sold');
-                            $damaged = ProdDamage::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                            $tranfered =  TransferOrderItem::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                            $returned = SaleReturnItem::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                                            
-                            $instock = ($stock_in+$returned)-($sold+$damaged+$tranfered); 
-                                         
-                            $shop_product->pivot->in_stock = $instock;
-                            $shop_product->pivot->save();
-                        }
-                        
+                        dispatch(new StockUpdaterJob($shop, $product->id));
                     }
 
-                    $shopprod = $shop->products()->where('product_id', $product->id)->first();
-                    if (is_null($shopprod)) {
-
-                        $shop->products()->attach($product, ['in_stock' => $quantity_in, 'location' => $row['location'], 'product_no' => $row['product_no'], 'barcode' => $row['barcode'], 'unit_cost' => $unit_cost, 'retail_price' => $retail_price,  'wholesale_price' => $wholesaleprice, 'time_created' => $now, 'brand' => $row['brand'], 'model' => $row['model'], 'type' => $row['type'],'size' => $row['size'], 'color' => $row['color'], 'length' => $row['length'], 'width' => $row['width'], 'thick' => $row['thick'], 'height' => $row['height'], 'volume' => $row['volume'], 'weight' => $row['weight']]);
-                        
-                    }
-
-                    $shop_product = $shop->products()->where('product_id', $product->id)->first();
-                    if ($shop_product->pivot->in_stock > $shop_product->pivot->reorder_point) {
-                        $shop_product->pivot->status = 'In Stock';
-                    }elseif ($shop_product->pivot->in_stock == 0) {
-                        $shop_product->pivot->status = 'Out of Stock';
-                    }elseif($shop_product->pivot->in_stock <= $shop_product->pivot->reorder_point && $shop_product->pivot->in_stock != 0){
-                                $shop_product->pivot->status = 'Low Stock';
-                    }
-                    $shop_product->pivot->save();
+                    $product->location = $row['location'];
+                    $product->product_code = $row['product_code'];
+                    $product->barcode = $row['barcode'];
+                    $product->unit_cost = $unit_cost;
+                    $product->retail_price = $retail_price;
+                    $product->wholesale_price = $wholesaleprice;
+                    $product->time_created = $now;
+                    $product->brand = $row['brand'];
+                    $product->model = $row['model'];
+                    $product->type = $row['type'];
+                    $product->size = $row['size'];
+                    $product->color = $row['color'];
+                    $product->length = $row['length'];
+                    $product->width = $row['width'];
+                    $product->thick = $row['thick'];
+                    $product->height = $row['height'];
+                    $product->volume = $row['volume'];
+                    $product->weight = $row['weight'];
+                    $product->save();
 
                     $prod_unit = new ProductUnit();
-                    $prod_unit->shop_id = $shop->id;
                     $prod_unit->product_id = $product->id;
-                    $prod_unit->unit_name = $product->basic_unit;
+                    $prod_unit->unit_name = $product->basic_uom;
                     $prod_unit->is_basic = true;
                     $prod_unit->qty_equal_to_basic = 1;
                     $prod_unit->unit_price = $retail_price;
                     $prod_unit->save();
+
+                    ++$this->rows;
+                    // Log::info($this->rows);
                     return $product;
                 }else{
                     if(!is_null($row['brand'])){
@@ -242,55 +234,46 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
                         }
                     }
                     
-                    if ($quantity_in > 0) {
-                        $stock = Stock::create([
-                            'shop_id' => $shop->id,
-                            'product_id' => $product->id,
-                            'quantity_in' => $quantity_in,
-                            'unit_cost' => $unit_cost,
-                            'source' => 'Circle Counting',
-                            'expire_dates' => $expire_date,
-                            'time_created' => $now
-                        ]);
+                    if ($quantity_in > 0) {                        
+                        $stock = new Stock();
+                        $stock->shop_id = $shop->id;
+                        $stock->product_id = $product->id;
+                        $stock->quantity_in = $quantity_in;
+                        $stock->unit_cost = $unit_cost;
+                        $stock->source = 'Circle Counting';
+                        $stock->expire_date = $expire_date;
+                        $stock->stock_date = $now;
+                        $stock->save();
+
+                        dispatch(new StockUpdaterJob($shop, $product->id));
                     }
 
-                    $shop_product = $shop->products()->where('product_id', $product->id)->first();
-                    if (!is_null($shop_product)) {
 
-                        $stock_in = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->where('is_deleted', false)->sum('quantity_in');
-                        $sold = AnSaleItem::where('product_id', $product->id)->where('shop_id', $shop->id)->where('is_deleted', false)->sum('quantity_sold');
-                        $damaged = ProdDamage::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                        $tranfered =  TransferOrderItem::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                        $returned = SaleReturnItem::where('product_id', $product->id)->where('shop_id', $shop->id)->sum('quantity');
-                                            
-                        $instock = ($stock_in+$returned)-($sold+$damaged+$tranfered); 
-                        $shop_product->pivot->unit_cost = $unit_cost;
-                        $shop_product->pivot->in_stock = $instock;
-                        $shop_product->pivot->save();
-                    }
+                    $product->location = $row['location'];
+                    $product->product_code = $row['product_code'];
+                    $product->barcode = $row['barcode'];
+                    $product->unit_cost = $unit_cost;
+                    $product->retail_price = $retail_price;
+                    $product->wholesale_price = $wholesaleprice;
+                    $product->time_created = $now;
+                    $product->brand = $row['brand'];
+                    $product->model = $row['model'];
+                    $product->type = $row['type'];
+                    $product->size = $row['size'];
+                    $product->color = $row['color'];
+                    $product->length = $row['length'];
+                    $product->width = $row['width'];
+                    $product->thick = $row['thick'];
+                    $product->height = $row['height'];
+                    $product->volume = $row['volume'];
+                    $product->weight = $row['weight'];
+                    $product->save();
 
-                    $shopprod = $shop->products()->where('product_id', $product->id)->first();
-                    if (is_null($shopprod)) {
-
-                            $shop->products()->attach($product, ['in_stock' => $quantity_in, 'location' => $row['location'], 'product_no' => $row['product_no'], 'barcode' => $row['barcode'], 'unit_cost' => $unit_cost, 'retail_price' => $retail_price,'wholesale_price' => $wholesaleprice, 'time_created' => $now, 'brand' => $row['brand'], 'model' => $row['model'], 'type' => $row['type'],'size' => $row['size'], 'color' => $row['color'], 'length' => $row['length'], 'width' => $row['width'], 'thick' => $row['thick'], 'height' => $row['height'], 'volume' => $row['volume'], 'weight' => $row['weight']]);
-                        
-                    }
-                    
-                    $shop_product = $shop->products()->where('product_id', $product->id)->first();
-                    if ($shop_product->pivot->in_stock > $shop_product->pivot->reorder_point) {
-                        $shop_product->pivot->status = 'In Stock';
-                    }elseif ($shop_product->pivot->in_stock == 0) {
-                        $shop_product->pivot->status = 'Out of Stock';
-                    }elseif($shop_product->pivot->in_stock <= $shop_product->pivot->reorder_point && $shop_product->pivot->in_stock != 0){
-                                $shop_product->pivot->status = 'Low Stock';
-                    }
-                    $shop_product->pivot->save();
-                    $prod_unit = ProductUnit::where('product_id', $product->id)->where('is_basic', true)->where('shop_id', $shop->id)->first();
+                    $prod_unit = ProductUnit::where('product_id', $product->id)->where('is_basic', true)->first();
                     if (is_null($prod_unit)) {       
                         $prod_unit = new ProductUnit();
-                        $prod_unit->shop_id = $shop->id;
                         $prod_unit->product_id = $product->id;
-                        $prod_unit->unit_name = $product->basic_unit;
+                        $prod_unit->unit_name = $product->basic_uom;
                         $prod_unit->is_basic = true;
                         $prod_unit->qty_equal_to_basic = 1;
                         $prod_unit->unit_price = $retail_price;
@@ -299,9 +282,11 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
                         $prod_unit->unit_price = $retail_price;
                         $prod_unit->save();
 
-                        $shop_product->pivot->retail_price = $retail_price;
-                        $shop_product->pivot->save();
+                        $product->retail_price = $retail_price;
+                        $product->save();
                     }
+
+                    ++$this->rows;
                     return $product;
                 }
             }
@@ -322,7 +307,12 @@ class ProductsImport implements ToModel, WithHeadingRow, WithMultipleSheets, Wit
     {
         return [
             'name' => 'required|string',
-            'basic_unit' => 'required|string',
+            'basic_uom' => 'required|string',
         ];
+    }
+
+    public function getRowCount(): int
+    {
+        return $this->rows;
     }
 }

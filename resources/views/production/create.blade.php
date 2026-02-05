@@ -353,7 +353,7 @@
                                     <input type="hidden" name="prod_batch" value="{{$prod_batch}}">
                                 </div>
                                 <div class="col-md-6 ">
-                                    <input type="submit" name="submit" class="btn btn-success btn-sm float-end">
+                                    <button type="submit" name="myButton" class="btn btn-success btn-sm">{{trans('navmenu.btn_submit')}}</button>
                                     <a href="javascript:;" onclick="return confirmDelete()" class="btn btn-warning btn-sm float-end" style="margin-right: 5px;">Cancel</a>
                                 </div>
                             </form>

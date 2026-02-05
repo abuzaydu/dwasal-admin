@@ -114,7 +114,7 @@
                                             @foreach($cat_products as $index => $product)
                                             <tr>
                                                 <td>{{$index+1}}</td>
-                                                <td><a href="{{ route('products.show' , encrypt($product->id)) }}">{{$product->name}}</a></td>
+                                                <td><a href="{{ route('products.show' , encrypt($product->id)) }}">@if(!is_null($product->product_code)){{$product->product_code}} - @endif{{$product->name}}</a></td>
                                                 <td style="text-align: center;">{{$product->in_stock+0}}</td>
                                                 <td style="text-align: center;">{{$product->basic_uom}}</td>
                                                 <td>
@@ -233,14 +233,16 @@
 
             filterInput.addEventListener('input', function () {
                 const filterValue = filterInput.value.toLowerCase();
-                listItems.forEach(function (item) {
-                    const text = item.innerText.toLowerCase();
-                    if (text.includes(filterValue)) {
-                        item.classList.remove('hidden');
-                    } else {
-                        item.classList.add('hidden');
-                    }
-                });
+                if (filterValue.length > 2) {
+                    listItems.forEach(function (item) {
+                        const text = item.innerText.toLowerCase();
+                        if (text.includes(filterValue)) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                }
             });
 
             const filterInput2 =
@@ -250,14 +252,16 @@
 
             filterInput2.addEventListener('input', function () {
                 const filterValue = filterInput2.value.toLowerCase();
-                listItems2.forEach(function (item) {
-                    const text = item.innerText.toLowerCase();
-                    if (text.includes(filterValue)) {
-                        item.classList.remove('hidden');
-                    } else {
-                        item.classList.add('hidden');
-                    }
-                });
+                if (filterValue.length > 2) {
+                    listItems2.forEach(function (item) {
+                        const text = item.innerText.toLowerCase();
+                        if (text.includes(filterValue)) {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                }
             });
         });
     </script>

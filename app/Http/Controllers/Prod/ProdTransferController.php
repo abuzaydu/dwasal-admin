@@ -22,7 +22,7 @@ use App\Models\AnSaleItem;
 use App\Models\TransferOrderItem;
 use App\Models\ProductionCostItem;
 use App\Models\Payment;
-
+use App\Jobs\StockUpdaterJob;
 
 class ProdTransferController extends Controller
 {
@@ -112,20 +112,10 @@ class ProdTransferController extends Controller
                 $item->stock_id = $dstock->id;
                 $item->save();
 
-                $deststock_in = Stock::where('product_id', $item->product_id)->where('is_deleted', false)->where('shop_id', $destinshop->id)->sum('quantity_in');
-                $destsold = AnSaleItem::where('product_id', $item->product_id)->where('is_deleted', false)->where('shop_id', $destinshop->id)->sum('quantity_sold');
-                $destdamaged = ProdDamage::where('product_id', $item->product_id)->where('shop_id', $destinshop->id)->sum('quantity');
-                $desttranfered =  TransferOrderItem::where('product_id', $item->product_id)->where('shop_id', $destinshop->id)->sum('quantity');
-                    
-                $destreturned = SaleReturnItem::where('product_id', $item->product_id)->where('shop_id', $destinshop->id)->sum('quantity');
-                                    
-                $destinstock = ($deststock_in+$destreturned)-($destsold+$destdamaged+$desttranfered);
+                $destshop_product->pivot->buying_per_unit = $item->cost_per_unit;
+                $destshop_product->pivot->save();
 
-                if (!is_null($destshop_product)) {
-                    $destshop_product->pivot->in_stock = $destinstock;
-                    $destshop_product->pivot->unit_cost = $item->cost_per_unit;
-                    $destshop_product->pivot->save();
-                }
+                dispatch(new StockUpdaterJob($destinshop, $item->product_id));
             }
         }
 

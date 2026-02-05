@@ -345,7 +345,7 @@
                             </tbody>
                         </table>
 
-                        @if(!is_null($product->barcode))
+                        @if(!empty($product->barcode))
                         <?php 
                             $pattern = '/^[0-9]+$/';
                         ?>

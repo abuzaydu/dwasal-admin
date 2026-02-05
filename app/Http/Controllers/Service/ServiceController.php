@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Session;
 use Log;
 use Response;
+use App\Models\Company;
 use App\Models\Shop;
 use App\Models\Setting;
 use App\Models\ShopCurrency;
@@ -80,27 +81,52 @@ class ServiceController extends Controller
         }
     }
 
-    public function getAutoCode()
+    public function recreateCodes()
     {
         $shop = Shop::find(Session::get('shop_id'));
+        $company = Company::find(Session::get('company_id'));
         $v = '';
-        if(preg_match_all('/\b(\w)/',strtoupper($shop->name),$m)) {
+        if(preg_match_all('/\b(\w)/',strtoupper($company->name),$m)) {
             // Log::info($m);
             $v = implode('',$m[1]); // $v is now SOQTU
         }
-        $service = $shop->services()->orderBy('id', 'desc')->first();
+
+        $services = $shop->services()->get();
+        foreach ($services as $key => $service) {
+            $code = $v.'/SERV-'.sprintf('%03d', $key+1);
+            $service->pivot->code = $code;
+            $service->pivot->save();
+               
+        }
+    }
+
+
+    public function getAutoCode()
+    {
+        $shop = Shop::find(Session::get('shop_id'));
+        $company = Company::find(Session::get('company_id'));
+        $v = '';
+        if(preg_match_all('/\b(\w)/',strtoupper($company->name),$m)) {
+            // Log::info($m);
+            $v = implode('',$m[1]); // $v is now SOQTU
+        }
+        $service = $shop->services()->select('code')->orderBy('services.id', 'desc')->first();
         if (!is_null($service)) {
-            $last = str_replace($v.'/S-', '', $service->code);
-            $lastcode = (int)$last;
-            // Log::info($last);
-            $id = $v.'/S-'.sprintf('%03d', $lastcode+1);
-            return $id;   
+            if (!empty($service->code)) {
+                $last = str_replace($v.'/S-', '', $service->code);
+                $lastcode = (int)$last;
+                Log::info($last);
+                $id = $v.'/S-'.sprintf('%03d', $lastcode+1);
+                return $id;
+            }else{
+                $id = $v.'/S-'.sprintf('%03d', 1);
+                return $id; 
+            }   
         }else{
             $id = $v.'/S-'.sprintf('%03d', 1);
             return $id; 
         }
     }
-
 
     /**
      * Store a newly created resource in storage.

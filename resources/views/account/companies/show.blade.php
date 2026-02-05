@@ -46,7 +46,7 @@
 </script>
 @section('content')
     <!--breadcrumb-->
-    <div class="block-header pt-1">
+    <div class="block-header pt-4">
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
@@ -76,11 +76,27 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Company Slogan</label>
-                                <input id="name" type="text" name="slogan" value="{{$company->slogan}}" required placeholder="Enter Your Company Slogan" class="form-control form-control-sm mb-1">
+                                <input id="name" type="text" name="slogan" value="{{$company->slogan}}" placeholder="Enter Your Company Slogan" class="form-control form-control-sm mb-1">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Company Logo</label>
                                 <input type="file" name="logo" class="form-control form-control-sm mb-1">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Use Invoice Header Banner<span style="color:red">*</span></label>
+                                <select name="use_invoice_banner" class="form-select form-select-sm mb-1">
+                                    @if($company->use_invoice_banner)
+                                    <option value="1">YES</option>
+                                    <option value="0">NO</option>
+                                    @else
+                                    <option value="0">NO</option>
+                                    <option value="1">YES</option>
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Company Banner</label>
+                                <input type="file" id="banner" name="banner">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Company Stamp</label>
@@ -101,8 +117,21 @@
                                     <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150">
                                 </figure>
                                 @endif
+                                <hr>
+                                <h5>Banner</h5>
+                                @if(!is_null($company->banner_url))
+                                <figure>
+                                    <img class="invoice-logo" src="{{asset('storage/banners/'.$company->banner_url)}}" alt="" width="150">
+                                </figure>
+                                @endif
                                 <h5 class="mb-1">{{$company->name}}</h5>
                                 <span class="color-400">{{$company->slogan}}</span>
+                                <h5>Stamp</h5>
+                                @if(!is_null($company->stamp))
+                                <figure>
+                                    <img class="invoice-logo" src="{{asset('storage/stamps/'.$company->stamp)}}" alt="" width="150">
+                                </figure>
+                                @endif
                             </div>
                             <div class="col-md-8">
                                 <h6 class="mb-1 text-uppercase">Shops, Businesses & Stores</h6>

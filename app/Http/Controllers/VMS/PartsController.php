@@ -78,7 +78,7 @@ class PartsController extends Controller
     public function show(string $id)
     {
         $page = 'Part Details';
-        $part = Part::where('parts.id', decrypt($id))->join('part_categories', 'part_categories.id', '=', 'parts.part_category_id')->select('parts.id as id', 'part_location_id', 'part_no', 'part_name','uom', 'av_qty', 'description', 'name')->first();
+        $part = Part::where('parts.id', decrypt($id))->join('part_categories', 'part_categories.id', '=', 'parts.part_category_id')->select('parts.id as id', 'part_location_id', 'part_no', 'part_name','uom', 'av_qty', 'active', 'description', 'name')->first();
         $location = PartLocation::find($part->part_location_id);
         $ppitems = PartPurchaseItem::where('part_id', $part->id)->get();
         $puitems = PartUsageItem::where('part_id', $part->id)->get();
@@ -154,5 +154,21 @@ class PartsController extends Controller
             return redirect('parts')->with('success', 'Part not Found');
         }
 
+    }
+
+    public function verifyAvQty($id)
+    {
+        $part = Part::find(decrypt($id));
+        if (!is_null($part)) {
+            $ppitems = PartPurchaseItem::where('part_id', $part->id)->sum('pp_qty');
+            $puitems = PartUsageItem::where('part_id', $part->id)->sum('pu_qty');
+
+            $part->av_qty = $ppitems-$puitems;
+            $part->save();
+
+            return redirect()->back()->with('success', 'Part '.$part->part_no.' - '.$part->part_name.' available Quantity updated successfully');
+        }else{
+            return redirect()->back()->with('error', 'Part not Found');
+        }
     }
 }

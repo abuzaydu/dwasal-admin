@@ -276,11 +276,7 @@
                                         @foreach($inactiveusers as $key => $user)
                                         <tr>
                                             <td>{{$key+1}}</td>
-                                            @if($user->id === Auth::user()->id)
-                                            <td>{{$user->name}}</td>
-                                            @else
-                                            <td><a href="{{route('user-profile.show', encrypt($user->id))}}">{{$user->name}}</a></td>
-                                            @endif
+                                            <td>{{$user->first_name}} {{ $user->last_name}}</td>
                                             <td>{{$user->phone}}</td>
                                             <td>
                                                 @if($user->roles->count() > 0)

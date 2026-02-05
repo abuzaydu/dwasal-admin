@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.prof')
 <script>
     function confirmDelete(id) {
         Swal.fire({

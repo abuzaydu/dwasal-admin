@@ -40,7 +40,7 @@ class PartPurchaseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Part Purchases';
         $now = Carbon::now(); 
@@ -48,7 +48,7 @@ class PartPurchaseController extends Controller
         $end = \Carbon\Carbon::now();
         $start_date = date('Y-m-d', strtotime($start));
         $end_date = date('Y-m-d', strtotime($end));
-          
+        
         //check if user opted for date range
         $is_post_query = false;
         if (!empty($request['start_date'])) {
@@ -88,6 +88,7 @@ class PartPurchaseController extends Controller
             if (!is_null($vendor)) {
                 $vendor_id = $vendor->id;
             }
+            
             $purchasetemp = new PartPurchaseTemp();
             $purchasetemp->company_id = $company->id;
             $purchasetemp->user_id = $user->id;
@@ -95,6 +96,7 @@ class PartPurchaseController extends Controller
             $purchasetemp->pp_date = Carbon::now();
             $purchasetemp->currency = $dfcurr->code;
             $purchasetemp->defcurr = $dfcurr->code;
+            $purchasetemp->purchase_type = '';
             $purchasetemp->save();
         }
 
@@ -144,11 +146,12 @@ class PartPurchaseController extends Controller
         $user = Auth::user();
         $purchasetemp = PartPurchaseTemp::find($request['part_purchase_temp_id']);
         if (!is_null($purchasetemp)) {
+
             $now = Carbon::now();
-            if (!empty($request['purchase_date'])) {
+            if (!empty($request['pp_date'])) {
                 $crtime = Carbon::now();
                 $time = date('H:i:s', strtotime($crtime));
-                $now = $request['purchase_date'].' '.$time;
+                $now = $request['pp_date'].' '.$time;
             }
 
             $total_unit_cost = 0;
@@ -184,23 +187,11 @@ class PartPurchaseController extends Controller
                     $purchase->amount_paid = $amount_paid;
                     $purchase->comments = $purchasetemp->comments;
                     $purchase->pp_date = $now;
-                    $purchase->purchase_type = $purchasetemp->purchase_type;
+                    $purchase->purchase_type = $request['purchase_type'];
                     $purchase->currency = $purchasetemp->currency;
                     $purchase->defcurr = $purchasetemp->defcurr;
                     $purchase->ex_rate = $purchasetemp->ex_rate;
                     $purchase->save();
-
-                    $acctrans = new VendorTransaction();
-                    $acctrans->company_id = $company->id;
-                    $acctrans->user_id = $user->id;
-                    $acctrans->vendor_id = $purchase->vendor_id;
-                    $acctrans->part_purchase_id = $purchase->id;
-                    $acctrans->amount = $total_amount;
-                    $acctrans->currency = $purchasetemp->currency;
-                    $acctrans->defcurr = $purchasetemp->defcurr;
-                    $acctrans->ex_rate = $purchasetemp->ex_rate;
-                    $acctrans->date = $now;
-                    $acctrans->save();
 
                     $eritems = 0;
                     $pritems = 0;
@@ -232,6 +223,18 @@ class PartPurchaseController extends Controller
                     $purchase->amount_paid = $amount_paid;
                     $purchase->save();
                     
+                    $acctrans = new VendorTransaction();
+                    $acctrans->company_id = $company->id;
+                    $acctrans->user_id = $user->id;
+                    $acctrans->vendor_id = $purchase->vendor_id;
+                    $acctrans->part_purchase_id = $purchase->id;
+                    $acctrans->amount = $total_amount;
+                    $acctrans->currency = $purchasetemp->currency;
+                    $acctrans->defcurr = $purchasetemp->defcurr;
+                    $acctrans->ex_rate = $purchasetemp->ex_rate;
+                    $acctrans->date = $now;
+                    $acctrans->save();
+
                     $account = null;
                     $pay_mode = 'Cash';
                     if (!empty($request['account_id'])) {
@@ -263,6 +266,7 @@ class PartPurchaseController extends Controller
                         $payacctrans->vendor_id = $purchase->vendor_id;
                         $payacctrans->pv_no = $pvno;
                         $payacctrans->payment = $amount_paid;
+                        $payacctrans->trans_invoice_amount = $amount_paid;
                         $payacctrans->currency = $purchasetemp->currency;
                         $payacctrans->defcurr = $purchasetemp->defcurr;
                         $payacctrans->ex_rate = $purchasetemp->ex_rate;
@@ -313,21 +317,21 @@ class PartPurchaseController extends Controller
                                         $trans->is_utilized = true;
                                         $trans->save();
                                     }
-                                    $payment = PartPurchasePayment::create([
-                                        'part_purchase_id' => $purchase->id,
-                                        'company_id' => $company->id,
-                                        'trans_id' => $trans->id,
-                                        'pv_no' => $trans->pv_no,
-                                        'pay_mode' => $trans->payment_mode,
-                                        'bank_name' => $trans->bank_name,
-                                        'bank_branch' => $trans->bank_branch,
-                                        'pay_date' => $trans->date,
-                                        'cheque_no' => $trans->cheque_no,
-                                        'amount' => $paidamount,
-                                        'currency' => $trans->currency,
-                                        'defcurr' => $trans->defcurr,
-                                        'ex_rate' => $trans->ex_rate,
-                                    ]);
+                                    $payment = new PartPurchasePayment();
+                                    $payment->part_purchase_id = $purchase->id;
+                                    $payment->company_id = $company->id;
+                                    $payment->trans_id = $trans->id;
+                                    $payment->pv_no = $trans->pv_no;
+                                    $payment->pay_mode = $trans->payment_mode;
+                                    $payment->bank_name = $trans->bank_name;
+                                    $payment->bank_branch = $trans->bank_branch;
+                                    $payment->pay_date = $trans->date;
+                                    $payment->cheque_no = $trans->cheque_no;
+                                    $payment->amount = $paidamount;
+                                    $payment->currency = $trans->currency;
+                                    $payment->defcurr = $trans->defcurr;
+                                    $payment->ex_rate = $trans->ex_rate;
+                                    $payment->save();
 
                                     $purchase->amount_paid = $paidamount;
                                     if (($purchase->total_amount-$purchase->amount_paid) == 0) {
@@ -385,6 +389,27 @@ class PartPurchaseController extends Controller
         }catch (DecryptException $e) {
             $msg = 'FAILED. The Payload is invalid.';
             return redirect()->back()->with('error', $msg);
+        }
+    }
+
+    public function items($id)  
+    {   
+        $page = 'Purchase Items';
+        $title = 'Purchase Items';
+        $title_sw = 'Purchase Items';
+        $purchase = PartPurchase::where('part_purchases.id', decrypt($id))->join('users', 'users.id', '=', 'part_purchases.user_id')->select('part_purchases.id as id', 'vendor_id', 'pp_code', 'pp_date', 'first_name', 'last_name', 'total_amount', 'amount_paid', 'part_purchases.created_at as created_at')->first();
+        if (!is_null($purchase)) {
+            
+            $vendor = Vendor::find($purchase->vendor_id);
+
+            $pitems = PartPurchaseItem::where('part_purchase_id', $purchase->id)->join('parts', 'parts.id', '=', 'part_purchase_items.part_id')->select('part_purchase_items.id as id', 'pp_qty', 'unit_price', 'total_price', 'date', 'part_purchase_items.created_at as created_at', 'part_no', 'part_name', 'uom')->orderBy('date', 'desc')->get();
+
+            $payments = PartPurchasePayment::where('part_purchase_id', $purchase->id)->get();
+            $parts = Part::where('company_id', Session::get('company_id'))->select('id', 'part_no', 'part_name')->get();
+
+            return view('vms.parts.purchases.items', compact('page', 'title', 'title_sw', 'purchase', 'pitems', 'vendor', 'payments', 'parts'));
+        }else{
+
         }
     }
 
@@ -543,56 +568,38 @@ class PartPurchaseController extends Controller
             $pitems = PartPurchaseItem::where('part_purchase_id', $purchase->id)->get();
 
             foreach ($pitems as $key => $value) {
-                $value->is_deleted = true;
-                $value->del_by = $user->first_name.'('.Carbon::now().')';
-                $value->save();
+                $value->delete();
 
                 $part = Part::find($value->part_id);
                 $part->av_qty -= $value->pp_qty;
                 $part->save();
             }
 
-            $payments = PurchasePayment::where('part_purchase_id', $purchase->id)->get();
+            $payments = PartPurchasePayment::where('part_purchase_id', $purchase->id)->get();
 
             foreach ($payments as $key => $payment) {
                 $pv = PaymentVoucher::where('pv_no', $payment->pv_no)->first();
                 if (!is_null($pv)) {
-                    $acctrans = VendorTransaction::where('pv_no', $purchase->pv_no)->where('shop_id', $shop->id)->first();
+                    $acctrans = VendorTransaction::find($payment->trans_id);
                     if (!is_null($acctrans)) {
-                        $acctrans->is_deleted = true;
-                        $acctrans->save();
-                        // $acctrans->delete();
+                        $acctrans->delete();
                     }
                    
                     $pv->delete();
                 }
 
-                $payment->is_deleted = true;
-                $payment->save();
-                // $payment->delete();
+                $payment->delete();
             }
 
-            $acctrans = VendorTransaction::where('part_purchase_id', $purchase->id)->where('shop_id', $shop->id)->first();
+            $acctrans = VendorTransaction::where('part_purchase_id', $purchase->id)->first();
             if ($acctrans) {
-                $acctrans->is_deleted = true;
-                $acctrans->save();
-                // $acctrans->delete();
+                $acctrans->delete();
             }
             
-            $costitems = PurchaseCostItem::where('part_purchase_id', $purchase->id)->get();
-            $total_cost = 0;
-            foreach ($costitems as $key => $item) {
-                $item->is_deleted = true;
-                $item->save();
-            }
-            
-            $purchase->is_deleted = true;
-            $purchase->del_by = $user->first_name.' ('.Carbon::now().')';
-            $purchase->save();
-            // $purchase->delete();
+            $purchase->delete();
         }
 
-        return redirect()->back()->with('success', 'Purchases were deleted successfully');
+        return redirect('part-purchases')->with('success', 'Purchases were deleted successfully');
     }
 
     public function purchaseItems($id)

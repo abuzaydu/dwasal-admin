@@ -121,7 +121,7 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-4 col-sm-12 text-right">
-                <form class="dashform row g-1" action="{{ url('f-purchases') }}" method="POST" id="stockform">
+                <form class="dashform row g-1" action="{{ url('f-part-purchases') }}" method="POST" id="stockform">
                     @csrf
                     <input type="hidden" name="start_date" id="start_input" value="">
                     <input type="hidden" name="end_date" id="end_input" value="">
@@ -199,7 +199,7 @@
                                     <tr>
                                         <td>{{$purchase->id}}</td>
                                         <td>{{date('d-m-Y', strtotime($purchase->pp_date))}}</td>
-                                        <td><a href="{{url('part-purchase-items/'.encrypt($purchase->id))}}">{{$purchase->vendor_name}}</a></td>
+                                        <td><a href="{{url('pp-items/'.encrypt($purchase->id))}}">{{$purchase->vendor_name}}</a></td>
                                         <td><a href="{{ route('part-purchases.show', encrypt($purchase->id))}}">{{ sprintf('%04d', $purchase->pp_code)}}</a></td>
                                         <td>{{number_format($purchase->total_amount, 2,'.', ',')}}</td>
                                         <td>{{number_format($purchase->amount_paid, 2,'.', ',')}}</td>

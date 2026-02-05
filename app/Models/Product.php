@@ -15,4 +15,9 @@ class Product extends Model
     {
         return $this->belongsToMany(Category::class);
     }
+    
+    public function shops()
+    {
+        return $this->belongstoMany(Shop::class);
+    }
 }

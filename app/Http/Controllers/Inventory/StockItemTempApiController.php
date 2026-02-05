@@ -291,6 +291,21 @@ class StockItemTempApiController extends Controller
         return redirect()->route('purchases.create')->with('success', 'Purchase cancelled successfully');
     }
 
+
+    public function cancelProduction($id)
+    {
+        $purchasetemp = PurchaseTemp::find(decrypt($id));
+        if (!is_null($purchasetemp)) {
+            $items = PurchaseItemTemp::where('purchase_temp_id', $purchasetemp->id)->get();
+            foreach ($items as $key => $item) {
+                $item->delete();
+            }
+            $purchasetemp->delete();
+        }
+
+        return redirect('productions/create-production')->with('success', 'Purchase cancelled successfully');
+    }
+
     public function ajaxPost(Request $request)
     {
         $shop = Shop::find(Session::get('shop_id'));

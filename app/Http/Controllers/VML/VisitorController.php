@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Session;
 use Auth;
+use App\Models\Company;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Models\Department;
@@ -37,8 +38,9 @@ class VisitorController extends Controller
     public function index()
     {
         $page = 'Visitors';
-        $departments = Department::where('company_id', Session::get('company_id'))->select('id', 'name')->get();
-        $employees = Employee::where('company_id', Session::get('company_id'))->select('id', 'fname', 'lname')->get();
+        $company = Company::find(Session::get('company_id'));
+        $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
+        $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
         $visitors = Visitor::where('visitors.shop_id', Session::get('shop_id'))->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')->get();
         $visitorids = array(
             ['name' => 'NIL'],
@@ -80,6 +82,7 @@ class VisitorController extends Controller
             $visitor->id_number = $request['id_number'];
             $visitor->badge_no = $request['badge_no'];
             $visitor->purpose = $request['purpose'];
+            $visitor->came_in_with = $request['came_in_with'];
             $visitor->save();
         }
 
@@ -93,7 +96,7 @@ class VisitorController extends Controller
     {
         $page = 'visitor Details';
         $codetype = 'QRCODE';
-        $visitor = Visitor::where('visitors.id', decrypt($id))->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'user_id', 'name', 'mobile',  'visitors.email as email', 'address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'is_granted', 'first_name as fname', 'last_name as lname', 'visitors.created_at as created_at')->first();
+        $visitor = Visitor::where('visitors.id', decrypt($id))->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'user_id', 'name', 'mobile',  'visitors.email as email', 'address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'is_granted', 'came_in_with', 'came_out_with', 'first_name as fname', 'last_name as lname', 'visitors.created_at as created_at')->first();
         if (!is_null($visitor)) {
             $guard = User::find($visitor->user_id);
             // return $visitor;
@@ -128,11 +131,19 @@ class VisitorController extends Controller
     public function edit(string $id)
     {
         $page = 'Edi visitor Details';
-        $units = UnitMeasure::select('unit_name')->get();
         $visitor = Visitor::find(decrypt($id));
-        $employees = Employee::where('company_id', Session::get('company_id'))->select('id', 'fname', 'lname')->get();
+        $company = Company::find(Session::get('company_id'));
+        $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
-        return view('vml.visitors.edit', compact('page', 'visitor', 'units', 'vehtypes', 'ownerships', 'departments'));
+        $visitorids = array(
+            ['name' => 'NIL'],
+            ['name' => 'NIN'],
+            ['name' => 'Driving License'],
+            ['name' => 'Voters Number'],
+            ['name' => 'Passport']
+        );
+
+        return view('vml.visitors.edit', compact('page', 'visitor', 'employees', 'departments', 'visitorids'));
     }
 
     /**
@@ -152,6 +163,8 @@ class VisitorController extends Controller
             $visitor->id_number = $request['id_number'];
             $visitor->badge_no = $request['badge_no'];
             $visitor->purpose = $request['purpose'];
+            $visitor->came_in_with = $request['came_in_with'];
+            $visitor->came_out_with = $request['came_out_with'];
             $visitor->save();
 
             return redirect('visitors')->with('success', 'visitor Details updated successfully');
