@@ -28,11 +28,11 @@
                         @csrf
                         <div class="col-md-4">
                             <label for="register-username" class="form-label">{{ trans('navmenu.first_name') }}</label>
-                            <input id="register-username" type="text" name="first_name" required placeholder="{{ trans('navmenu.hnt_name') }}" class="form-control form-control-sm mb-1">
+                            <input id="register-username" type="text" name="first_name" required placeholder="{{ trans('navmenu.hnt_first_name') }}" class="form-control form-control-sm mb-1">
                         </div>
                         <div class="col-md-4">
                             <label for="register-username" class="form-label">{{ trans('navmenu.last_name') }}</label>
-                            <input id="register-username" type="text" name="last_name" required placeholder="{{ trans('navmenu.hnt_name') }}" class="form-control form-control-sm mb-1">
+                            <input id="register-username" type="text" name="last_name" required placeholder="{{ trans('navmenu.hnt_last_name') }}" class="form-control form-control-sm mb-1">
                         </div>
                         <div class="col-md-4">
                             <label for="register-phone" class="form-label">{{ trans('navmenu.mobile') }}</label>
