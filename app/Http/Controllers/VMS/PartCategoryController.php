@@ -56,7 +56,10 @@ class PartCategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $page = 'Edit Part Category';
+        $pcate = PartCategory::find(decrypt($id));
+
+        return view('vms.parts.categories.edit', compact('page', 'pcate'));
     }
 
     /**
@@ -64,7 +67,11 @@ class PartCategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $pcate = PartCategory::find(decrypt($id));
+        $pcate->name = $request->name;
+        $pcate->save();
+
+        return redirect('parts')->with('success', 'Part Category updated successfully');
     }
 
     /**

@@ -42,9 +42,9 @@ class PartLocationController extends Controller
             $location->capacity = $request->capacity;
             $location->save();
 
-            return redirect('parts')->with('success', 'Part Category added successfully');
+            return redirect('parts')->with('success', 'Part Location added successfully');
         }else{
-            return redirect('parts')->with('info', 'Part Category already added');
+            return redirect('parts')->with('info', 'Part Location already added');
         }
     }
 
@@ -61,7 +61,10 @@ class PartLocationController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $page = 'Edit Part Location';
+        $location = PartLocation::find(decrypt($id));
+
+        return view('vms.parts.locations.edit', compact('page', 'location'));
     }
 
     /**
@@ -69,7 +72,16 @@ class PartLocationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $location = PartLocation::find(decrypt($id));
+        $location->name = $request->name;
+        $location->room = $request->room;
+        $location->self = $request->self;
+        $location->drawer = $request->drawer;
+        $location->dimension = $request->dimension;
+        $location->capacity = $request->capacity;
+        $location->save();
+
+        return redirect('parts')->with('success', 'Part Location added successfully');
     }
 
     /**

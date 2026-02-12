@@ -60,8 +60,9 @@
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
-                    <li class="breadcrumb-item">parts Management</li>                         
+                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>
+                    <li class="breadcrumb-item">Vehicle Managment</li>
+                    <li class="breadcrumb-item"><a href="{{ url('parts') }}">Parts</a></li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
@@ -91,7 +92,7 @@
                                         <td>{{$part->av_qty+0}} {{$part->uom}}</td>
                                         <th>Status</th>
                                         <td>
-                                            @if($part->active)
+                                            @if($part->status == 'Active')
                                             <span class="badge rounded-pill bg-success">Active</span>
                                             @else
                                             <span class="badge rounded-pill bg-danger">In Active</span>

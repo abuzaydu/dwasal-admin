@@ -51,7 +51,7 @@ class PayrollController extends Controller
         }
 
         $curyear = Carbon::today()->format('Y');
-        if (!empty($request['year'])) {
+        if (!is_null($request['year'])) {
             $curyear = $request['year'];
         }
         $company = Company::find(Session::get('company_id'));
@@ -63,13 +63,13 @@ class PayrollController extends Controller
         $start_date = $start->format('Y-m-d');
         $end_date = $end->format('Y-m-d');
         $is_post_query = false;
-        if (!empty($request['start_date'])) {
+        if (!is_null($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
             $start = $request['start_date'].' 00:00:00';
             $end = $request['end_date'].' 23:59:59';
             $is_post_query = true;
-        }elseif(!empty($request['year'])){
+        }elseif(!is_null($request['year'])){
             $date = Carbon::createFromFormat('d F Y', '05 January '.$request['year']);
             $start = $date->startOfMonth()->format('Y-m-d');
             $start_date = $start;
@@ -119,13 +119,13 @@ class PayrollController extends Controller
         $start_date = null;            
         $end_date = null;
         $is_post_query = false;
-        if (!empty($request['start_date'])) {
+        if (!is_null($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
             $start = $request['start_date'].' 00:00:00';
             $end = $request['end_date'].' 23:59:59';
             $is_post_query = true;
-        }elseif(!empty($request['month'])){
+        }elseif(!is_null($request['month'])){
             $date = Carbon::createFromFormat('d F Y', '05 '.$request['month']);
             $start = $date->firstOfMonth()->format('Y-m-d');
             $start_date = $start;
@@ -143,7 +143,7 @@ class PayrollController extends Controller
         $m = Carbon::today()->startOfMonth();
         $y = Carbon::today()->startOfMonth()->format('Y');
         $curmonth = $m->monthName.' '.$y;
-        if (!empty($request['month'])) {
+        if (!is_null($request['month'])) {
             $curmonth = $request['month'];
         }
 
@@ -151,7 +151,7 @@ class PayrollController extends Controller
         $mpayrolls = MPayroll::where('company_id', $company->id)->whereBetween('month', [$start, $end])->get();
         $payrolls = null;
         $employee = null;
-        if (!empty($request['employee_id'])) {
+        if (!is_null($request['employee_id'])) {
             $employee = Employee::find($request['employee_id']);
             $payrolls = MPayroll::where('company_id', $company->id)->whereBetween('m_payrolls.month', [$start, $end])->join('payrolls', 'payrolls.m_payroll_id', '=', 'm_payrolls.id')->join('employees', 'employees.id', '=', 'payrolls.employee_id')->where('employee_id', $employee->id)->select('payrolls.id as id', 'payid', 'fname', 'lname', 'payrolls.created_at as created_at', 'payrolls.updated_at as updated_at')->get();
         }else{
@@ -196,7 +196,7 @@ class PayrollController extends Controller
         $end = Carbon::now()->endOfMonth()->format('Y-m-d');
         $curmonth = $m->monthName.' '.$y;
 
-        if (!empty($request['month'])) {
+        if (!is_null($request['month'])) {
             if ($request['month'] != Session::get('curmonth')) {
                 session()->forget('curmonth');
                 // Cancel user payroll temps before creating new ones
@@ -445,33 +445,12 @@ class PayrollController extends Controller
                 $dect_before_paye = $ssf+$mif+$heslb+$late_overall+$absent_overall;
                 $total_ern = $gross_income-$dect_before_paye;
 
-                $paygrpvalue = 0;
-                $b_paygrpvalue = 0;
-                $b1_paygrpvalue = 0;
-                $b2_paygrpvalue = 0;
-                $b3_paygrpvalue = 0;
+                $payevalue = 0;
                 $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
 
                 if(!is_null($paygrp)){
-                    $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-                    $b_paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $paygrp->min_income)->first();
-                    if (!is_null($b_paygrp)) {
-                        $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                        $b1_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b_paygrp->min_income)->first();
-                        if (!is_null($b1_paygrp)) {
-                            $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                            $b2_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b1_paygrp->min_income)->first();
-                            if (!is_null($b2_paygrp)) {
-                                $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                                $b3_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b2_paygrp->min_income)->first();
-                                if (!is_null($b3_paygrp)) {
-                                    $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                                }
-                            }
-                        }
-                    }
+                    $payvalue = $paygrp->fixed_paye_value+($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
                 }
-                $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
 
                 $net_pay = $total_ern-$payevalue;
                 $deduction = $dect_before_paye+$payevalue;
@@ -610,33 +589,14 @@ class PayrollController extends Controller
         $dect_before_paye = $ssf+$mif+$heslb+$late_overall+$absent_overall;
         $total_ern = $gross_income-$dect_before_paye;
 
-        $paygrpvalue = 0;
-        $b_paygrpvalue = 0;
-        $b1_paygrpvalue = 0;
-        $b2_paygrpvalue = 0;
-        $b3_paygrpvalue = 0;
-        $paygrp = PayrollSetting::where('company_id', $company->id)->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
-
+        $payevalue = 0;
+        $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
         if(!is_null($paygrp)){
-            $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-            $b_paygrp = PayrollSetting::where('company_id', $company->id)->where('max_income', $paygrp->min_income)->first();
-            if (!is_null($b_paygrp)) {
-                $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                $b1_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b_paygrp->min_income)->first();
-                if (!is_null($b1_paygrp)) {
-                    $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                    $b2_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b1_paygrp->min_income)->first();
-                    if (!is_null($b2_paygrp)) {
-                        $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                        $b3_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b2_paygrp->min_income)->first();
-                        if (!is_null($b3_paygrp)) {
-                            $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                        }
-                    }
-                }
-            }
+            $payevalue = $paygrp->fixed_paye_value+(($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100);
+
         }
-        $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
+
+
         $net_pay = $total_ern-$payevalue-$emploan_amount-$penalty;
         $total_deduction = $dect_before_paye+$payevalue+$emploan_amount+$penalty;
 
@@ -820,33 +780,12 @@ class PayrollController extends Controller
             $dect_before_paye = $ssf+$mif+$heslb+$late_overall+$absent_overall;
             $total_ern = $gross_income-$dect_before_paye;
 
-            $paygrpvalue = 0;
-            $b_paygrpvalue = 0;
-            $b1_paygrpvalue = 0;
-            $b2_paygrpvalue = 0;
-            $b3_paygrpvalue = 0;
+            $payevalue = 0;
             $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
-
             if(!is_null($paygrp)){
-                $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-                $b_paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $paygrp->min_income)->first();
-                if (!is_null($b_paygrp)) {
-                    $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                    $b1_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b_paygrp->min_income)->first();
-                    if (!is_null($b1_paygrp)) {
-                        $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                        $b2_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b1_paygrp->min_income)->first();
-                        if (!is_null($b2_paygrp)) {
-                            $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                            $b3_paygrp  = PayrollSetting::where('company_id', Session::get('company_id'))->where('max_income', $b2_paygrp->min_income)->first();
-                            if (!is_null($b3_paygrp)) {
-                                $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                            }
-                        }
-                    }
-                }
+                $payevalue = $paygrp->fixed_paye_value+(($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100);
+
             }
-            $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
 
             $net_pay = $total_ern-$payevalue;
             $deduction = $dect_before_paye+$payevalue;
@@ -1000,35 +939,13 @@ class PayrollController extends Controller
                 $dect_before_paye = $ssf+$mif+$heslb+$late_overall+$absent_overall;
                 $total_ern = $gross_income-$dect_before_paye;
 
-
-                $paygrpvalue = 0;
-                $b_paygrpvalue = 0;
-                $b1_paygrpvalue = 0;
-                $b2_paygrpvalue = 0;
-                $b3_paygrpvalue = 0;
-                $paygrp = PayrollSetting::where('company_id', $company->id)->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
-
+                $payevalue = 0;
+                $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
                 if(!is_null($paygrp)){
-                    $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-                    $b_paygrp = PayrollSetting::where('company_id', $company->id)->where('max_income', $paygrp->min_income)->first();
-                    if (!is_null($b_paygrp)) {
-                        $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                        $b1_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b_paygrp->min_income)->first();
-                        if (!is_null($b1_paygrp)) {
-                            $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                            $b2_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b1_paygrp->min_income)->first();
-                            if (!is_null($b2_paygrp)) {
-                                $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                                $b3_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b2_paygrp->min_income)->first();
-                                if (!is_null($b3_paygrp)) {
-                                    $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                                }
-                            }
-                        }
-                    }
+                    $payevalue = $paygrp->fixed_paye_value+(($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100);
+
                 }
-                
-                $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
+
                 $net_pay = $total_ern-$payevalue-$emploan_amount-$penalty;
                 $deduction = $dect_before_paye+$payevalue;
                 $position = 'Not Assinged';
@@ -1088,7 +1005,7 @@ class PayrollController extends Controller
         $m = Carbon::today()->startOfMonth();
         $y = Carbon::today()->startOfMonth()->format('Y');
         $curmonth = $m->monthName.' '.$y;
-        if (!empty($request['month'])) {
+        if (!is_null($request['month'])) {
             $curmonth = $request['month'];
         }
 
@@ -1152,33 +1069,13 @@ class PayrollController extends Controller
             $dect_before_paye = $ssf+$heslb+$late_overall+$absent_overall;
             $total_ern = $gross_income-$dect_before_paye;
 
-            $paygrpvalue = 0;
-            $b_paygrpvalue = 0;
-            $b1_paygrpvalue = 0;
-            $b2_paygrpvalue = 0;
-            $b3_paygrpvalue = 0;
-            $paygrp = PayrollSetting::where('company_id', $company->id)->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
-
+            $payevalue = 0;
+            $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
             if(!is_null($paygrp)){
-                $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-                $b_paygrp = PayrollSetting::where('company_id', $company->id)->where('max_income', $paygrp->min_income)->first();
-                if (!is_null($b_paygrp)) {
-                    $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                    $b1_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b_paygrp->min_income)->first();
-                    if (!is_null($b1_paygrp)) {
-                        $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                        $b2_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b1_paygrp->min_income)->first();
-                        if (!is_null($b2_paygrp)) {
-                            $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                            $b3_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b2_paygrp->min_income)->first();
-                            if (!is_null($b3_paygrp)) {
-                                $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                            }
-                        }
-                    }
-                }
+                $payevalue = $paygrp->fixed_paye_value+(($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100);
+
             }
-            $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
+
             $net_pay = $total_ern-$payevalue;
             $deduction = $dect_before_paye+$payevalue;
 
@@ -1215,7 +1112,7 @@ class PayrollController extends Controller
         $end_date = $end->format('Y-m-d');
         
         $is_post_query = false;
-        if (!empty($request['start_date'])) {
+        if (!is_null($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
             $start = $request['start_date'].' 00:00:00';
@@ -1235,7 +1132,6 @@ class PayrollController extends Controller
         $total_wcf = 0;
         $total_heslb = 0;
         $total_emp_loan = 0;
-        $other_deductions = 0;
         $total_net_pay = 0;
         foreach ($mpayrolls as $key => $mpayroll) {
             $allpayrolls = Payroll::where('m_payroll_id', $mpayroll->id)->join('employees', 'employees.id', '=', 'payrolls.employee_id')->get();
@@ -1295,8 +1191,6 @@ class PayrollController extends Controller
                         $wcf = round($gross_income * $ps_wcf->percent_rate/100);
                     }
                 }
-
-                $heslb = 0;
                 if ($employee->allow_deduct_heslb) {
                     $ps_heslb = PayrollSetting::where('company_id', $company->id)->where('name', 'HESLB')->first();
                     if (!is_null($ps_heslb)) {
@@ -1310,40 +1204,17 @@ class PayrollController extends Controller
                     $emploan_amount = round($emploan->amount*($emploan->return_rate/100), 2);
                 }
 
-                $penalty = $payroll->penalty;
-
                 $dect_before_paye = $ssf+$mif+$heslb+$late_overall+$absent_overall;
                 $total_ern = $gross_income-$dect_before_paye;
 
-
-                $paygrpvalue = 0;
-                $b_paygrpvalue = 0;
-                $b1_paygrpvalue = 0;
-                $b2_paygrpvalue = 0;
-                $b3_paygrpvalue = 0;
-                $paygrp = PayrollSetting::where('company_id', $company->id)->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
-
+                $payevalue = 0;
+                $paygrp = PayrollSetting::where('company_id', Session::get('company_id'))->where('min_income', '<=', $total_ern)->where('max_income', '>=', $total_ern)->first();
                 if(!is_null($paygrp)){
-                    $paygrpvalue = ($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100;
-                    $b_paygrp = PayrollSetting::where('company_id', $company->id)->where('max_income', $paygrp->min_income)->first();
-                    if (!is_null($b_paygrp)) {
-                        $b_paygrpvalue = ($b_paygrp->max_income-$b_paygrp->min_income)*$b_paygrp->percent_rate/100;
-                        $b1_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b_paygrp->min_income)->first();
-                        if (!is_null($b1_paygrp)) {
-                            $b1_paygrpvalue = ($b1_paygrp->max_income-$b1_paygrp->min_income)*$b1_paygrp->percent_rate/100;
-                            $b2_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b1_paygrp->min_income)->first();
-                            if (!is_null($b2_paygrp)) {
-                                $b2_paygrpvalue = ($b2_paygrp->max_income-$b2_paygrp->min_income)*$b2_paygrp->percent_rate/100;
-                                $b3_paygrp  = PayrollSetting::where('company_id', $company->id)->where('max_income', $b2_paygrp->min_income)->first();
-                                if (!is_null($b3_paygrp)) {
-                                    $b3_paygrpvalue = ($b3_paygrp->max_income-$b3_paygrp->min_income)*$b3_paygrp->percent_rate/100;
-                                }
-                            }
-                        }
-                    }
+                    $payevalue = $paygrp->fixed_paye_value+(($total_ern-$paygrp->min_income)*$paygrp->percent_rate/100);
+
                 }
-                $payevalue = $paygrpvalue+$b_paygrpvalue+$b1_paygrpvalue+$b2_paygrpvalue+$b3_paygrpvalue;
-                $net_pay = $total_ern-$payevalue-$emploan_amount-$penalty;
+
+                $net_pay = $total_ern-$payevalue-$emploan_amount;
                 $deduction = $dect_before_paye+$payevalue;
                 $position = 'Not Assinged';
                 $emppos = Position::find($employee->position_id);
@@ -1360,7 +1231,7 @@ class PayrollController extends Controller
                 $m_net_pay += $net_pay; 
                 $m_emp_loan += $emploan_amount;
             }
-            array_push($payrolls, ['month' => $mpayroll->month, 'gross_income' => $m_gross_income, 'paye' => $m_paye, 'ssf' => $m_ssf, 'mif' => $m_mif, 'wcf' => $m_wcf, 'heslb' => $m_heslb, 'emp_loan' => $m_emp_loan, 'penalty' => $penalty, 'net_pay' => $m_net_pay]);
+            array_push($payrolls, ['month' => $mpayroll->month, 'gross_income' => $m_gross_income, 'paye' => $m_paye, 'ssf' => $m_ssf, 'mif' => $m_mif, 'wcf' => $m_wcf, 'heslb' => $m_heslb, 'nst_loan' => $m_emp_loan, 'net_pay' => $m_net_pay]);
 
             $total_gross_income += $m_gross_income;
             $total_paye += $m_paye;
@@ -1370,10 +1241,8 @@ class PayrollController extends Controller
             $total_heslb += $m_heslb;
             $total_emp_loan += $m_emp_loan;
             $total_net_pay += $m_net_pay;
-            $other_deductions += $penalty;
-
         }
 
-        return view('payrolls.reports', compact('page', 'company', 'payrolls', 'total_gross_income', 'total_paye', 'total_ssf', 'total_mif', 'total_wcf', 'total_heslb', 'total_emp_loan', 'other_deductions', 'total_net_pay', 'duration', 'is_post_query', 'start_date', 'end_date'));
+        return view('payrolls.reports', compact('page', 'company', 'payrolls', 'total_gross_income', 'total_paye', 'total_ssf', 'total_mif', 'total_wcf', 'total_heslb', 'total_emp_loan', 'total_net_pay', 'duration', 'is_post_query', 'start_date', 'end_date'));
     }
 }

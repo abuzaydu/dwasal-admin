@@ -114,12 +114,6 @@
                                         <td class="text-danger text-end">{{number_format($mif, 2, '.', ',')}}</td>
                                     </tr>
                                     @endif
-                                    @if(!is_null($ps_wcf))
-                                    <tr>
-                                        <td>{{$ps_wcf->name}} ({{$ps_wcf->percent_rate}} %):</td>
-                                        <td class="text-danger text-end"><b>{{ number_format($wcf, 2, '.', ',') }}</b></td>
-                                    </tr>
-                                    @endif
                                     @if(!is_null($ps_heslb))
                                     <tr>
                                         <td>{{$ps_heslb->name}}</td>

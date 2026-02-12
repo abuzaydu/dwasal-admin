@@ -86,7 +86,7 @@
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
-                    <li class="breadcrumb-item">parts Managment</li>                         
+                    <li class="breadcrumb-item">Vehicle Managment</li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
@@ -210,7 +210,6 @@
                                             <th>Dimension</th>
                                             <th>Capacity</th>
                                             <th>Status</th>
-                                            <th>Description</th>
                                             <th>Created</th>
                                             <th>Updated</th>
                                             <th style="text-align: center;">Actions</th>
@@ -226,7 +225,6 @@
                                             <td style="text-align: center;">{{$location->drawer}}</td>
                                             <td style="text-align: center;">{{$location->dimension}}</td>
                                             <td style="text-align: center;">{{$location->capacity}}</td>
-                                            <td style="text-align: center;">{{$location->description}}</td>
                                             <td style="text-align: center;">
                                                 @if($location->active)
                                                 <span class="badge rounded-pill bg-success">Active</span>
@@ -275,11 +273,11 @@
                         @csrf
                         <div class="col-md-6">
                             <label class="form-label">Part Number <span style="color: red; font-weight: bold;">*</span></label>
-                            <input id="name" type="text" name="part_no" required placeholder="Enter Part Number" class="form-control form-control-sm mb-1">
+                            <input id="name" type="text" name="part_no" value="{{$part->part_name}}" required placeholder="Enter Part Number" class="form-control form-control-sm mb-1">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Part Name <span style="color: red; font-weight: bold;">*</span></label>
-                            <input type="text" name="part_name" placeholder="Enter Part Name" class="form-control form-control-sm mb-1">
+                            <input type="text" name="part_name" placeholder="Enter Part Name" class="form-control form-control-sm mb-1" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Part Category <span style="color: red; font-weight: bold;">*</span></label>
@@ -299,15 +297,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <!-- <div class="col-md-6">
                             <label class="form-label">Current Quantity </label>
                             <input type="number" name="av_qty" placeholder="Enter Current Quantity" class="form-control form-control-sm mb-1">
-                        </div>
+                        </div> -->
                         <div class="col-md-6">
-                            <label class="form-label">UOM </label>
+                            <label class="form-label">UOM  <span style="color: red; font-weight: bold;">*</span></label>
                             <select id="unit" name="uom" class="form-select form-select-sm mb-1" required>
                                 <option value="">Select Unit</option>
-                                <option>pc</optio<>
+                                <option>pc</option>
                                 <option>box</option>
                                 <option>set</option>
                                 <option>roll</option>
@@ -319,12 +317,19 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select form-select-sm mb-1">
+                                <option>Active</option>
+                                <option>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Description </label>
-                            <textarea type="text" name="description" placeholder="Enter Description" class="form-control form-control-sm mb-1"></textarea>
+                            <textarea type="text" rows="1" name="description" placeholder="Enter Description" class="form-control form-control-sm mb-1"></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Remarks </label>
-                            <textarea type="text" name="remarks" placeholder="Enter Remarks" class="form-control form-control-sm mb-1"></textarea>
+                            <textarea type="text" rows="1" name="remarks" placeholder="Enter Remarks" class="form-control form-control-sm mb-1"></textarea>
                         </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Add</button>
@@ -395,15 +400,11 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Dimension</label>
-                                <input type="text" name="drawer" class="form-control form-control-sm mb-1" placeholder="Enter Drawer number">
+                                <input type="text" name="dimension" class="form-control form-control-sm mb-1" placeholder="Enter Drawer number">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Capacity</label>
                                 <input type="text" name="capacity" class="form-control form-control-sm mb-1" placeholder="Enter Capacity">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Dimension</label>
-                                <input type="text" name="dimension" class="form-control form-control-sm mb-1" placeholder="Enter Dimension">
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success btn-sm" id="btn-submit-new">{{ trans('navmenu.btn_save') }}</button>
