@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\VML;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
 use App\Models\Company;
-use App\Models\User;
-use App\Models\Visitor;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\User;
+use App\Models\Visitor;
 use App\Notifications\FcmNotification;
+use Auth;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Session;
 
 class VisitorController extends Controller
 {
@@ -28,7 +29,23 @@ class VisitorController extends Controller
     public function dashboard(Request $request)
     {
         $page = 'Visitors Dashboard';
-        return view('vml.index', compact('page'));
+            $company = Company::find(Session::get('company_id'));
+        $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
+        $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
+        $visitorsLogs = Visitor::whereDate('created_at', Carbon::today())
+            ->latest()
+            ->limit(10)
+            ->get();
+        $visitors = Visitor::with('user')->get();
+        $totalVisitors = Visitor::with('user')->whereDate('created_at', Carbon::today())->count();;
+        $pendingVisitors = Visitor::whereDate('created_at', Carbon::today())->where('status', 'Awaiting Host permission')->count();
+        $checkedinVisitors = Visitor::whereDate('created_at', Carbon::today())->where('status', 'Checked In')->count();
+        $visitorsMonthly =  Visitor::whereMonth('created_at', Carbon::now()->month)
+    ->whereYear('created_at', Carbon::now()->year)
+    ->count();
+      
+
+        return view('vml.index', compact('page', 'visitorsLogs','departments', 'employees', 'visitors', 'totalVisitors', 'pendingVisitors', 'checkedinVisitors', 'visitorsMonthly'));
     }
 
 
@@ -56,9 +73,11 @@ class VisitorController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    //mange badge no and id number unique validation
+    public function manageBadge()
     {
-        //
+        $page = 'Manage Badges';
+        return view('vml.visitors.create_badge', compact('page'));
     }
 
     /**

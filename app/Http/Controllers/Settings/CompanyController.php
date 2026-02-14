@@ -53,7 +53,7 @@ class CompanyController extends Controller
                 ]);
 
                 $extension = $request->logo->extension();
-                $request->logo->storeAs('/clogos', $company->id.'_logo.'.$extension);
+                $request->logo->storeAs('public/clogos', $company->id.'_logo.'.$extension);
                 $location = $company->id.'_logo.'.$extension;
             }
         }
@@ -104,7 +104,7 @@ class CompanyController extends Controller
                     'image' => 'mimes:jpeg,png|max:1014',
                 ]);
 
-                $logo_path = storage_path('/clogos/'.$company->logo_url);
+                $logo_path = storage_path('public/clogos/'.$company->logo_url);
                 if (File::exists($logo_path)) {
                     unlink($logo_path);
                 }

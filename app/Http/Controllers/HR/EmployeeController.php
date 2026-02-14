@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers\HR;
 
+use App\Exports\EmployeeExport;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use File;
-use Response;
-use Carbon\Carbon;
-use Session;
+use App\Imports\EmployeeImport;
+use App\Models\AcademicInfo;
 use App\Models\Company;
 use App\Models\Employee;
-use App\Models\User;
-use App\Models\PayrollSetting;
-use App\Models\Position;
-use App\Models\EmployeeMedicalInfo;
-use App\Models\AcademicInfo;
 use App\Models\EmployeeDoc;
+use App\Models\EmployeeMedicalInfo;
 use App\Models\LeaveRoster;
 use App\Models\NextOfKin;
-use App\Exports\EmployeeExport;
-use App\Imports\EmployeeImport;
+use App\Models\PayrollSetting;
+use App\Models\Position;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use File;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Response;
+use Session;
 
 class EmployeeController extends Controller
 {
@@ -126,7 +127,7 @@ class EmployeeController extends Controller
     {
         $page = 'Employee Details';
         $title = 'Employee Details';
-        $employee = Employee::find(decrypt($id));
+        $employee = Employee::with('company')->find(decrypt($id));
         $academic_infos = AcademicInfo::where('employee_id' , $employee->id)->get();
         $medical_infos = EmployeeMedicalInfo::where('employee_id' , $employee->id)->get();
         $employee_docs = EmployeeDoc::where('employee_id' , $employee->id)->get();
@@ -299,5 +300,20 @@ class EmployeeController extends Controller
         Excel::import(new EmployeeImport, request()->file('employee_file'));
 
         return redirect('employees')->with('success', 'Employees Uploaded successfully');
+    }
+
+    public function downloadIdCard($id)
+    {
+        $employee = Employee::with('company','position')->findOrFail($id);
+        $position = $employee->position; // Adjust based on your relationship
+        $user_photo = $employee->photo; 
+        
+        // Build QR content
+        $qrContent = "FULL NAME: {$employee->fname} {$employee->lname}\nID: " . ($employee->emp_id ?? 'N/A');
+
+        $pdf = Pdf::loadView('hr.employees.id_card_pdf', compact('employee', 'position', 'user_photo', 'qrContent'))
+                ->setPaper([0, 0, 400, 600], 'portrait'); // Custom ID card size
+
+        return $pdf->download($employee->fname.'_ID_Card.pdf');
     }
 }

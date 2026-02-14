@@ -32,6 +32,38 @@ class UserFactory extends Factory
         ];
     }
 
+        /**
+         * Indicate that the visitor has been granted access.
+         */
+        public function granted(): static
+        {
+            return $this->state(fn (array $attributes) => [
+                'is_granted' => true,
+                'status' => 'Approved',
+            ]);
+        }
+
+        /**
+         * Indicate that the visitor has checked in.
+         */
+        public function checkedIn(): static
+        {
+            return $this->state(fn (array $attributes) => [
+                'time_in' => now(),
+            ]);
+        }
+
+        /**
+         * Indicate that the visitor has checked out.
+         */
+        public function checkedOut(): static
+        {
+            return $this->state(fn (array $attributes) => [
+                'time_in' => now()->subHours(2),
+                'time_out' => now(),
+            ]);
+        }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

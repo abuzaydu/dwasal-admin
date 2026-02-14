@@ -1327,6 +1327,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-hr-salaries', [EmployeeSalaryController::class, 'index']);
     Route::resource('hr-salaries' , EmployeeSalaryController::class);
     Route::resource('employee-docs' , EmployeeDocController::class);
+    Route::get('/employees/download-id/{id}', [EmployeeController::class, 'downloadIdCard'])->name('employees.download_id');
 
     //Payrolls
     Route::resource('payrolls', PayrollController::class);
@@ -1445,7 +1446,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
     Route::resource('visitors', VisitorController::class);
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
-
+    Route::get('manage-badge', [VisitorController::class, 'manageBadge'])->name('manage-badge');
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);
     Route::post('del-multiple-recycle-purchases', [RecycleBinController::class, 'delMultipleRecyclePurchases']);
