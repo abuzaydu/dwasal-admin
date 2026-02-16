@@ -67,9 +67,9 @@
                         </ul>
                     </div>
 
-                    <div class="tab-content mt-3">
+            <div class="tab-content mt-3">
                         <!-- Tab: Overview -->
-                        <div class="tab-pane fade show active" id="profile_post" role="tabpanel">
+                    <div class="tab-pane fade show active" id="profile_post" role="tabpanel">
                             <div class="row-title mb-1">
                                 <h5 class="px-4">Profile Overview</h5>
                             </div>
@@ -602,58 +602,82 @@
                         <div class="card-body">
                             <h6 class="card-title mb-4">Employee Identity Card</h6>
                             
-                            <div class="row">
-                                <!-- Front Side -->
-                                <div class="col-md-6 mb-4">
-                                    <h6 class="text-muted mb-3 text-center">Front Side</h6>
-                                    <div id="id-card-front" class="position-relative bg-white border mx-auto" style="width: 350px; height: 500px; border-radius: 15px; overflow: hidden; font-family: 'Arial', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                                        
-                                        <div class="text-center pt-4 pb-2">
-                                            <div class="d-flex align-items-center justify-content-center">
-                                                <div style="background: #d4a017; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
-                                                    <i class="fa fa-check"></i>
-                                                </div>
-                                                <div class="text-start" style="line-height: 1;">
-                                                    <h5 class="m-0 fw-bold" style="letter-spacing: 1px; color: #d4a017;">{{ $employee->company->name ?? 'COMPANY' }}</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-center my-3">
-                                            <div class="d-inline-block p-1 rounded-circle" style="border: 3px solid #d4a017;">
-                                                @if($user_photo)
-                                                    <img src="{{asset('storage/'.$user_photo)}}" alt="Employee Photo" class="rounded-circle" width="130px" height="130px" style="object-fit: cover;">
-                                                @else
-                                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 130px; height: 130px;">
-                                                        <i class="fa fa-user fa-3x text-muted"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <div class="text-center px-3">
-                                            <h3 class="fw-bold mb-0 text-uppercase" style="color: #222;">{{$employee->fname}} {{$employee->lname}}</h3>
-                                            <p class="text-uppercase fw-bold mb-4" style="color: #d4a017; font-size: 0.9rem;">{{$position ? $position->name : 'DESIGNATION'}}</p>
-                                            
-                                            <div class="text-start mx-auto" style="width: fit-content; font-size: 0.85rem; color: #444;">
-                                                <p class="mb-1"><strong>ID NUMBER:</strong> &nbsp;&nbsp;&nbsp; {{$employee->emp_id ?? '987654321'}}</p>
-                                                <p class="mb-1"><strong>VALID THROUGH:</strong> &nbsp;&nbsp;&nbsp; {{ $employee->end_date ?? 'Not Set' }}</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="position-absolute bottom-0 w-100" style="background: #d4a017; height: 100px; border-radius: 0 0 15px 15px;">
-                                            <div class="position-absolute bg-white p-1" style="bottom: 15px; right: 20px; border-radius: 5px; line-height: 0;">
-                                                @php
-                                                    $fullName = $employee->fname . ' ' . $employee->lname;
-                                                    $posName = $position ? $position->name : 'Not Assigned';
-                                                    $empID = $employee->id_number ?? $employee->id;
-                                                    $qrContent = "FULL NAME: $fullName\nPOSITION: $posName\nID NUMBER: $empID";
-                                                @endphp
-                                                {!! QrCode::size(70)->margin(1)->generate($qrContent) !!}
-                                            </div>
-                                        </div>
+                    <div class="row">
+                        <!-- Front Side -->
+                        <div class="col-md-6 mb-4">
+                            <h6 class="text-muted mb-3 text-center">Front Side</h6>
+                            <div id="id-card-front" class="position-relative bg-white border mx-auto" style="width: 350px; height: 500px; border-radius: 15px; overflow: hidden; font-family: 'Arial', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                                
+                        <!-- Main Content Container (everything except footer) -->
+                        <div style="padding-bottom: 170px; height: 100%;">
+                            
+                            <!-- Company Logo Section -->
+                            <div class="text-center pt-3">
+                                @if($employee->company && $employee->company->logo_url)
+                                    <img src="{{ asset('storage/clogos/' . $employee->company->logo_url ) }}" 
+                                        alt="Company Logo" 
+                                        style="max-width: 65px; max-height: 65px; object-fit: contain;">
+                                @else
+                                    <div style="width: 65px; height: 65px; margin: 0 auto; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
+                                        <i class="fa fa-building fa-2x" style="color: #999;"></i>
                                     </div>
+                                @endif
+                            </div>
+
+                            <!-- Company Name -->
+                            <div class="text-center px-3 py-2">
+                                <h5 class="fw-bold mb-0" style="font-size: 0.9rem; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; display: inline-block;">
+                                    {{ $employee->company->name ?? 'COMPANY NAME' }}
+                                </h5>
+                            </div>
+
+                            <!-- Employee Photo Section -->
+                            <div class="text-center my-3">
+                                <div class="d-inline-block p-1 rounded-circle" style="border: 3px solid #d4a017; box-shadow: 0 3px 10px rgba(212, 160, 23, 0.3);">
+                                    @if($user_photo)
+                                        <img src="{{asset('storage/'.$user_photo)}}" 
+                                            alt="Employee Photo" 
+                                            class="rounded-circle" 
+                                            width="115px" 
+                                            height="115px" 
+                                            style="object-fit: cover;">
+                                    @else
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 115px; height: 115px;">
+                                            <i class="fa fa-user fa-3x text-muted"></i>
+                                        </div>
+                                    @endif
                                 </div>
+                            </div>
+
+                            <!-- Employee Name -->
+                            <div class="text-center px-3">
+                                <h3 class="fw-bold mb-1 text-uppercase" style="color: #1a1a1a; font-size: 1.15rem; line-height: 1.3; letter-spacing: 0.5px;">
+                                    {{$employee->fname}} {{$employee->lname}}
+                                </h3>
+                            </div>
+
+                            <!-- Position/Designation -->
+                            <div class="text-center px-3">
+                                <p class="text-uppercase fw-bold mb-2" style="color: #d4a017; font-size: 0.85rem; letter-spacing: 0.5px;">
+                                    {{$position ? $position->name : 'DESIGNATION'}}
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- Gold Footer with Larger QR Code -->
+                        <div class="position-absolute bottom-0 w-100" style="background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%); height: 170px; border-radius: 0 0 15px 15px; display: flex; align-items: center; justify-content: center;">
+                            <div class="bg-white p-2 rounded-2" style="box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                                @php
+                                    $empID = $employee->emp_id ?? $employee->id;
+                                    // $qrContent = "ID: $empID";
+                                    $qrContent = \App\Helpers\QrCodeEncryption::encrypt($empID)
+                                @endphp
+                                {!! QrCode::size(140)->margin(0)->generate($qrContent) !!}
+                            </div>
+                        </div>
+                    </div>
+            </div>
 
                                 <!-- Back Side -->
                                 <div class="col-md-6 mb-4">
@@ -666,8 +690,9 @@
                                             <div class="mb-4">
                                                 @if($employee->company && $employee->company->logo_url)
                                                
-                                                    <img src="{{asset('storage/clogos'.$employee->company->logo_url)}}" alt="Company Logo" style="max-width: 100px; max-height: 100px; object-fit: contain;">
-                                                
+                                                    {{-- <img src="{{asset('storage/clogos'.$employee->company->logo_url)}}" alt="Company Logo" style="max-width: 100px; max-height: 100px; object-fit: contain;"> --}}
+                                                    <img src="{{ asset('storage/clogos/' . $employee->company->logo_url ) }}" alt="Company Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;">
+
                                                     @else
                                                     <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                                                         <i class="fa fa-building fa-3x" style="color: white;"></i>

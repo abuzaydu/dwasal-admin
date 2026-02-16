@@ -105,6 +105,8 @@ return [
         ),
     ],
 
+    'qr_app_key' => env('QR_APP_KEY', 'default-fallback-key'),
+
     /*
     |--------------------------------------------------------------------------
     | Maintenance Mode Driver

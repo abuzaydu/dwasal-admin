@@ -49,5 +49,29 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('visitor-check-in', [VisitorsController::class, 'visitorCheckIn']);
         Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
     });
+
+    Route::post('/qr/decrypt', function (Request $request) {
+    $request->validate([
+        'qr_data' => 'required|string',
+        'app_key' => 'required|string'
+    ]);
+
+    $empID = QrCodeEncryption::decrypt(
+        $request->qr_data, 
+        $request->app_key
+    );
+
+    if (!$empID) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid or unauthorized QR code'
+        ], 401);
+    }
+
+    return response()->json([
+        'success' => true,
+        'emp_id' => $empID
+    ]);
+});
 });
 
