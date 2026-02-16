@@ -114,7 +114,12 @@ class PartsController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $page = 'Edit Part Details';
+        $part = Part::find(decrypt($id));
+        $partcategories = PartCategory::where('company_id', $part->company_id)->get();
+        $partlocations = PartLocation::where('company_id', $part->company_id)->get();
+
+        return view('vms.parts.edit', compact('page', 'part', 'partcategories', 'partlocations'));
     }
 
     /**
@@ -132,6 +137,7 @@ class PartsController extends Controller
             $part->av_qty = $request->av_qty;
             $part->description = $request->description;
             $part->remarks = $request->remarks;
+            $part->status = $request->status;
             $part->save();
 
             return redirect('parts')->with('success', 'Part Details updated successfully');

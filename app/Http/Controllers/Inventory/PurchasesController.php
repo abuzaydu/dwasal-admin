@@ -490,7 +490,7 @@ class PurchasesController extends Controller
                         $stock->quantity_in = $item->quantity_in;
                         $stock->supp_unit_cost = $item->unit_cost;
                         $stock->unit_cost = $stock->unit_cost+$unit_ac;
-                        if ($shop->business_type_id == 1) {
+                        if ($shop->business_type_id == 1 && $purchase->is_production) {
                             $stock->source = 'Production Batch No. '.$purchase->grn_no;
                         }else{
                             $stock->source = 'Purchased';

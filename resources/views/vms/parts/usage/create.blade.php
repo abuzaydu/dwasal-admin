@@ -202,7 +202,6 @@
             var value = $(element).text();
             var partid = $(element).val();
             $('#part-id').val(partid);
-            alert(partid);
             $('#part-form').submit(); 
         }
     </script> 

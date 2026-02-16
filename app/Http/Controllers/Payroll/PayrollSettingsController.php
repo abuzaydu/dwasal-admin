@@ -21,15 +21,15 @@ class PayrollSettingsController extends Controller
         $title = 'Payroll Settings';
         $company = Company::find(Session::get('company_id'));
         $settings = array(
-            ['name' => 'NSSF', 'description' => 'Social Security Fund', 'percent_rate' => 10, 'min_income' => 0, 'max_income' => 0],
-            ['name' => 'NHIF', 'description' => 'Healthy Insurance', 'percent_rate' => 3, 'min_income' => 0, 'max_income' => 0],
-            ['name' => 'WCF', 'description' => 'Workers Compensation Fund', 'percent_rate' => 1, 'min_income' => 0, 'max_income' => 0],
-            ['name' => 'PAYE I', 'description' => 'Where the total income does not exceed 270,000/=', 'percent_rate' => 0, 'min_income' => 0, 'max_income' => 270000],
-            ['name' => 'PAYE II', 'description' => 'Where the total income exceeds 270,000/= but does not exceed Tshs. 520,000/=', 'percent_rate' => 8, 'min_income' => 270000, 'max_income' => 520000],
-            ['name' => 'PAYE III', 'description' => 'Where the total income exceeds 520,000/= but does not exceed Tshs. 520,000/=', 'percent_rate' => 20, 'min_income' => 520000, 'max_income' => 760000],
-            ['name' => 'PAYE IV', 'description' => 'Where the total income exceeds 760,000/= but does not exceed Tshs. 1,000,000/=', 'percent_rate' => 25, 'min_income' => 760000, 'max_income' => 1000000],
-            ['name' => 'PAYE V', 'description' => 'Where the total income is above 1,000,000/=', 'percent_rate' => 30, 'min_income' => 1000000, 'max_income' => 1000000000],
-            ['name' => 'HESLB', 'description' => 'Loans Board', 'percent_rate' => 15, 'min_income' => 0, 'max_income' => 0],
+            ['name' => 'NSSF', 'description' => 'Social Security Fund', 'percent_rate' => 10, 'fixed_paye_value' => 0, 'min_income' => 0, 'max_income' => 0],
+            ['name' => 'NHIF', 'description' => 'Healthy Insurance', 'percent_rate' => 3, 'fixed_paye_value' => 0, 'min_income' => 0, 'max_income' => 0],
+            ['name' => 'WCF', 'description' => 'Workers Compensation Fund', 'percent_rate' => 0.5, 'fixed_paye_value' => 0, 'min_income' => 0, 'max_income' => 0],
+            ['name' => 'PAYE I', 'description' => 'Where the total income does not exceed 270,000/=. Tax Rate : NIL', 'percent_rate' => 0, 'fixed_paye_value' => 0, 'min_income' => 0, 'max_income' => 270000],
+            ['name' => 'PAYE II', 'description' => 'Where the total income exceeds 270,000/= but does not exceed Tshs. 520,000/=. Tax Rate : 8% of the amount in excess of the amount in excess of Tshs. 270,000/=', 'percent_rate' => 8, 'fixed_paye_value' => 0, 'min_income' => 270000, 'max_income' => 520000],
+            ['name' => 'PAYE III', 'description' => 'Where the total income exceeds 520,000/= but does not exceed Tshs. 760,000/=. Tax Rate : Tshs. 20,000/= plus 20% of the amount in excess of Tshs. 520,000/=', 'percent_rate' => 20,  'fixed_paye_value' => 20000, 'min_income' => 520000, 'max_income' => 760000],
+            ['name' => 'PAYE IV', 'description' => 'Where the total income exceeds 760,000/= but does not exceed Tshs. 1,000,000/=. Tax Rate : Tshs. 68,000/= plus 25% of the amount in excess of Tshs. 760,000/=', 'percent_rate' => 25, 'fixed_paye_value' => 68000, 'min_income' => 760000, 'max_income' => 1000000],
+            ['name' => 'PAYE V', 'description' => 'Where the total income is above 1,000,000/=. Tax Rate : Tshs. 128,000/= plus 30% of the amount in excess of Tshs. 1,000,000/=', 'percent_rate' => 30, 'fixed_paye_value' => 128000, 'min_income' => 1000000, 'max_income' => 1000000000],
+            ['name' => 'HESLB', 'description' => 'Loans Board', 'percent_rate' => 15, 'fixed_paye_value' => 0, 'min_income' => 0, 'max_income' => 0],
         );
 
         foreach ($settings as $key => $value) {
@@ -40,6 +40,14 @@ class PayrollSettingsController extends Controller
                 $prsetting->name = $value['name'];
                 $prsetting->description = $value['description'];
                 $prsetting->percent_rate = $value['percent_rate'];
+                $prsetting->fixed_paye_value = $value['fixed_paye_value'];
+                $prsetting->min_income = $value['min_income'];
+                $prsetting->max_income = $value['max_income'];
+                $prsetting->save();
+            }else{
+                $prsetting->description = $value['description'];
+                $prsetting->percent_rate = $value['percent_rate'];
+                $prsetting->fixed_paye_value = $value['fixed_paye_value'];
                 $prsetting->min_income = $value['min_income'];
                 $prsetting->max_income = $value['max_income'];
                 $prsetting->save();
@@ -118,6 +126,7 @@ class PayrollSettingsController extends Controller
         $psetting = PayrollSetting::find(decrypt($id));
         $psetting->name = $request['name'];
         $psetting->percent_rate = $request['percent_rate'];
+        $psetting->fixed_paye_value = $request['fixed_paye_value'];
         $psetting->description = $request['description'];
         $psetting->min_income = $request['min_income'];
         $psetting->max_income = $request['max_income'];

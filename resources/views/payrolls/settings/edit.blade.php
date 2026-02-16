@@ -87,6 +87,12 @@
                                 <div class="invalid-feedback">Please provide Percentage.</div>
                             </div>
                             <div class="col-md-4">
+                                <label for="validationCustom02" class="form-label">Fixed PAYE Value <span style="color: red;">*</span></label>
+                                <input type="number" class="form-control form-control-sm mb-1" id="validationCustom02" step="any" name="fixed_paye_value" value="{{$psetting->fixed_paye_value}}" required>
+                                <div class="valid-feedback">Looks good!</div>
+                                <div class="invalid-feedback">Please provide Percentage.</div>
+                            </div>
+                            <div class="col-md-4">
                                 <label for="validationCustom03" class="form-label">Min Monthly Income</label>
                                 <input type="number" class="form-control form-control-sm mb-1" id="validationCustom02" step="any" name="min_income" value="{{$psetting->min_income}}">
                             </div>

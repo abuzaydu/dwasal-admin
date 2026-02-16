@@ -377,6 +377,15 @@ class AnSaleController extends Controller
             $item->time_created = $sale->time_created;
             $item->save();
         }
+        
+        $payments = SalePayment::where('an_sale_id', $sale->id)->get();
+        foreach ($payments as $key => $payment) {
+            $payacctrans = CustomerTransaction::find($payment->trans_id);
+            if (!is_null($payacctrans)) {
+                $payacctrans->customer_id = $sale->customer_id;
+                $payacctrans->save();
+            }
+        }
 
         if (!empty($request['device_id'])) {
             $dsale = DeviceSale::where('an_sale_id', $sale->id)->first();

@@ -111,6 +111,7 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th style="text-align: center;">Rate (%)</th>
+                                    <th>Fixed PAYE Value</th>
                                     <th>Min Income (Monthly)</th>
                                     <th>Max Income (Monthly)</th>
                                     <th>Description</th>
@@ -123,8 +124,9 @@
                                     <th scope="row">{{$key+1}}</th>
                                     <td>{{ $psetting->name }}</td>
                                     <td style="text-align: center;">{{ $psetting->percent_rate+0 }}</td>
-                                    <td>{{ number_format($psetting->min_income, 2, '.', ',') }}</td>
-                                    <td>{{ number_format($psetting->max_income, 2, '.', ',') }}</td>
+                                    <td style="text-align: center;">{{ $psetting->fixed_paye_value+0 }}</td>
+                                    <td style="text-align: center;">{{ number_format($psetting->min_income, 2, '.', ',') }}</td>
+                                    <td style="text-align: center;">{{ number_format($psetting->max_income, 2, '.', ',') }}</td>
                                     <td>{{ $psetting->description}}</td>
                                     <td> 
                                         <a href="{{ route('payroll-settings.edit', encrypt($psetting->id)) }}"><i class='fa fa-pencil mr-1'></i>Edit</a> | 

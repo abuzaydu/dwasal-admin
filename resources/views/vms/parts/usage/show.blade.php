@@ -141,7 +141,7 @@
                     <div class="text-end">
                         @if($pusage->is_approved)
                         @if($pusage->status != 'Closed')
-                        <a href="#"  class="btn btn-success btn-sm" onclick="confirmClose('<?php echo encrypt($pusage->id); ?>')" style="margin-right: 2px;"><i class="fa fa-money"></i>Closed Parts Usage Request</a>
+                        <a href="#"  class="btn btn-success btn-sm" onclick="confirmClose('<?php echo encrypt($pusage->id); ?>')" style="margin-right: 2px;"><i class="fa fa-money"></i> Closed Parts Usage Request</a>
                         @endif
                         @else
                         <a href="{{ route('parts-usage.edit', encrypt($pusage->id))}}" class="btn btn-sm btn-secondary btn-sm"><i class="fa fa-edit"></i> Edit</a>
