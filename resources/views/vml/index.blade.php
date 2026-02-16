@@ -25,8 +25,8 @@
         </div>
     </div>
 <div class="row clearfix">
-    <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card">
+    <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
+        <div class="card w-100">
             <div class="card-body">
                 <div class="text-center">
                     <h6 class="text-muted mb-3">Total Visitors Today</h6>
@@ -35,8 +35,8 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card">
+    <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
+        <div class="card w-100">
             <div class="card-body">
                 <div class="text-center">
                     <h6 class="text-muted mb-3">Pending Visitors</h6>
@@ -45,8 +45,8 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card">
+    <div class="col-lg-3 col-md-6 col-sm-12 d-flex  align-items-stretch">
+        <div class="card w-100">
             <div class="card-body">
                 <div class="text-center">
                     <h6 class="text-muted mb-3">Checked-in Visitors</h6>
@@ -55,8 +55,8 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="card">
+    <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
+        <div class="card w-100">
             <div class="card-body">
                 <div class="text-center">
                     <h6 class="text-muted mb-3">Total Visitors Monthly</h6>
