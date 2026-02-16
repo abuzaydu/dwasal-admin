@@ -1,13 +1,15 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\WelcomeController;
+use App\Helpers\QrCodeEncryption;
+use App\Http\Controllers\Admin\UserController;
 
 use App\Http\Controllers\AppAPI\AuthenticateController;
+
 use App\Http\Controllers\AppAPI\TruckScanController;
 use App\Http\Controllers\AppAPI\VisitorsController;
+use App\Http\Controllers\WelcomeController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
