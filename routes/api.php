@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AppAPI\AttendanceController;
 
 use App\Http\Controllers\AppAPI\AuthenticateController;
+use App\Http\Controllers\AppAPI\QrCodeController;
 use App\Http\Controllers\AppAPI\TruckScanController;
 use App\Http\Controllers\AppAPI\VisitorsController;
 use App\Http\Controllers\WelcomeController;
@@ -53,32 +54,14 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
     });
 
-    Route::post('/qr/decrypt', function (Request $request) {
-    $request->validate([
-        'qr_data' => 'required|string',
-        'app_key' => 'required|string'
-    ]);
+    // QR Code API
+    Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
-    $empID = QrCodeEncryption::decrypt(
-        $request->qr_data, 
-        $request->app_key
-    );
+    // Attendance API
+    Route::group(['middleware' => 'jwt.auth'], function(){
+        Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
+        Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
 
-    if (!$empID) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid or unauthorized QR code'
-        ], 401);
-    }
+        });
+    });
 
-    return response()->json([
-        'success' => true,
-        'emp_id' => $empID
-    ]);
-});
-});
-Route::group(['middleware' => 'jwt.auth'], function(){
-    Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
-    Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
-
- });
