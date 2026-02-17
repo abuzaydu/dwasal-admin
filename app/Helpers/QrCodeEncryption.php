@@ -18,7 +18,7 @@ class QrCodeEncryption
         try {
             // Add a timestamp to make each QR unique and time-bound (optional)
             $data = [
-                'emp_id' => $empID,
+                'id' => $empID,
                 'timestamp' => now()->timestamp,
                 'app_key' => config('app.qr_app_key') // Secret key for your mobile app
             ];
@@ -52,7 +52,7 @@ class QrCodeEncryption
             //     return null; // Expired QR
             // }
             
-            return $decrypted['emp_id'];
+            return $decrypted['id'];
         } catch (\Exception $e) {
             Log::error('QR Decryption failed: ' . $e->getMessage());
             return null;

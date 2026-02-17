@@ -3,8 +3,9 @@
 use App\Helpers\QrCodeEncryption;
 use App\Http\Controllers\Admin\UserController;
 
-use App\Http\Controllers\AppAPI\AuthenticateController;
+use App\Http\Controllers\AppAPI\AttendanceController;
 
+use App\Http\Controllers\AppAPI\AuthenticateController;
 use App\Http\Controllers\AppAPI\TruckScanController;
 use App\Http\Controllers\AppAPI\VisitorsController;
 use App\Http\Controllers\WelcomeController;
@@ -76,4 +77,8 @@ Route::group(['middleware' => 'cors'], function () {
     ]);
 });
 });
+Route::group(['middleware' => 'jwt.auth'], function(){
+    Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
+    Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
 
+ });
