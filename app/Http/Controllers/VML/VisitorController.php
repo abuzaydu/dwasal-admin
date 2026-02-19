@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\VML;
 
 use App\Http\Controllers\Controller;
+use App\Models\Badge;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Employee;
@@ -66,8 +67,9 @@ class VisitorController extends Controller
             ['name' => 'Voters Number'],
             ['name' => 'Passport']
         );
+        $badges = $company->badges()->where('status', 'available')->get();
 
-        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids'));
+        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids', 'badges'));
     }
 
     /**
@@ -103,7 +105,10 @@ class VisitorController extends Controller
             $visitor->purpose = $request['purpose'];
             $visitor->came_in_with = $request['came_in_with'];
             $visitor->save();
-        }
+        Badge::where('badge_number', $request['badge_no'])
+        ->update(['status' => 'in_use']);
+       
+     }
 
         return redirect('visitors')->with('success', 'New visitor added successfully');
     }

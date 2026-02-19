@@ -17,13 +17,7 @@
     </div>
     <!--end breadcrumb-->
 
-    <div class="row clearfix">
-        <div class="card">
-            <div class="card-body">
-                
-            </div>
-        </div>
-    </div>
+    
 <div class="row clearfix">
     <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
         <div class="card w-100">

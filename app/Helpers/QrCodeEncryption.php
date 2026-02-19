@@ -47,12 +47,8 @@ class QrCodeEncryption
                 return null; // Invalid app key
             }
             
-            // Optional: Check if QR is still valid (e.g., within 24 hours)
-            // if (now()->timestamp - $decrypted['timestamp'] > 86400) {
-            //     return null; // Expired QR
-            // }
-            
-            return $decrypted['id'];
+           // return $decrypted['id'];
+           return json_decode($decrypted['id'], true); // returns a proper array
         } catch (\Exception $e) {
             Log::error('QR Decryption failed: ' . $e->getMessage());
             return null;

@@ -4,203 +4,162 @@ namespace App\Http\Controllers\AppAPI;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceSetting;
+use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+
 
 class AttendanceController extends Controller
 {
-    
-
-    public function punchOut(Request $request)
-{
-    $request->validate([
-        'end_of_day' => 'required|date',
-        'employee' => 'required|array|min:1'
-    ]);
-
-    $user = auth()->user();
-    if (!$user) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Unauthorized'
-        ], 401);
-    }
-    $company = $user->companies()
-    ->where('companies.id', $request->company_id)->first();
-
-    if (!$company) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Company not found'
-        ], 404);
-    }
-
-    $setting = AttendanceSetting::where('company_id', $company->id)->first();
-
-    if (!$setting) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Attendance setting not configured'
-        ], 404);
-    }
-
-    DB::beginTransaction();
-
-    try {
-
-        $date = Carbon::parse($request->end_of_day)->format('Y-m-d');
-        $leave = Carbon::parse($request->end_of_day);
-
-        foreach ($request->employee as $employeeId) {
-
-            $attendance = EmployeeAttendance::whereDate('created_at', $date)
-                ->where('employee_id', $employeeId)
-                ->first();
-
-            if (!$attendance) {
-                continue;
-            }
-
-            $attendance->end_of_day = $request->end_of_day;
-
-            $officialEnd = Carbon::createFromFormat(
-                'Y-m-d H:i:s',
-                $date . ' ' . $setting->end_of_day
-            );
-
-            $attendance->is_fullday = $leave->greaterThanOrEqualTo($officialEnd);
-
-            $attendance->save();
-        }
-
-        DB::commit();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Punch out recorded successfully'
-        ], 200);
-
-    } catch (\Exception $e) {
-
-        DB::rollBack();
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Something went wrong',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
-
-public function punchIn(Request $request)
+     public function punchIn(Request $request)
     {
-    $request->validate([
-        'company_id'   => 'required|integer',
-        'start_of_day' => 'required|date',
-        'employee'     => 'required|array|min:1'
-    ]);
+        $request->validate([
+            'employee_id' => 'required|integer',
+            'company_id'  => 'required|integer',
+        ]);
 
-    $user = auth()->user();
+        $employeeId = $request->employee_id;
+        $companyId  = $request->company_id;
 
-    if (!$user) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Unauthorized'
-        ], 401);
-    }
-
-    // Verify user belongs to company
-    $company = $user->companies()
-        ->where('companies.id', $request->company_id)
-        ->first();
-
-    if (!$company) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Unauthorized for this company'
-        ], 403);
-    }
-
-    $setting = AttendanceSetting::where('company_id', $company->id)->first();
-
-    if (!$setting) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Attendance setting not found'
-        ], 404);
-    }
-
-     DB::beginTransaction();
-
-    try {
-    $startDate = Carbon::parse($request->start_of_day)->format('Y-m-d');
-    $arrive = Carbon::parse($request->start_of_day);
-
-    foreach ($request->employee as $employeeId) {
-
-        //  Fetch existing attendance row
-        $attendance = EmployeeAttendance::whereDate('created_at', $startDate)
-            ->where('employee_id', $employeeId)
-            ->where('company_id', $company->id)
+        // Validate employee belongs to this company
+        $employee = Employee::where('id', $employeeId)
+            ->where('company_id', $companyId)
             ->first();
 
-        if (!$attendance) {
-            // Do NOT create new row
+        if (!$employee) {
             return response()->json([
-                'status' => false,
-                'message' => "Attendance record not found for employee ID {$employeeId}"
+                'message' => 'Invalid employee or company'
             ], 404);
         }
 
-        //  Update the columns like browser controller
-        $attendance->start_of_day = $request->start_of_day;
+        $now   = now();
+        $today = $now->toDateString();
 
-        if ($attendance->status === 'Absent') {
+        // Check if already punched in today
+        $attendance = EmployeeAttendance::where('employee_id', $employee->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if ($attendance && $attendance->start_of_day) {
+            return response()->json([
+                'message' => 'Employee already punched in today'
+            ], 400);
+        }
+
+        // Get attendance setting
+        $setting = AttendanceSetting::where('company_id', $companyId)->first();
+        if (!$setting) {
+            return response()->json([
+                'message' => 'Attendance setting not configured'
+            ], 400);
+        }
+
+        // Create new attendance if not exists
+        if (!$attendance) {
+            $attendance = new EmployeeAttendance();
+            $attendance->company_id  = $companyId;
+            $attendance->employee_id = $employee->id;
+            $attendance->status      = 'Present';
+            $attendance->created_at  = $now;
+        }
+
+        // Set punch-in
+        $attendance->start_of_day = $now;
+        $attendance->is_present   = true;
+        if($attendance->status == 'Absent'){
             $attendance->status = 'Present';
         }
 
-        $attendance->is_present = true;
-
-        // Late check
-        $officialStart = Carbon::createFromFormat(
+        // Calculate if late
+        $companyStartTime = Carbon::createFromFormat(
             'Y-m-d H:i:s',
-            $startDate . ' ' . $setting->start_of_day
+            $today . ' ' . $setting->start_of_day
         );
-
-        $attendance->is_late = $arrive->greaterThan($officialStart);
-
-        // Full day check if end_of_day exists
-        if ($attendance->end_of_day) {
-            $leave = Carbon::parse($attendance->end_of_day);
-            $officialEnd = Carbon::createFromFormat(
-                'Y-m-d H:i:s',
-                $leave->format('Y-m-d') . ' ' . $setting->end_of_day
-            );
-
-            $attendance->is_fullday = $leave->greaterThanOrEqualTo($officialEnd);
-        }
+        $attendance->is_late = $now->gt($companyStartTime);
 
         $attendance->save();
-         DB::commit();
 
         return response()->json([
-            'status' => true,
-            'message' => 'Punch in recorded successfully'
-        ], 200);
-
+            'message'    => 'Punch in successful',
+            'employee'   => $employee->fname,
+            'time'       => $now->format('H:i:s'),
+            'is_late'    => $attendance->is_late
+        ]);
     }
-    } catch (\Exception $e) {
 
-        DB::rollBack();
+     public function punchOut(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|integer',
+            'company_id'  => 'required|integer',
+        ]);
+
+        $employeeId = $request->employee_id;
+        $companyId  = $request->company_id;
+
+        // Validate employee belongs to this company
+        $employee = Employee::where('id', $employeeId)
+            ->where('company_id', $companyId)
+            ->first();
+
+        if (!$employee) {
+            return response()->json([
+                'message' => 'Invalid employee or company'
+            ], 404);
+        }
+
+        $now   = now();
+        $today = $now->toDateString();
+
+        // Find today's attendance
+        $attendance = EmployeeAttendance::where('employee_id', $employee->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if (!$attendance || !$attendance->start_of_day) {
+            return response()->json([
+                'message' => 'Employee has not punched in today'
+            ], 400);
+        }
+
+        if ($attendance->end_of_day) {
+            return response()->json([
+                'message' => 'Employee already punched out today'
+            ], 400);
+        }
+
+        // Set punch out
+        $attendance->end_of_day = $now;
+
+        // Get attendance setting
+        $setting = AttendanceSetting::where('company_id', $companyId)->first();
+        if (!$setting) {
+            return response()->json([
+                'message' => 'Attendance setting not configured'
+            ], 400);
+        }
+
+        // Full-day logic
+        $companyEndTime = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $today . ' ' . $setting->end_of_day
+        );
+        $attendance->is_fullday = $now->gte($companyEndTime);
+
+         $attendance->save();
+
         return response()->json([
-            'status' => false,
-            'message' => 'Something went wrong',
-            'error' => $e->getMessage()
-        ], 500);;
-}
+            'message'        => 'Punch out successful',
+            'employee'       => $employee->name,
+            'time'           => $now->format('H:i:s'),
+            'is_fullday'     => $attendance->is_fullday,
+        ]);
     }
 
+    
 
-    }
+  
+    
+
+        }

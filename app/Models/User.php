@@ -83,7 +83,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function companies()
     {
-       return $this->belongsToMany(Company::class);
+       return $this->belongsToMany(Company::class)->withPivot('is_default')->withTimestamps();
     }
     
     public function shops()

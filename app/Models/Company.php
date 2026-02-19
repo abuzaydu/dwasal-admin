@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Badge;
 use App\Models\Employee;
 use App\Models\Shop;
 use App\Models\User;
@@ -29,5 +30,9 @@ class Company extends Model
     public function employee()
     {
         return $this->hasMany(Employee::class);
+    }
+    public function badges()
+    {
+        return $this->hasMany(Badge::class);
     }
 }

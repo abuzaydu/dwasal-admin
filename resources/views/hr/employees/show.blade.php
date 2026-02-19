@@ -669,9 +669,18 @@
                         <div class="position-absolute bottom-0 w-100" style="background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%); height: 170px; border-radius: 0 0 15px 15px; display: flex; align-items: center; justify-content: center;">
                             <div class="bg-white p-2 rounded-2" style="box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                                 @php
-                                    $empID = $employee->id ?? 'EMPLOYEE_ID';
-                                    // $qrContent = "ID: $empID";
-                                    $qrContent = \App\Helpers\QrCodeEncryption::encrypt($empID)
+                                    $empID = $employee->emp_id ?? 'EMPLOYEE_ID';
+                                    $companyID = $employee->company_id ?? 'COMPANY_ID';
+                                    $employee_id = $employee->id;
+
+                                    // Combine emp_id and company_id into a JSON string
+                                    $data = json_encode([
+                                        'emp_id' => $empID,
+                                        'company_id' => $companyID,
+                                        'id' => $employee_id
+                                    ]);
+
+                                        $qrContent = \App\Helpers\QrCodeEncryption::encrypt($data)
                                 @endphp
                                 {!! QrCode::size(140)->margin(0)->generate($qrContent) !!}
                             </div>

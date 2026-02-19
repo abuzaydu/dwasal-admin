@@ -52,13 +52,14 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('update-visitor', [VisitorsController::class, 'update']);
         Route::post('visitor-check-in', [VisitorsController::class, 'visitorCheckIn']);
         Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
+        Route::post('available-badges', [VisitorsController::class, 'getAvailableBadges']);
     });
 
     // QR Code API
     Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
     // Attendance API
-    Route::group(['middleware' => 'jwt.auth'], function(){
+    Route::middleware('auth:api')->group(function(){
         Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
         Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
 

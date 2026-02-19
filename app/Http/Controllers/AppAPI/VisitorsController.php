@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\AppAPI;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use File;
 use \Carbon\Carbon;
-use App\Models\Visitor;
+use App\Http\Controllers\Controller;
+use App\Models\Badge;
 use App\Models\Company;
-use App\Models\Employee;
 use App\Models\Department;
+use App\Models\Employee;
+use App\Models\Visitor;
+use File;
+use Illuminate\Http\Request;
 use Log;
 
 class VisitorsController extends Controller
@@ -62,6 +63,8 @@ class VisitorsController extends Controller
             $visitor->purpose = $request['purpose'];
             $visitor->status = 'Awaiting Host permission';
             $visitor->save();
+            Badge::where('badge_number', $request['badge_no'])
+            ->update(['status' => 'in_use']);
         }
         // Log::info($visitor);
         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Initialized successfully']);
@@ -109,6 +112,8 @@ class VisitorsController extends Controller
             $visitor->status = 'Checked In';
             $visitor->time_in = Carbon::now();
             $visitor->save();
+            Badge::where('badge_number', $visitor->badge_no)
+            ->update(['status' => 'in_use']);
 
             return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked In successfully']);
 
@@ -124,7 +129,8 @@ class VisitorsController extends Controller
             $visitor->status = 'Checked Out';
             $visitor->time_out = Carbon::now();
             $visitor->save();
-            
+            Badge::where('badge_number', $visitor->badge_no)
+            ->update(['status' => 'available']);
             return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked Out successfully']);
 
         }else{
@@ -138,6 +144,17 @@ class VisitorsController extends Controller
             // Log::info($visitors);
         return response()->json($visitors);
     }
+
+    public function getAvailableBadges(Request $request)
+{
+    $companyId = $request->company_id;
+    $company = Company::find($companyId);
+    $badges = $company->badges()->where('status', 'available')->get();
+    
+    return response()->json([
+        'badges' => $badges
+    ]);
+}
     /**
      * Display the specified resource.
      */
@@ -169,4 +186,5 @@ class VisitorsController extends Controller
     {
         //
     }
+
 }
