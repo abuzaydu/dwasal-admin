@@ -49,9 +49,11 @@
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
-            <div class="col-lg-7 col-md-7 col-sm-12">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#visitorModal"><i class="fa fa-plus-square"></i> New Visitor</button>
+            <div class="col-lg-7 col-md-7 col-sm-12 text-end">
+                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#visitorModal">
+                    <i class="fa fa-plus-square"></i> New Visitor</button>
             </div>
+            
         </div>
     </div>
     <!--end breadcrumb-->

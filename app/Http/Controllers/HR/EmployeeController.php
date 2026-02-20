@@ -316,4 +316,12 @@ class EmployeeController extends Controller
 
         return $pdf->download($employee->fname.'_ID_Card.pdf');
     }
+    public function showIdCard($id)
+{
+    $employee   = Employee::with('company')->findOrFail($id);
+    $position   = $employee->position;       // adjust to your relationship
+    $user_photo = $employee->user->photo ?? null; // adjust to your relationship
+
+    return view('hr.employees.employee-id-card', compact('employee', 'position', 'user_photo'));
+}
 }

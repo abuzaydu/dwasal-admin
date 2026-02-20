@@ -65,7 +65,8 @@
                             <!-- <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#profile_campaigns" role="tab" id="tab_profile_campaigns"><i class="fa fa-area-chart"></i><span class="d-none d-md-inline-block ms-2">Campaigns</span></a></li> -->
                             <!-- <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#profile_activity" role="tab"><i class="fa fa-font"></i><span class="d-none d-md-inline-block ms-2">Activities</span></a></li> -->
                         </ul>
-                    </div>
+    </div>
+    
 
             <div class="tab-content mt-3">
                         <!-- Tab: Overview -->
@@ -597,157 +598,24 @@
                                         <div>
 
                     </div>
-                        <!-- Employee Identity Card -->
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title mb-4">Employee Identity Card</h6>
-                            
-                    <div class="row">
-                        <!-- Front Side -->
-                        <div class="col-md-6 mb-4">
-                            <h6 class="text-muted mb-3 text-center">Front Side</h6>
-                            <div id="id-card-front" class="position-relative bg-white border mx-auto" style="width: 350px; height: 500px; border-radius: 15px; overflow: hidden; font-family: 'Arial', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                                
-                        <!-- Main Content Container (everything except footer) -->
-                        <div style="padding-bottom: 170px; height: 100%;">
-                            
-                            <!-- Company Logo Section -->
-                            <div class="text-center pt-3">
-                                @if($employee->company && $employee->company->logo_url)
-                                    <img src="{{ asset('storage/clogos/' . $employee->company->logo_url ) }}" 
-                                        alt="Company Logo" 
-                                        style="max-width: 65px; max-height: 65px; object-fit: contain;">
-                                @else
-                                    <div style="width: 65px; height: 65px; margin: 0 auto; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0;">
-                                        <i class="fa fa-building fa-2x" style="color: #999;"></i>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <!-- Company Name -->
-                            <div class="text-center px-3 py-2">
-                                <h5 class="fw-bold mb-0" style="font-size: 0.9rem; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; display: inline-block;">
-                                    {{ $employee->company->name ?? 'COMPANY NAME' }}
-                                </h5>
-                            </div>
-
-                            <!-- Employee Photo Section -->
-                            <div class="text-center my-3">
-                                <div class="d-inline-block p-1 rounded-circle" style="border: 3px solid #d4a017; box-shadow: 0 3px 10px rgba(212, 160, 23, 0.3);">
-                                    @if($user_photo)
-                                        <img src="{{asset('storage/'.$user_photo)}}" 
-                                            alt="Employee Photo" 
-                                            class="rounded-circle" 
-                                            width="115px" 
-                                            height="115px" 
-                                            style="object-fit: cover;">
-                                    @else
-                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 115px; height: 115px;">
-                                            <i class="fa fa-user fa-3x text-muted"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Employee Name -->
-                            <div class="text-center px-3">
-                                <h3 class="fw-bold mb-1 text-uppercase" style="color: #1a1a1a; font-size: 1.15rem; line-height: 1.3; letter-spacing: 0.5px;">
-                                    {{$employee->fname}} {{$employee->lname}}
-                                </h3>
-                            </div>
-
-                            <!-- Position/Designation -->
-                            <div class="text-center px-3">
-                                <p class="text-uppercase fw-bold mb-2" style="color: #d4a017; font-size: 0.85rem; letter-spacing: 0.5px;">
-                                    {{$position ? $position->name : 'DESIGNATION'}}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- Gold Footer with Larger QR Code -->
-                        <div class="position-absolute bottom-0 w-100" style="background: linear-gradient(180deg, #d4a017 0%, #b8860b 100%); height: 170px; border-radius: 0 0 15px 15px; display: flex; align-items: center; justify-content: center;">
-                            <div class="bg-white p-2 rounded-2" style="box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                                @php
-                                    $empID = $employee->emp_id ?? 'EMPLOYEE_ID';
-                                    $companyID = $employee->company_id ?? 'COMPANY_ID';
-                                    $employee_id = $employee->id;
-
-                                    // Combine emp_id and company_id into a JSON string
-                                    $data = json_encode([
-                                        'emp_id' => $empID,
-                                        'company_id' => $companyID,
-                                        'id' => $employee_id
-                                    ]);
-
-                                        $qrContent = \App\Helpers\QrCodeEncryption::encrypt($data)
-                                @endphp
-                                {!! QrCode::size(140)->margin(0)->generate($qrContent) !!}
-                            </div>
-                        </div>
-                    </div>
-            </div>
-
-                                <!-- Back Side -->
-                                <div class="col-md-6 mb-4">
-                                    <h6 class="text-muted mb-3 text-center">Back Side</h6>
-                                    <div id="id-card-back" class="position-relative bg-white border mx-auto" style="width: 350px; height: 500px; border-radius: 15px; overflow: hidden; font-family: 'Arial', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                                        
-                                        <div style="background: linear-gradient(135deg, #d4a017 0%, #b8860b 100%); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 30px; text-align: center;">
-                                            
-                                            <!-- Company Logo Section -->
-                                            <div class="mb-4">
-                                                @if($employee->company && $employee->company->logo_url)
-                                               
-                                                    {{-- <img src="{{asset('storage/clogos'.$employee->company->logo_url)}}" alt="Company Logo" style="max-width: 100px; max-height: 100px; object-fit: contain;"> --}}
-                                                    <img src="{{ asset('storage/clogos/' . $employee->company->logo_url ) }}" alt="Company Logo" style="max-width: 80px; max-height: 80px; object-fit: contain;">
-
-                                                    @else
-                                                    <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fa fa-building fa-3x" style="color: white;"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-
-                                            <!-- Company Information -->
-                                            <div class="mb-4" style="border-bottom: 2px solid rgba(255,255,255,0.5); padding-bottom: 20px;">
-                                                <h4 class="fw-bold mb-2">{{ $employee->company->name ?? 'COMPANY NAME' }}</h4>
-                                                <p class="mb-1" style="font-size: 0.9rem;">{{ $employee->company->industry ?? 'Industry' }}</p>
-                                            </div>
-
-                                            <!-- Contact Information -->
-                                            <div style="font-size: 0.85rem; text-align: left; width: 100%;">
-                                                <p class="mb-2"><i class="fa fa-map-marker me-2"></i> {{ $employee->company->address ?? 'Address Not Available' }}</p>
-                                                <p class="mb-2"><i class="fa fa-phone me-2"></i> {{ $employee->company->mobile ?? 'Phone Not Available' }}</p>
-                                                <p class="mb-2"><i class="fa fa-envelope me-2"></i> {{ $employee->company->email ?? 'Email Not Available' }}</p>
-                                                @if($employee->company && $employee->company->website)
-                                                    <p class="mb-0"><i class="fa fa-globe me-2"></i> {{ $employee->company->website }}</p>
-                                                @endif
-                                            </div>
-
-                                            <!-- Security Feature -->
-                                            <div class="mt-4 pt-2 border-top border-white" style="width: 100%; font-size: 0.75rem;">
-                                                <p class="m-0">Issue Date: {{ date('d/m/Y', strtotime($employee->created_at)) }}</p>
-                                                <p class="m-0">Authorized by Company</p>
-                                            </div>
-                                        </div>
+          
+                    <!-- Employee ID Card Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body bg-white">
+                                        @include('hr.employees.employee-id-card', [
+                                            'employee'   => $employee,
+                                            'position'   => $position,
+                                            'user_photo' => $user_photo,
+                                        ])
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Download Button -->
-                            <div class="text-center mt-4">
-                                <a href="{{ route('employees.download_id', $employee->id) }}" class="btn btn-sm btn-success">
-                                    <i class="fa fa-file-pdf"></i> Download PDF Card
-                                </a>
-                            </div>
                         </div>
-                    </div>
-
                     <!-- End of Employee Identity Card -->
-            </div>
-      </div> <!-- Row end  -->
-    </div>
+           
+   
                           <!-- Tab: Groups -->
                           <div class="tab-pane fade" id="profile_groups" role="tabpanel">
                             <div class="row-title mb-2">
@@ -764,9 +632,9 @@
                           </div>
                           <!-- Tab: Campaigns -->
                           <div class="tab-pane fade" id="profile_campaigns" role="tabpanel">
-                            <div class="row-title mb-2">
-                              <h5>Campaigns</h5>
-                            </div>
+                                <div class="row-title mb-2">
+                                <h5>Campaigns</h5>
+                                </div>
                           </div>
                           <!-- Tab: Activity -->
                           <div class="tab-pane fade" id="profile_activity" role="tabpanel">
@@ -774,8 +642,8 @@
                               <h5>User Activity</h5>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                    </div>
+            </div>
     </div>
 @endsection
 @section('page-scripts')

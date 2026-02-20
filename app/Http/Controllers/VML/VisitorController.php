@@ -79,8 +79,10 @@ class VisitorController extends Controller
     public function manageBadge()
     {
         $page = 'Manage Badges';
-        return view('vml.visitors.create_badge', compact('page'));
+        $badges = Badge::all();
+        return view('vml.visitors.create_badge', compact('page', 'badges'));
     }
+    
 
     /**
      * Store a newly created resource in storage.

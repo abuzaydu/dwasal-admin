@@ -394,10 +394,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
 //VMl Routes
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/badges',            [BadgeController::class, 'index'])->name('badges.index');
-Route::get('/badges/create',     [BadgeController::class, 'create'])->name('badges.create');
-Route::post('/badges/bulk',      [BadgeController::class, 'storeBulk'])->name('badges.storeBulk');
-Route::delete('/{id}',    [BadgeController::class, 'destroy'])->name('badges.destroy');
-
+    Route::post('/badges/bulk',      [BadgeController::class, 'storeBulk'])->name('badges.storeBulk');
+    Route::delete('/{id}',    [BadgeController::class, 'destroy'])->name('badges.destroy');
+    Route::get('badges/auto-print', [BadgeController::class, 'autoPrint'])
+        ->name('badges.auto.print');
 }
 );
 //SmartMauzo customers routes
@@ -1338,7 +1338,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('hr-salaries' , EmployeeSalaryController::class);
     Route::resource('employee-docs' , EmployeeDocController::class);
     Route::get('/employees/download-id/{id}', [EmployeeController::class, 'downloadIdCard'])->name('employees.download_id');
-
+Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])->name('employees.id_card');
     //Payrolls
     Route::resource('payrolls', PayrollController::class);
     Route::post('payrolls/create', [PayrollController::class, 'create']);
