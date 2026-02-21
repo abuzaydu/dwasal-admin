@@ -248,14 +248,15 @@ use App\Http\Controllers\VFD\ZReportController;
 
 //MHC Controllers
 use App\Http\Controllers\VML\VisitorController;
+use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\InsuranceController;
 use App\Http\Controllers\VMS\LegalDocumentController;
 use App\Http\Controllers\VMS\MaintenanceController;
 use App\Http\Controllers\VMS\OwnershipController;
+
+
 use App\Http\Controllers\VMS\PartCategoryController;
-
-
 use App\Http\Controllers\VMS\PartItemTempApiController;
 use App\Http\Controllers\VMS\PartLocationController;
 use App\Http\Controllers\VMS\PartPurchaseController;
@@ -274,13 +275,13 @@ use App\Http\Controllers\Web\ApprovalRequestController;
 use App\Http\Controllers\Web\CompanyReportsController;
 use App\Http\Controllers\Web\FinancialReportsController;
 use App\Http\Controllers\Web\PurchaseReportController;
+
 use App\Http\Controllers\Web\RecycleBinController;
 
 use App\Http\Controllers\Web\ReportsController;
-
 use App\Http\Controllers\Web\SmsTemplateController;
-use App\Http\Controllers\Web\StockReportController;
 //Api Test
+use App\Http\Controllers\Web\StockReportController;
 use App\Http\Controllers\Web\VerifyPaymentController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -1454,6 +1455,7 @@ Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])-
 
     Route::get('visitors-dash', [VisitorController::class, 'dashboard']);
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
+    Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
     Route::resource('visitors', VisitorController::class);
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
     Route::get('manage-badge', [VisitorController::class, 'manageBadge'])->name('manage-badge');

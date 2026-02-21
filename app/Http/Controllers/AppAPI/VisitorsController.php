@@ -20,7 +20,7 @@ class VisitorsController extends Controller
      */
     public function index(Request $request)
     {
-        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')->get();
+        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitors.visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname', 'visitors.came_in_with', 'visitors.came_out_with')->get();
             // Log::info($visitors);
         return response()->json($visitors);
     }
@@ -62,7 +62,10 @@ class VisitorsController extends Controller
             $visitor->badge_no = $request['badge_no'];
             $visitor->purpose = $request['purpose'];
             $visitor->status = 'Awaiting Host permission';
+            $visitor->came_in_with = $request['came_in_with'] ?? null;
+            $visitor->came_out_with = $request['came_out_with'] ?? null;
             $visitor->save();
+
             Badge::where('badge_number', $request['badge_no'])
             ->update(['status' => 'in_use']);
         }

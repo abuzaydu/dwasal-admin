@@ -37,16 +37,34 @@ class VisitorController extends Controller
             ->latest()
             ->limit(10)
             ->get();
-        $visitors = Visitor::with('user')->get();
-        $totalVisitors = Visitor::with('user')->whereDate('created_at', Carbon::today())->count();;
-        $pendingVisitors = Visitor::whereDate('created_at', Carbon::today())->where('status', 'Awaiting Host permission')->count();
-        $checkedinVisitors = Visitor::whereDate('created_at', Carbon::today())->where('status', 'Checked In')->count();
-        $visitorsMonthly =  Visitor::whereMonth('created_at', Carbon::now()->month)
-    ->whereYear('created_at', Carbon::now()->year)
-    ->count();
+    
+    $period = $request->get('period', 'today');
+
+    // Build the date range based on period
+    $dateRange = match($period) {
+        'weekly'  => [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->endOfDay()],
+        'monthly' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
+        'yearly'  => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
+        'total'   => [null, null], // no date filter
+        default   => [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()], // 'today'
+    };
+
+    // Helper closure to apply date range
+    $applyRange = function ($query) use ($dateRange) {
+        if ($dateRange[0] && $dateRange[1]) {
+            $query->whereBetween('created_at', $dateRange);
+        }
+        return $query;
+    };
+
+    $totalVisitors    = $applyRange(Visitor::query())->count();
+    $pendingVisitors  = $applyRange(Visitor::whereIn('status', ['Awaiting Host permission', 'Permission Granted']))->count();
+    $checkedinVisitors = $applyRange(Visitor::where('status', 'Checked In'))->count();
+    $checkedoutVisitors  = $applyRange(Visitor::where('status', 'Checked Out'))->count(); // reuse same period
+
       
 
-        return view('vml.index', compact('page', 'visitorsLogs','departments', 'employees', 'visitors', 'totalVisitors', 'pendingVisitors', 'checkedinVisitors', 'visitorsMonthly'));
+        return view('vml.index', compact('page', 'visitorsLogs','departments', 'employees', 'totalVisitors', 'pendingVisitors', 'checkedinVisitors', 'checkedoutVisitors','period'));
     }
 
 

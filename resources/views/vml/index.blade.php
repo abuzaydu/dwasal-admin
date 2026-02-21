@@ -22,17 +22,74 @@
 </div>
 <!--end breadcrumb-->
 
-<!-- Stats Cards -->
+
+{{-- Filter Tabs --}}
+<div class="row mb-3">
+    <div class="col-12 text-end">
+        <div class="dropdown">
+            <button class="btn btn-sm btn-primary dropdown-toggle" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false">
+                {{ ucfirst(request('period', 'today')) }}
+            </button>
+
+            <ul class="dropdown-menu">
+                @foreach(['today' => 'Today', 'weekly' => 'Weekly', 'monthly' => 'Monthly', 'yearly' => 'Yearly', 'total' => 'Total'] as $key => $label)
+                    <li>
+                        <a class="dropdown-item {{ request('period', 'today') === $key ? 'active' : '' }}"
+                           href="{{ request()->fullUrlWithQuery(['period' => $key]) }}">
+                            {{ $label }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+</div>
+
 <div class="row clearfix">
 
-    <!-- Total Visitors Today -->
+    {{-- Helper: export dropdown macro --}}
+    @php
+        $period = request('period', 'today');
+
+        // type = the card/data type slug passed to export route
+        $exportDropdown = fn(string $type) => '
+            <div class="dropdown position-absolute top-0 end-0 m-2">
+                <button class="btn btn-sm btn-light border-0 shadow-none"
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                        title="Export">
+                    <i class="fa fa-download text-secondary"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                        <a class="dropdown-item" href="' . route('visitors.export', ['type' => $type, 'period' => $period, 'format' => 'xlsx']) . '">
+                            <i class="fa fa-file-excel-o text-success me-2"></i> Export Excel
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="' . route('visitors.export', ['type' => $type, 'period' => $period, 'format' => 'pdf']) . '">
+                            <i class="fa fa-file-pdf-o text-danger me-2"></i> Export PDF
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        ';
+    @endphp
+
+    <!-- Total Visitors -->
     <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
-        <div class="card w-100 shadow-sm border-0">
+        <div class="card w-100 shadow-sm border-0 position-relative">
+            {!! $exportDropdown('total') !!}
             <div class="card-body text-center">
                 <div class="mb-2">
                     <i class="fa fa-users fa-2x text-primary"></i>
                 </div>
-                <h6 class="text-muted mb-2">Total Visitors Today</h6>
+                <h6 class="text-muted mb-2">
+                    Total Visitors
+                    <span class="badge bg-secondary">{{ ucfirst($period) }}</span>
+                </h6>
                 <h2 class="mb-0 fw-bold">{{ $totalVisitors ?? 0 }}</h2>
             </div>
         </div>
@@ -40,10 +97,11 @@
 
     <!-- Pending Visitors -->
     <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
-        <div class="card w-100 shadow-sm border-0">
+        <div class="card w-100 shadow-sm border-0 position-relative">
+            {!! $exportDropdown('pending') !!}
             <div class="card-body text-center">
                 <div class="mb-2">
-                    <i class="fa fa-users fa-2x text-primary"></i>
+                    <i class="fa fa-clock-o fa-2x text-warning"></i>
                 </div>
                 <h6 class="text-muted mb-2">Pending Visitors</h6>
                 <h2 class="mb-0 fw-bold">{{ $pendingVisitors ?? 0 }}</h2>
@@ -53,10 +111,11 @@
 
     <!-- Checked-in Visitors -->
     <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
-        <div class="card w-100 shadow-sm border-0">
+        <div class="card w-100 shadow-sm border-0 position-relative">
+            {!! $exportDropdown('checkedin') !!}
             <div class="card-body text-center">
-                 <div class="mb-2">
-                    <i class="fa fa-users fa-2x text-primary"></i>
+                <div class="mb-2">
+                    <i class="fa fa-check-circle fa-2x text-success"></i>
                 </div>
                 <h6 class="text-muted mb-2">Checked-in Visitors</h6>
                 <h2 class="mb-0 fw-bold">{{ $checkedinVisitors ?? 0 }}</h2>
@@ -64,15 +123,16 @@
         </div>
     </div>
 
-    <!-- Total Visitors Monthly -->
+        <!-- Checked-out Visitors -->
     <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
-        <div class="card w-100 shadow-sm border-0">
+        <div class="card w-100 shadow-sm border-0 position-relative">
+            {!! $exportDropdown('checkedout') !!}
             <div class="card-body text-center">
                 <div class="mb-2">
-                    <i class="fa fa-users fa-2x text-primary"></i>
+                    <i class="fa fa-sign-out fa-2x text-info"></i>
                 </div>
-                <h6 class="text-muted mb-2">Total Visitors Monthly</h6>
-                <h2 class="mb-0 fw-bold">{{ $visitorsMonthly ?? 0 }}</h2>
+                <h6 class="text-muted mb-2">Checked-out Visitors</h6>
+                <h2 class="mb-0 fw-bold">{{ $checkedoutVisitors ?? 0 }}</h2>
             </div>
         </div>
     </div>
