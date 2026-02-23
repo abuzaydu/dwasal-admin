@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\Visitor;
 use File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Log;
 
 class VisitorsController extends Controller
@@ -73,40 +74,77 @@ class VisitorsController extends Controller
         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Initialized successfully']);
     }
 
+    // public function visitorPhoto(Request $request)
+    // {
+    //     $visitor = Visitor::find($request['visitor_id']);
+    //     if (!is_null($visitor)) {
+    //         $location = null;
+    //         if ($request->hasFile('photo')) {
+    //             //  Let's do everything here
+    //             if ($request->file('photo')->isValid()) {
+    //                 //
+    //                 $validated = $request->validate([
+    //                     'image' => 'mimes:jpeg,png|max:1014',
+    //                 ]);
+
+    //                 $photo_path = storage_path('/visitors/'.$visitor->visitor_photo);
+    //                 if (File::exists($photo_path)) {
+    //                     unlink($photo_path);
+    //                 }
+
+    //                 $extension = $request->photo->extension();
+    //                 $request->photo->storeAs('/visitors', $visitor->id.'.'.$extension);
+    //                 $location = $visitor->id.'.'.$extension;
+    //             }
+    //         }else{
+    //             $location = $visitor->visitor_photo;
+    //         }
+    //         $visitor->visitor_photo = $location;
+    //         $visitor->save();
+
+    //         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
+
+    //     }else{
+    //         return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
+    //     }
+    // }
     public function visitorPhoto(Request $request)
-    {
-        $visitor = Visitor::find($request['visitor_id']);
-        if (!is_null($visitor)) {
-            $location = null;
-            if ($request->hasFile('photo')) {
-                //  Let's do everything here
-                if ($request->file('photo')->isValid()) {
-                    //
-                    $validated = $request->validate([
-                        'image' => 'mimes:jpeg,png|max:1014',
-                    ]);
+{
+    $visitor = Visitor::find($request['visitor_id']);
+    if (!is_null($visitor)) {
+        $location = null;
+        if ($request->hasFile('photo')) {
+            if ($request->file('photo')->isValid()) {
 
-                    $photo_path = storage_path('/visitors/'.$visitor->visitor_photo);
-                    if (File::exists($photo_path)) {
-                        unlink($photo_path);
-                    }
+                $request->validate([
+                    'photo' => 'mimes:jpeg,png|max:2048',
+                ]);
 
-                    $extension = $request->photo->extension();
-                    $request->photo->storeAs('/visitors', $visitor->id.'.'.$extension);
-                    $location = $visitor->id.'.'.$extension;
+                // Delete old photo if exists
+                $old_photo_path = 'visitors/' . $visitor->visitor_photo;
+                if (Storage::disk('public')->exists($old_photo_path)) {
+                    Storage::disk('public')->delete($old_photo_path);
                 }
-            }else{
-                $location = $visitor->visitor_photo;
+
+                $extension = $request->photo->extension();
+                $filename = $visitor->id . '.' . $extension;
+
+                $request->photo->storeAs('visitors', $filename, 'public');
+                $location = $filename;
             }
-            $visitor->visitor_photo = $location;
-            $visitor->save();
-
-            return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
-
-        }else{
-            return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
+        } else {
+            $location = $visitor->visitor_photo;
         }
+
+        $visitor->visitor_photo = $location;
+        $visitor->save();
+
+        return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
+
+    } else {
+        return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
     }
+}
 
     public function visitorCheckIn(Request $request)
     {

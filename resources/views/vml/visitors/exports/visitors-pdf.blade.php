@@ -35,12 +35,12 @@
             <tr>
                 <td>{{ $i + 1 }}</td>
                 <td>{{ $v->name }}</td>
-                <td>{{ $v->phone ?? 'N/A' }}</td>
-                <td>{{ $v->host_name ?? 'N/A' }}</td>
+                <td>{{ $v->mobile ?? 'N/A' }}</td>
+                <td>{{ $v->user->first_name. ' ' .$v->user->last_name ?? 'N/A' }}</td>
                 <td>{{ $v->purpose ?? 'N/A' }}</td>
                 <td>{{ $v->status }}</td>
-                <td>{{ $v->check_in_time  ? \Carbon\Carbon::parse($v->check_in_time)->format('H:i')  : 'N/A' }}</td>
-                <td>{{ $v->check_out_time ? \Carbon\Carbon::parse($v->check_out_time)->format('H:i') : 'N/A' }}</td>
+                <td>{{ $v->time_in  ? \Carbon\Carbon::parse($v->time_in)->format('H:i')  : 'N/A' }}</td>
+                <td>{{ $v->time_out ? \Carbon\Carbon::parse($v->time_out)->format('H:i') : 'N/A' }}</td>
                 <td>{{ \Carbon\Carbon::parse($v->created_at)->format('d M Y') }}</td>
             </tr>
             @empty

@@ -64,13 +64,13 @@ class VisitorsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         return [
             $index,
             $visitor->name,
-            $visitor->phone       ?? 'N/A',
+            $visitor->mobile       ?? 'N/A',
             $visitor->email       ?? 'N/A',
-            $visitor->host_name   ?? 'N/A',
+            $visitor->user->first_name . ' ' . $visitor->user->last_name ?? 'N/A',
             $visitor->purpose     ?? 'N/A',
             $visitor->status,
-            $visitor->check_in_time  ? Carbon::parse($visitor->check_in_time)->format('H:i') : 'N/A',
-            $visitor->check_out_time ? Carbon::parse($visitor->check_out_time)->format('H:i') : 'N/A',
+            $visitor->time_in  ? Carbon::parse($visitor->time_in)->format('H:i') : 'N/A',
+            $visitor->time_out ? Carbon::parse($visitor->time_out)->format('H:i') : 'N/A',
             Carbon::parse($visitor->created_at)->format('d M Y'),
         ];
     }
