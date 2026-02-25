@@ -8,7 +8,9 @@ use App\Models\Badge;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Visitor;
+use App\Notifications\ChekInNotification;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +23,9 @@ class VisitorsController extends Controller
      */
     public function index(Request $request)
     {
-        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitors.visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname', 'visitors.came_in_with', 'visitors.came_out_with')->get();
+        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitors.visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname', 'visitors.came_in_with', 'visitors.came_out_with')
+        ->orderBy('visitors.created_at', 'desc')
+        ->get();
             // Log::info($visitors);
         return response()->json($visitors);
     }
@@ -69,45 +73,16 @@ class VisitorsController extends Controller
 
             Badge::where('badge_number', $request['badge_no'])
             ->update(['status' => 'in_use']);
+               // Notify the host about the visitor check-in
+            $host = User::find($visitor->host_id);
+            if ($host) {
+                $host->notify(new ChekInNotification($visitor));
+            }
         }
         // Log::info($visitor);
         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Initialized successfully']);
     }
 
-    // public function visitorPhoto(Request $request)
-    // {
-    //     $visitor = Visitor::find($request['visitor_id']);
-    //     if (!is_null($visitor)) {
-    //         $location = null;
-    //         if ($request->hasFile('photo')) {
-    //             //  Let's do everything here
-    //             if ($request->file('photo')->isValid()) {
-    //                 //
-    //                 $validated = $request->validate([
-    //                     'image' => 'mimes:jpeg,png|max:1014',
-    //                 ]);
-
-    //                 $photo_path = storage_path('/visitors/'.$visitor->visitor_photo);
-    //                 if (File::exists($photo_path)) {
-    //                     unlink($photo_path);
-    //                 }
-
-    //                 $extension = $request->photo->extension();
-    //                 $request->photo->storeAs('/visitors', $visitor->id.'.'.$extension);
-    //                 $location = $visitor->id.'.'.$extension;
-    //             }
-    //         }else{
-    //             $location = $visitor->visitor_photo;
-    //         }
-    //         $visitor->visitor_photo = $location;
-    //         $visitor->save();
-
-    //         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
-
-    //     }else{
-    //         return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
-    //     }
-    // }
     public function visitorPhoto(Request $request)
 {
     $visitor = Visitor::find($request['visitor_id']);
@@ -117,7 +92,7 @@ class VisitorsController extends Controller
             if ($request->file('photo')->isValid()) {
 
                 $request->validate([
-                    'photo' => 'mimes:jpeg,png|max:2048',
+                    'photo' => 'mimes:jpeg,png|max:5120',
                 ]);
 
                 // Delete old photo if exists
@@ -155,7 +130,7 @@ class VisitorsController extends Controller
             $visitor->save();
             Badge::where('badge_number', $visitor->badge_no)
             ->update(['status' => 'in_use']);
-
+            
             return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked In successfully']);
 
         }else{

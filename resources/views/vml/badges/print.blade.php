@@ -17,7 +17,7 @@
             background: #f0f2f5;
         }
 
-        /* ── Screen toolbar ── */
+        /*  Screen toolbar  */
         .toolbar {
             display: flex;
             align-items: center;
@@ -52,7 +52,7 @@
         }
         .btn-print:hover { opacity: 0.88; }
 
-        /* ── Badge Grid: 2 per row ── */
+        /* Badge Grid: 2 per row */
         .badge-grid {
             display: grid;
             grid-template-columns: repeat(2, 85.6mm);
@@ -61,7 +61,7 @@
             justify-content: center;
         }
 
-        /* ── Badge Shell (PVC CR80) ── */
+        /* Badge Shell (PVC CR80) */
         .badge {
             width: 85.6mm;
             height: 54mm;
@@ -75,7 +75,7 @@
             border: 1px solid #ddd;
         }
 
-        /* ── Top gold band ── */
+        /* Top gold band */
         .badge-top {
             width: 100%;
             height: 8mm;
@@ -85,7 +85,7 @@
             print-color-adjust: exact;
         }
 
-        /* ── Center content ── */
+        /* Center content */
         .badge-body {
             flex: 1;
             background: #ffffff;
@@ -144,7 +144,7 @@
             text-align: center;
         }
 
-        /* ── Bottom gold band ── */
+        /* Bottom gold band  */
         .badge-bottom {
             width: 100%;
             height: 6mm;
@@ -165,7 +165,7 @@
             text-transform: uppercase;
         }
 
-        /* ── Print styles ── */
+        /* Print styles */
         @media print {
             body        { background: #fff; }
             .toolbar    { display: none; }

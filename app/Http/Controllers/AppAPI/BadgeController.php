@@ -18,14 +18,6 @@ class BadgeController extends Controller
         $badges = Badge::all();
         return view('vml.badges.index', compact('badges', 'page','companies'));
     }
-
-    public function create()
-    {   $page = 'Create Badge';
-         $companies = Company::all();
-        $companies = Company::all();
-        $badges = Badge::all();
-        return view('vml.badges.create', compact('companies', 'page', 'badges'));
-    }
    
     public function storeBulk(Request $request)
 {
@@ -61,7 +53,7 @@ class BadgeController extends Controller
         $createdIds[] = $badge->id;
     }
 
-    // 🔥 Redirect to auto print page
+    // Redirect to auto print page
     return redirect()->route('badges.auto.print', [
         'ids' => implode(',', $createdIds)
     ]);

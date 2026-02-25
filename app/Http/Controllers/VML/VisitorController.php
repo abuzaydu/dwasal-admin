@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Models\Company;
 use App\Models\Department;
-use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Notifications\FcmNotification;
@@ -77,7 +76,9 @@ class VisitorController extends Controller
         $company = Company::find(Session::get('company_id'));
         $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
         $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
-        $visitors = Visitor::where('visitors.shop_id', Session::get('shop_id'))->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')->get();
+        $visitors = Visitor::where('visitors.shop_id', Session::get('shop_id'))
+        ->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')
+        ->orderBy('visitors.created_at', 'desc')->get();
         $visitorids = array(
             ['name' => 'NIL'],
             ['name' => 'NIN'],
@@ -93,15 +94,10 @@ class VisitorController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    //mange badge no and id number unique validation
-    public function manageBadge()
+    public function create()
     {
-        $page = 'Manage Badges';
-        $badges = Badge::all();
-        return view('vml.visitors.create_badge', compact('page', 'badges'));
-    }
-    
 
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -151,23 +147,43 @@ class VisitorController extends Controller
     }
 
     public function grantPermission($id)
-    {
-        $visitor = Visitor::find(decrypt($id));
-        if (!is_null($visitor)) {
-            $user = User::find($visitor->user_id);
-            $visitor->is_granted = true;
-            $visitor->status = 'Permission Granted';
-            $visitor->save();
+{
+    try {
+        $visitor = Visitor::findOrFail(decrypt($id));
 
+        $user = User::find($visitor->user_id);
+
+        // Update visitor status
+        $visitor->update([
+            'is_granted' => true,
+            'status' => 'Permission Granted'
+        ]);
+
+        // Prepare professional notification message
+        if ($user) {
             $notificationData = [
-                'title' => 'Hello!',
-                'body' => 'Etrance Permission granted for visitor '.$visitor->name.' Please Allow him/her in.',
-                'data' => ['key' => 'value'], // Additional data if needed
+                'title' => 'Visitor Entry Approved',
+                'body' => 'Entry permission has been granted for visitor ' . $visitor->name . '. Kindly allow access at the entrance.',
+                'data' => [
+                    'visitor_id' => $visitor->id,
+                    'type' => 'visitor_permission'
+                ],
             ];
+
             $user->notify(new FcmNotification($notificationData));
-            return redirect()->route('visitors.show', encrypt($visitor->id))->with('success', 'Permission granted successfully');
         }
+
+        return redirect()
+            ->route('visitors.show', encrypt($visitor->id))
+            ->with('success', 'Visitor permission granted successfully.');
+
+    } catch (\Exception $e) {
+
+        return redirect()
+            ->back()
+            ->with('error', 'An error occurred while granting permission.');
     }
+}
 
     /**
      * Show the form for editing the specified resource.

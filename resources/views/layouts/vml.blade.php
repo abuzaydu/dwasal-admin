@@ -82,9 +82,9 @@
                                     </select>
                                 </form>
                             </li>
-                            @if(Auth::user()->unreadNotifications->count() > 0)
+                            {{-- @if(Auth::user()->unreadNotifications->count() > 0)
                             <li class="dropdown">
-                                <a class="dropdown-toggle icon-menu" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="dropdown-toggle icon-menu" href="/notifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fa fa-bell"></i>
                                     <span class="notification-dot"></span>
                                 </a>
@@ -121,6 +121,14 @@
                                     </ul>
                                 </div>
                             </li>
+                            @endif --}}
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                                <li>
+                                    <a href="{{ url('/notifications') }}" class="icon-menu">
+                                        <i class="fa fa-bell"></i>
+                                        <span class="notification-dot"></span>
+                                    </a>
+                                </li>
                             @endif
                             <li class="dropdown">
                                 <a class="dropdown-toggle icon-menu" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-sliders"></i></a>

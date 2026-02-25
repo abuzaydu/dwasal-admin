@@ -45,7 +45,7 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('delivery-note-info', [TruckScanController::class, 'deliveryNoteInfo']);
 
 
-        Route::post('visitors', [VisitorsController::class, 'index']);
+        Route::get('visitors', [VisitorsController::class, 'index']);
         Route::post('hosters', [VisitorsController::class, 'create']);
         Route::post('create-visitor', [VisitorsController::class, 'store']);
         Route::post('visitor-photo', [VisitorsController::class, 'visitorPhoto']);
@@ -58,11 +58,14 @@ Route::group(['middleware' => 'cors'], function () {
     // QR Code API
     Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
+    
+
     // Attendance API
     Route::middleware('auth:api')->group(function(){
         Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
         Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
 
         });
+        
     });
 

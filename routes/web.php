@@ -69,6 +69,7 @@ use App\Http\Controllers\HR\HolidayController;
 use App\Http\Controllers\HR\HRDashController;
 use App\Http\Controllers\HR\LeaveRosterController;
 use App\Http\Controllers\HR\NextOfKinController;
+use App\Http\Controllers\HR\NotificationController;
 use App\Http\Controllers\HR\PositionController;
 use App\Http\Controllers\Inventory\BrandController;
 use App\Http\Controllers\Inventory\CategoryController;
@@ -83,15 +84,15 @@ use App\Http\Controllers\Inventory\PurchaseOrderController;
 use App\Http\Controllers\Inventory\PurchaseOrderItemController;
 use App\Http\Controllers\Inventory\PurchaseOrderTempApiController;
 use App\Http\Controllers\Inventory\PurchasePaymentController;
-use App\Http\Controllers\Inventory\PurchasesController;
 
+use App\Http\Controllers\Inventory\PurchasesController;
 use App\Http\Controllers\Inventory\ShopProductsApiController;
 use App\Http\Controllers\Inventory\StockController;
 use App\Http\Controllers\Inventory\StockCorrectionController;
 use App\Http\Controllers\Inventory\StockItemTempApiController;
 use App\Http\Controllers\Inventory\SupplierController;
-use App\Http\Controllers\Inventory\TransferOrderController;
 
+use App\Http\Controllers\Inventory\TransferOrderController;
 use App\Http\Controllers\Inventory\TransferOrderItemController;
 use App\Http\Controllers\Inventory\TransferOrderItemTempController;
 use App\Http\Controllers\Inventory\TransformationTransferItemController;
@@ -114,8 +115,8 @@ use App\Http\Controllers\Prod\DlcItemTempController;
 use App\Http\Controllers\Prod\FoodProductionController;
 use App\Http\Controllers\Prod\FoodProductionTempController;
 use App\Http\Controllers\Prod\FoodTypeController;
-use App\Http\Controllers\Prod\MaterialWIPsController;
 
+use App\Http\Controllers\Prod\MaterialWIPsController;
 use App\Http\Controllers\Prod\MaterialWIPTempController;
 use App\Http\Controllers\Prod\MohCostController;
 use App\Http\Controllers\Prod\MohCostItemController;
@@ -125,31 +126,31 @@ use App\Http\Controllers\Prod\MroApiController;
 use App\Http\Controllers\Prod\MROController;
 use App\Http\Controllers\Prod\MROItemController;
 use App\Http\Controllers\Prod\MroUseController;
-use App\Http\Controllers\Prod\MroUsedItemTempController;
 
+use App\Http\Controllers\Prod\MroUsedItemTempController;
 use App\Http\Controllers\Prod\PackingMaterialApiController;
 use App\Http\Controllers\Prod\PackingMaterialController;
 use App\Http\Controllers\Prod\PC\ExportHandlingCostController;
+
 use App\Http\Controllers\Prod\PC\IndirectCostController;
-
 use App\Http\Controllers\Prod\PC\LabourCostController;
+
+
 use App\Http\Controllers\Prod\PC\LocalIndirectCostController;
-
-
 use App\Http\Controllers\Prod\PC\LocalPackagingCostController;
 use App\Http\Controllers\Prod\PC\MaterialCostController;
 use App\Http\Controllers\Prod\PC\PackagingCostController;
 use App\Http\Controllers\Prod\PC\ProductPricingController;
+
 use App\Http\Controllers\Prod\PC\TransportCostController;
 
-use App\Http\Controllers\Prod\PlcPaymentController;
-
 //VFD
+use App\Http\Controllers\Prod\PlcPaymentController;
 use App\Http\Controllers\Prod\PmDamageController;
 use App\Http\Controllers\Prod\PmItemController;
-use App\Http\Controllers\Prod\PmPurchaseController;
 
 // PRODUCTION Controllers
+use App\Http\Controllers\Prod\PmPurchaseController;
 use App\Http\Controllers\Prod\PmPurchaseItemApiController;
 use App\Http\Controllers\Prod\PmPurchasePaymentController;
 use App\Http\Controllers\Prod\PmSupplierTransactionController;
@@ -201,12 +202,12 @@ use App\Http\Controllers\Sales\SaleItemTempController;
 use App\Http\Controllers\Sales\SaleOrderController;
 use App\Http\Controllers\Sales\SaleOrderItemController;
 use App\Http\Controllers\Sales\SalePaymentController;
-use App\Http\Controllers\Sales\SaleReturnController;
 
+use App\Http\Controllers\Sales\SaleReturnController;
 use App\Http\Controllers\Sales\SaleReturnItemController;
 use App\Http\Controllers\Sales\ServiceInvoiceItemTempController;
-use App\Http\Controllers\Sales\ServiceSaleItemController;
 
+use App\Http\Controllers\Sales\ServiceSaleItemController;
 use App\Http\Controllers\Sales\ServiceSaleItemTempController;
 use App\Http\Controllers\SandProd\MaintenanceRecordController;
 use App\Http\Controllers\SandProd\ProductionRunController;
@@ -215,14 +216,14 @@ use App\Http\Controllers\SandProd\RawMaterialSourceController;
 use App\Http\Controllers\SandProd\RMSourcingController;
 use App\Http\Controllers\SandProd\SandDashController;
 use App\Http\Controllers\SandProd\StorageLocationController;
-use App\Http\Controllers\SandProd\WashingEquipmentController;
 
 //Asset & Depreciations
+use App\Http\Controllers\SandProd\WashingEquipmentController;
 use App\Http\Controllers\SandProd\WashingPlantController;
 use App\Http\Controllers\Service\DeviceController;
-use App\Http\Controllers\Service\GradeController;
 
 // HR Controllers
+use App\Http\Controllers\Service\GradeController;
 use App\Http\Controllers\Service\ServCategoryController;
 use App\Http\Controllers\Service\ServiceController;
 use App\Http\Controllers\Service\ShopServiceApiController;
@@ -236,26 +237,26 @@ use App\Http\Controllers\Settings\ShopController;
 use App\Http\Controllers\Settings\UnitEquivalentController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\OrderDeliveryController;
-use App\Http\Controllers\Shop\OrderPaymentController;
 
 // Payroll Controllers
+use App\Http\Controllers\Shop\OrderPaymentController;
 use App\Http\Controllers\Shop\ProductImageController;
 use App\Http\Controllers\Shop\QuotationController;
 use App\Http\Controllers\Shop\QuoteRequestController;
 use App\Http\Controllers\VFD\RctInfoController;
 use App\Http\Controllers\VFD\RegInfoController;
-use App\Http\Controllers\VFD\ZReportController;
 
 //MHC Controllers
+use App\Http\Controllers\VFD\ZReportController;
 use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\InsuranceController;
 use App\Http\Controllers\VMS\LegalDocumentController;
 use App\Http\Controllers\VMS\MaintenanceController;
+
+
 use App\Http\Controllers\VMS\OwnershipController;
-
-
 use App\Http\Controllers\VMS\PartCategoryController;
 use App\Http\Controllers\VMS\PartItemTempApiController;
 use App\Http\Controllers\VMS\PartLocationController;
@@ -274,13 +275,13 @@ use App\Http\Controllers\Web\ActionLogsController;
 use App\Http\Controllers\Web\ApprovalRequestController;
 use App\Http\Controllers\Web\CompanyReportsController;
 use App\Http\Controllers\Web\FinancialReportsController;
+
 use App\Http\Controllers\Web\PurchaseReportController;
 
 use App\Http\Controllers\Web\RecycleBinController;
-
 use App\Http\Controllers\Web\ReportsController;
-use App\Http\Controllers\Web\SmsTemplateController;
 //Api Test
+use App\Http\Controllers\Web\SmsTemplateController;
 use App\Http\Controllers\Web\StockReportController;
 use App\Http\Controllers\Web\VerifyPaymentController;
 use App\Http\Controllers\WelcomeController;
@@ -1458,7 +1459,6 @@ Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])-
     Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
     Route::resource('visitors', VisitorController::class);
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
-    Route::get('manage-badge', [VisitorController::class, 'manageBadge'])->name('manage-badge');
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);
     Route::post('del-multiple-recycle-purchases', [RecycleBinController::class, 'delMultipleRecyclePurchases']);
@@ -1491,6 +1491,12 @@ Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])-
 
     Route::get('action-logs', [ActionLogsController::class, 'index']);
     Route::post('f-action-logs', [ActionLogsController::class, 'index']);
+});
+//notification
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications',          [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.markRead');
+    Route::patch('/notifications/read-all',  [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
 });
 
 Route::post('efdms-reg-ack-infos', [ApiTestController::class, 'store']);

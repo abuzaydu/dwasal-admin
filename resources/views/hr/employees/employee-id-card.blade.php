@@ -1,12 +1,3 @@
-{{--
-    Employee ID Card — Multi-Template
-    Include as: @include('hr.employees.employee-id-card', ['employee' => $employee, 'position' => $position, 'user_photo' => $user_photo])
-
-    Templates available:
-      • wave  — White + Navy wave (IvyPrints style)
-      • gold  — Gold gradient header (original template)
---}}
-
 @php
     /* ── Shared QR data — computed once, reused by all templates ── */
     $qr_empID     = $employee->emp_id      ?? 'EMPLOYEE_ID';
@@ -25,14 +16,10 @@
 @endphp
 
 <style>
-    /* ════════════════════════════════════════
-       FONTS
-    ════════════════════════════════════════ */
+    /*FONTS*/
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
 
-    /* ════════════════════════════════════════
-       WRAPPER
-    ════════════════════════════════════════ */
+    /*WRAPPER */
     .idcard-multi-section {
         font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
         padding: 30px 15px;
@@ -47,9 +34,7 @@
         letter-spacing: 0.5px;
     }
 
-    /* ════════════════════════════════════════
-       TEMPLATE SWITCHER  —  pill buttons
-    ════════════════════════════════════════ */
+    /*TEMPLATE SWITCHER  —  pill buttons*/
     .idc-switcher {
         display: flex;
         justify-content: center;
@@ -88,9 +73,7 @@
     .idc-switcher-btn.active.btn-wave { background: linear-gradient(135deg, #1a3a6b, #4a7ab5); }
     .idc-switcher-btn.active.btn-gold { background: linear-gradient(135deg, #d4a017, #9a6e00); }
 
-    /* ════════════════════════════════════════
-       TEMPLATE PANELS  (each hidden by default)
-    ════════════════════════════════════════ */
+    /* TEMPLATE PANELS  (each hidden by default) */
     .idc-template-panel {
         display: none;
     }
@@ -98,9 +81,7 @@
         display: block;
     }
 
-    /* ════════════════════════════════════════
-       SHARED CARD ROW + LABELS
-    ════════════════════════════════════════ */
+    /* SHARED CARD ROW + LABELS*/
     .idc-cards-row {
         display: flex;
         flex-wrap: wrap;
@@ -119,10 +100,8 @@
         margin-bottom: 10px;
     }
 
-    /* ════════════════════════════════════════
-       SHARED CARD SHELL  —  CR80 portrait
-       54 × 85.6 mm  →  at 280 px wide: height = 444 px
-    ════════════════════════════════════════ */
+    /* SHARED CARD SHELL  —  CR80 portrait
+       54 × 85.6 mm  →  at 280 px wide: height = 444 px */
     .idc-shell {
         width: 280px;
         height: 444px;
@@ -133,9 +112,7 @@
         flex-shrink: 0;
     }
 
-    /* ════════════════════════════════════════
-       DOWNLOAD BUTTON  (shared, color set per template)
-    ════════════════════════════════════════ */
+    /* DOWNLOAD BUTTON  (shared, color set per template)*/
     .idc-download-btn {
         display: inline-flex;
         align-items: center;
@@ -155,10 +132,7 @@
     .idc-download-btn:active { transform: translateY(0); }
     .idc-download-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    /* ════════════════════════════════════════
-       ████  TEMPLATE 1 — WAVE  ████
-       White + Navy + SVG wave footer
-    ════════════════════════════════════════ */
+    /* TEMPLATE 1 — WAVE */
 
     /* FRONT */
     #idc-wave-front {
@@ -442,10 +416,8 @@
         text-align: center;
     }
 
-    /* ════════════════════════════════════════
-       ████  TEMPLATE 2 — GOLD  ████
-       Original gold gradient header design
-    ════════════════════════════════════════ */
+    /* TEMPLATE 2 — GOLD 
+       Original gold gradient header design */
 
     /* FRONT */
     #idc-gold-front {
@@ -670,9 +642,7 @@
         <i class="fa fa-id-card me-2"></i> Employee Identity Card
     </p>
 
-    {{-- ══════════════════════════════
-         TEMPLATE SWITCHER BUTTONS
-    ══════════════════════════════ --}}
+    {{--TEMPLATE SWITCHER BUTTONS--}}
     <div class="idc-switcher">
         <button class="idc-switcher-btn btn-wave active"
                 onclick="idcSwitchTemplate('wave', this)">
@@ -691,9 +661,7 @@
     </div>
 
 
-    {{-- ══════════════════════════════════════════════
-         TEMPLATE PANEL 1  ·  WAVE
-    ══════════════════════════════════════════════ --}}
+    {{-- TEMPLATE PANEL 1  ·  WAVE --}}
     <div id="idc-panel-wave" class="idc-template-panel active">
 
         <div class="idc-cards-row">
@@ -807,9 +775,7 @@
     </div>{{-- /panel wave --}}
 
 
-    {{-- ══════════════════════════════════════════════
-         TEMPLATE PANEL 2  ·  GOLD
-    ══════════════════════════════════════════════ --}}
+    {{-- TEMPLATE PANEL 2  ·  GOLD --}}
     <div id="idc-panel-gold" class="idc-template-panel">
 
         <div class="idc-cards-row">
@@ -907,11 +873,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-/* ════════════════════════════════════════
-   TEMPLATE SWITCHER
+/* TEMPLATE SWITCHER
    — shows the chosen panel, hides the rest
-   — updates active state on switcher buttons
-════════════════════════════════════════ */
+   — updates active state on switcher buttons */
 function idcSwitchTemplate(key, clickedBtn) {
     // Hide all panels
     document.querySelectorAll('.idc-template-panel').forEach(p => p.classList.remove('active'));
@@ -924,11 +888,9 @@ function idcSwitchTemplate(key, clickedBtn) {
 }
 
 
-/* ════════════════════════════════════════
-   UNIFIED PDF DOWNLOAD
+/* UNIFIED PDF DOWNLOAD
    — reads front/back IDs for the active template
-   — CR80 portrait: 54 × 85.6 mm, one side per page
-════════════════════════════════════════ */
+   — CR80 portrait: 54 × 85.6 mm, one side per page */
 async function idcDownload(templateKey) {
     const btn = document.getElementById('idc-' + templateKey + '-download-btn');
     btn.disabled = true;

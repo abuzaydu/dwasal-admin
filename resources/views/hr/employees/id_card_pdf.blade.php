@@ -1,8 +1,4 @@
-{{--
-    Employee ID Card — Wave Template
-    Include as: @include('hr.employees.employee-id-card-wave', ['employee' => $employee, 'position' => $position, 'user_photo' => $user_photo])
---}}
-
+{{-- this blade is the one that is used right now --}}
 <style>
     /* ── Google Font ── */
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
@@ -39,12 +35,10 @@
         margin-bottom: 10px;
     }
 
-    /* ══════════════════════════════
-       SHARED SHELL  —  CR80 portrait
+    /* SHARED SHELL  —  CR80 portrait
        85.6 × 54 mm → scale ×4 for screen preview
        Actual proportions: 54:85.6  ≈  width:height = 1:1.585
-       At 280px wide → height = 444px
-    ══════════════════════════════ */
+       At 280px wide → height = 444px */
     .id-card-wave-shell {
         width: 280px;
         height: 444px;
@@ -55,9 +49,7 @@
         flex-shrink: 0;
     }
 
-    /* ══════════════════════════════
-       FRONT  —  White + Navy Wave
-    ══════════════════════════════ */
+    /* FRONT  —  White + Navy Wave */
     #idcw-front {
         background: #ffffff;
         display: flex;
@@ -258,9 +250,7 @@
         line-height: 1.6;
     }
 
-    /* ══════════════════════════════
-       BACK  —  Full Navy + Wave accent
-    ══════════════════════════════ */
+    /*  BACK  —  Full Navy + Wave accent*/
     #idcw-back {
         background: #1a3a6b;
         display: flex;
@@ -403,9 +393,7 @@
 
     <div class="cards-row">
 
-        {{-- ══════════════════════
-             FRONT
-        ══════════════════════ --}}
+        {{-- FRONT --}}
         <div>
             <p class="card-label">Front Side</p>
             <div class="id-card-wave-shell" id="idcw-front">
@@ -496,9 +484,7 @@
             </div>
         </div>
 
-        {{-- ══════════════════════
-             BACK
-        ══════════════════════ --}}
+        {{--  BACK --}}
         <div>
             <p class="card-label">Back Side</p>
             <div class="id-card-wave-shell" id="idcw-back">

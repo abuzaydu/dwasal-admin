@@ -49,7 +49,7 @@
                                             <th>Badge No.</th>
                                             <th>Company</th>
                                             <th>Status</th>
-                                            {{-- <th style="text-align: center;">Actions</th> --}}
+                                            <th style="text-align: center;">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,16 +72,17 @@
                                                     {{ ucfirst($badge->status) }}
                                                 </span>
                                             </td>
-                                            {{-- <td style="text-align: center;">
+                                            <td style="text-align: center;">
                                                
                                                 <form method="POST" action="{{ route('badges.destroy', encrypt($badge->id)) }}" id="delete-form-{{ $key }}" style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <a href="javascript:;" onclick="return confirmDelete({{ $key }})">
+                                                    <button type="submit" onclick="return confirm({{ $key }})" class="btn btn-sm">
                                                         <i class="fa fa-trash" style="color: red;"></i>
-                                                    </a>
+                                                    </button>
                                                 </form> 
-                                            </td> --}}
+                                                
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
