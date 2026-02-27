@@ -15,7 +15,7 @@ class BadgeController extends Controller
          $page = 'Badges';
          $companies = Company::all();
         $companies = Company::all();
-        $badges = Badge::all();
+        $badges = Badge::orderBy('created_at', 'desc')->get();
         return view('vml.badges.index', compact('badges', 'page','companies'));
     }
     public function show($id)
