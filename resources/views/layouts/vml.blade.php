@@ -182,6 +182,9 @@
                                 @endif
                                 <hr>
                                 <li class="{{ request()->is('visitors') ? 'active' : '' }}"><a href="{{ url('visitors') }}"><i class="fa fa-truck"></i> Visitors</a></li>
+                                <hr>
+                                <li class="{{ request()->is('badges') ? 'active' : '' }}"><a href="{{ url('badges') }}"><i class="fa fa-truck"></i> Manage Badges</a></li>
+
                             </ul>
                         </nav>
                     </div>

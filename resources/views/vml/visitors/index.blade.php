@@ -49,9 +49,11 @@
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
-            <div class="col-lg-7 col-md-7 col-sm-12">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#visitorModal"><i class="fa fa-plus-square"></i> New Visitor</button>
+            <div class="col-lg-7 col-md-7 col-sm-12 text-end">
+                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#visitorModal">
+                    <i class="fa fa-plus-square"></i> New Visitor</button>
             </div>
+            
         </div>
     </div>
     <!--end breadcrumb-->
@@ -140,7 +142,15 @@
                         @csrf
                         <div class="col-md-6">
                             <label class="form-label">Badge Number<span style="color: red; font-weight: bold;">*</span></label>
-                            <input id="name" type="text" name="badge_no" placeholder="Enter visitor Plate Number" class="form-control form-control-sm mb-1">
+                            <select name="badge_no" class="form-select form-select-sm mb-1" required>
+                                <option value="">-- Select Badge --</option>
+                                @foreach($badges as $badge)
+                               
+                                <option value="{{ $badge->badge_number }}">{{ $badge->badge_number }}</option>
+                                @endforeach
+                                
+                            </select>
+                          
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Name <span style="color: red; font-weight: bold;">*</span></label>

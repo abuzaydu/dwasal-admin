@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\VML;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
+use App\Models\Badge;
 use App\Models\Company;
-use App\Models\User;
-use App\Models\Visitor;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\User;
+use App\Models\Visitor;
 use App\Notifications\FcmNotification;
+use Auth;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Session;
 
 class VisitorController extends Controller
 {
@@ -28,7 +30,41 @@ class VisitorController extends Controller
     public function dashboard(Request $request)
     {
         $page = 'Visitors Dashboard';
-        return view('vml.index', compact('page'));
+            $company = Company::find(Session::get('company_id'));
+        $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
+        $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
+        $visitorsLogs = Visitor::whereDate('created_at', Carbon::today())
+            ->latest()
+            ->limit(10)
+            ->get();
+    
+    $period = $request->get('period', 'today');
+
+    // Build the date range based on period
+    $dateRange = match($period) {
+        'weekly'  => [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->endOfDay()],
+        'monthly' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
+        'yearly'  => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
+        'total'   => [null, null], // no date filter
+        default   => [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()], // 'today'
+    };
+
+    // Helper closure to apply date range
+    $applyRange = function ($query) use ($dateRange) {
+        if ($dateRange[0] && $dateRange[1]) {
+            $query->whereBetween('created_at', $dateRange);
+        }
+        return $query;
+    };
+
+    $totalVisitors    = $applyRange(Visitor::query())->count();
+    $pendingVisitors  = $applyRange(Visitor::whereIn('status', ['Awaiting Host permission', 'Permission Granted']))->count();
+    $checkedinVisitors = $applyRange(Visitor::where('status', 'Checked In'))->count();
+    $checkedoutVisitors  = $applyRange(Visitor::where('status', 'Checked Out'))->count(); // reuse same period
+
+      
+
+        return view('vml.index', compact('page', 'visitorsLogs','departments', 'employees', 'totalVisitors', 'pendingVisitors', 'checkedinVisitors', 'checkedoutVisitors','period'));
     }
 
 
@@ -49,17 +85,22 @@ class VisitorController extends Controller
             ['name' => 'Voters Number'],
             ['name' => 'Passport']
         );
+        $badges = $company->badges()->where('status', 'available')->get();
 
-        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids'));
+        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids', 'badges'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    //mange badge no and id number unique validation
+    public function manageBadge()
     {
-        //
+        $page = 'Manage Badges';
+        $badges = Badge::all();
+        return view('vml.visitors.create_badge', compact('page', 'badges'));
     }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -84,7 +125,10 @@ class VisitorController extends Controller
             $visitor->purpose = $request['purpose'];
             $visitor->came_in_with = $request['came_in_with'];
             $visitor->save();
-        }
+        Badge::where('badge_number', $request['badge_no'])
+        ->update(['status' => 'in_use']);
+       
+     }
 
         return redirect('visitors')->with('success', 'New visitor added successfully');
     }

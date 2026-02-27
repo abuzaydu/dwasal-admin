@@ -1,288 +1,290 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Acc\AccountingDashController;
 
 // Auth Controllers
-use App\Http\Controllers\WelcomeController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Acc\AccountsController;
+use App\Http\Controllers\Acc\AccountTransController;
+use App\Http\Controllers\Acc\BalanceSheetsController;
+use App\Http\Controllers\Acc\CashInController;
 
 // Admin routes
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\TransactionController;
-use App\Http\Controllers\Admin\ServiceChargeController;
-use App\Http\Controllers\Admin\ModuleController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\UserTransactionController;
-use App\Http\Controllers\Admin\SenderIDController;
+use App\Http\Controllers\Acc\CashOutController;
+use App\Http\Controllers\Acc\COAController;
+use App\Http\Controllers\Acc\EmployeeLoanController;
+use App\Http\Controllers\Acc\EmployeeLoanReturnController;
+use App\Http\Controllers\Acc\ExpenseCategoryController;
+use App\Http\Controllers\Acc\ExpenseController;
+use App\Http\Controllers\Acc\ExpenseItemController;
+use App\Http\Controllers\Acc\ExpensePaymentController;
+use App\Http\Controllers\Acc\ExpenseTempController;
+use App\Http\Controllers\Acc\ExpSupplierController;
+use App\Http\Controllers\Acc\PettyCashController;
 use App\Http\Controllers\Admin\BusinessTypeController;
-use App\Http\Controllers\Admin\SubscriptionTypeController;
-use App\Http\Controllers\Admin\SmsAccountController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ModuleController;
+
 use App\Http\Controllers\Admin\PaymentAuthController;
 
-use App\Http\Controllers\HomeController;
-
-use App\Http\Controllers\Settings\ProfileController;
-use App\Http\Controllers\Settings\CompanyController;
-use App\Http\Controllers\Settings\CompanyRoleController;
-use App\Http\Controllers\Settings\ShopController;
-use App\Http\Controllers\Settings\SettingsController;
-use App\Http\Controllers\Settings\DeliveryRateController;
-use App\Http\Controllers\Settings\UnitEquivalentController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SenderIDController;
+use App\Http\Controllers\Admin\ServiceChargeController;
+use App\Http\Controllers\Admin\SmsAccountController;
+use App\Http\Controllers\Admin\SubscriptionTypeController;
 
 // Production
-use App\Http\Controllers\SandProd\SandDashController;
-use App\Http\Controllers\SandProd\WashingPlantController;
-use App\Http\Controllers\SandProd\WashingEquipmentController;
-use App\Http\Controllers\SandProd\StorageLocationController;
-use App\Http\Controllers\SandProd\MaintenanceRecordController;
-use App\Http\Controllers\SandProd\RawMaterialSourceController;
-use App\Http\Controllers\SandProd\RMSourcingController;
-use App\Http\Controllers\SandProd\ProductionRunController;
-use App\Http\Controllers\SandProd\QualityTestController;
+use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserTransactionController;
+use App\Http\Controllers\ApiTestController;
+use App\Http\Controllers\AppAPI\BadgeController;
+use App\Http\Controllers\Asset\AssetRecordController;
+use App\Http\Controllers\Asset\DepreciationController;
+use App\Http\Controllers\Asset\DepreciationMethodController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 
-use App\Http\Controllers\Shop\ProductImageController;
-use App\Http\Controllers\Shop\OrderController;
-use App\Http\Controllers\Shop\OrderPaymentController;
-use App\Http\Controllers\Shop\OrderDeliveryController;
-
-use App\Http\Controllers\Shop\QuoteRequestController;
-use App\Http\Controllers\Shop\QuotationController;
-
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AutoCompleteSearch;
 use App\Http\Controllers\Client\CartController;
+
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\HomeController;
+
+use App\Http\Controllers\HR\AcademicInfoController;
+use App\Http\Controllers\HR\AttendanceController;
 // use App\Http\Controllers\Client\DashController;
 
-use App\Http\Controllers\Web\CompanyReportsController;
-use App\Http\Controllers\Web\SmsTemplateController;
+use App\Http\Controllers\HR\AttendanceSettingController;
+use App\Http\Controllers\HR\DepartmentController;
 
-use App\Http\Controllers\Inventory\InventoryDashController;
-use App\Http\Controllers\Inventory\ProductUnitController;
-use App\Http\Controllers\Inventory\ProductsController;
+use App\Http\Controllers\HR\EmployeeController;
+use App\Http\Controllers\HR\EmployeeDocController;
+use App\Http\Controllers\HR\EmployeeMedicalInfoController;
+use App\Http\Controllers\HR\EmployeeSalaryController;
+use App\Http\Controllers\HR\EventController;
+use App\Http\Controllers\HR\HolidayController;
+use App\Http\Controllers\HR\HRDashController;
+use App\Http\Controllers\HR\LeaveRosterController;
+use App\Http\Controllers\HR\NextOfKinController;
+use App\Http\Controllers\HR\PositionController;
 use App\Http\Controllers\Inventory\BrandController;
-use App\Http\Controllers\Inventory\StockCorrectionController;
-use App\Http\Controllers\Inventory\CorrectionTempController;
-use App\Http\Controllers\Inventory\PurchasesController;
-use App\Http\Controllers\Inventory\StockItemTempApiController;
-use App\Http\Controllers\Inventory\PurchaseCostItemTempController;
-use App\Http\Controllers\Inventory\PurchaseCostItemController;
-use App\Http\Controllers\Inventory\ShopProductsApiController;
 use App\Http\Controllers\Inventory\CategoryController;
-use App\Http\Controllers\Inventory\StockController;
-use App\Http\Controllers\Inventory\PurchasePaymentController;
+use App\Http\Controllers\Inventory\CorrectionTempController;
+use App\Http\Controllers\Inventory\InventoryDashController;
+use App\Http\Controllers\Inventory\ProdDamageController;
+use App\Http\Controllers\Inventory\ProductsController;
+use App\Http\Controllers\Inventory\ProductUnitController;
+use App\Http\Controllers\Inventory\PurchaseCostItemController;
+use App\Http\Controllers\Inventory\PurchaseCostItemTempController;
 use App\Http\Controllers\Inventory\PurchaseOrderController;
 use App\Http\Controllers\Inventory\PurchaseOrderItemController;
 use App\Http\Controllers\Inventory\PurchaseOrderTempApiController;
-use App\Http\Controllers\Inventory\ProdDamageController;
+use App\Http\Controllers\Inventory\PurchasePaymentController;
+use App\Http\Controllers\Inventory\PurchasesController;
+
+use App\Http\Controllers\Inventory\ShopProductsApiController;
+use App\Http\Controllers\Inventory\StockController;
+use App\Http\Controllers\Inventory\StockCorrectionController;
+use App\Http\Controllers\Inventory\StockItemTempApiController;
+use App\Http\Controllers\Inventory\SupplierController;
 use App\Http\Controllers\Inventory\TransferOrderController;
-use App\Http\Controllers\Inventory\TransferOrderItemTempController;
+
 use App\Http\Controllers\Inventory\TransferOrderItemController;
+use App\Http\Controllers\Inventory\TransferOrderItemTempController;
 use App\Http\Controllers\Inventory\TransformationTransferItemController;
 use App\Http\Controllers\Inventory\TransformationTransferItemTempController;
-use App\Http\Controllers\Inventory\SupplierController;
-
-use App\Http\Controllers\Service\ServCategoryController;
-use App\Http\Controllers\Service\ServiceController;
-use App\Http\Controllers\Service\DeviceController;
-use App\Http\Controllers\Service\TripLogsController;
-use App\Http\Controllers\Service\GradeController;
-use App\Http\Controllers\Service\ShopServiceApiController;
-
-use App\Http\Controllers\Sales\SaleDashController;
-use App\Http\Controllers\Sales\CustomerController;
-use App\Http\Controllers\Sales\CustomerCategoryController;
-use App\Http\Controllers\Sales\SaleOrderController;
-use App\Http\Controllers\Sales\SaleOrderItemController;
-use App\Http\Controllers\Sales\SaleController;
-use App\Http\Controllers\Sales\SaleItemTempController;
-use App\Http\Controllers\Sales\ServiceSaleItemTempController;
-use App\Http\Controllers\Sales\AnSaleController;
-use App\Http\Controllers\Sales\AnSaleItemController;
-use App\Http\Controllers\Sales\ServiceSaleItemController;
-use App\Http\Controllers\Sales\SalePaymentController;
-use App\Http\Controllers\Sales\SaleReturnController;
-use App\Http\Controllers\Sales\SaleReturnItemController;
-use App\Http\Controllers\Sales\RefundRequestController;
-use App\Http\Controllers\Sales\InvoiceNoteController;
-use App\Http\Controllers\Sales\InvoiceController;
-use App\Http\Controllers\Sales\ProInvoiceController;
-use App\Http\Controllers\Sales\InvoiceItemTempController;
-use App\Http\Controllers\Sales\ServiceInvoiceItemTempController;
-use App\Http\Controllers\Sales\DeliveryNoteController;
-use App\Http\Controllers\Sales\DeliveryAddressController;
-use App\Http\Controllers\Sales\CreditNoteController;
-
-use App\Http\Controllers\Acc\AccountingDashController;
-use App\Http\Controllers\Acc\BalanceSheetsController;
-use App\Http\Controllers\Acc\AccountsController;
-use App\Http\Controllers\Acc\COAController;
-use App\Http\Controllers\Acc\ExpenseCategoryController;
-use App\Http\Controllers\Acc\ExpenseItemController;
-use App\Http\Controllers\Acc\ExpenseController;
-use App\Http\Controllers\Acc\ExpenseTempController;
-use App\Http\Controllers\Acc\ExpensePaymentController;
-use App\Http\Controllers\Acc\ExpSupplierController;
-
-use App\Http\Controllers\Acc\CashOutController;
-use App\Http\Controllers\Acc\CashInController;
-use App\Http\Controllers\Acc\AccountTransController;
-use App\Http\Controllers\Acc\PettyCashController;
-
-use App\Http\Controllers\Acc\EmployeeLoanController;
-use App\Http\Controllers\Acc\EmployeeLoanReturnController;
-
-
-use App\Http\Controllers\Web\ReportsController;
-use App\Http\Controllers\Web\FinancialReportsController;
-use App\Http\Controllers\Web\PurchaseReportController;
-use App\Http\Controllers\Web\StockReportController;
-use App\Http\Controllers\Web\ApprovalRequestController;
-
-use App\Http\Controllers\Web\VerifyPaymentController;
-
-//VFD
-use App\Http\Controllers\VFD\RegInfoController;
-use App\Http\Controllers\VFD\RctInfoController;
-use App\Http\Controllers\VFD\ZReportController;
-
-// PRODUCTION Controllers
-use App\Http\Controllers\Prod\ProdSettingController;
-use App\Http\Controllers\Prod\ProdHomeController;
-use App\Http\Controllers\Prod\RawMaterialController;
-use App\Http\Controllers\Prod\RmPurchaseController;
-use App\Http\Controllers\Prod\RmItemController;
-use App\Http\Controllers\Prod\RmSupplierTransactionController;
-use App\Http\Controllers\Prod\RmPurchasePaymentController;
-use App\Http\Controllers\Prod\RmPurchaseItemApiController;
-use App\Http\Controllers\Prod\RawMaterialApiController;
-use App\Http\Controllers\Prod\RmUseController;
-use App\Http\Controllers\Prod\RmUseItemTempController;
-use App\Http\Controllers\Prod\RmDamageController;
-use App\Http\Controllers\Prod\DlcItemTempController;
-use App\Http\Controllers\Prod\RmUsedItemController;
-use App\Http\Controllers\Prod\PackingMaterialController;
-use App\Http\Controllers\Prod\PackingMaterialApiController;
-use App\Http\Controllers\Prod\PmPurchaseItemApiController;
-use App\Http\Controllers\Prod\PmSupplierTransactionController;
-use App\Http\Controllers\Prod\PmPurchaseController;
-use App\Http\Controllers\Prod\PmPurchasePaymentController;
-use App\Http\Controllers\Prod\PmItemController;
-use App\Http\Controllers\Prod\PmUseController;
-use App\Http\Controllers\Prod\PmUseItemTempController;
-use App\Http\Controllers\Prod\PmDamageController;
-use App\Http\Controllers\Prod\PmTransferController;
-use App\Http\Controllers\Prod\PmTransferItemController;
-use App\Http\Controllers\Prod\MROItemController;
-use App\Http\Controllers\Prod\MROController;
-use App\Http\Controllers\Prod\MroUsedItemTempController;
-use App\Http\Controllers\Prod\MroUseController;
-use App\Http\Controllers\Prod\MroApiController;
-use App\Http\Controllers\Prod\ProdLabourCostController;
-use App\Http\Controllers\Prod\ProdLabourCostTempController;
-use App\Http\Controllers\Prod\ProdLabourCostItemController;
-use App\Http\Controllers\Prod\PlcPaymentController;
-use App\Http\Controllers\Prod\MohCostController;
-use App\Http\Controllers\Prod\MohCostItemController;
-use App\Http\Controllers\Prod\MohCostTempController;
-use App\Http\Controllers\Prod\MohCostPaymentController;
-use App\Http\Controllers\Prod\ProductionStageController;
-use App\Http\Controllers\Prod\PPStageController;
-use App\Http\Controllers\Prod\ProductionCostController;
-use App\Http\Controllers\Prod\ProductionApiController;
-use App\Http\Controllers\Prod\DLCItemController;
-use App\Http\Controllers\Prod\ProdCostItemController;
-use App\Http\Controllers\Prod\ProdTransferController;
-use App\Http\Controllers\Prod\WIPsController;
-use App\Http\Controllers\Prod\WIPTempController;
-use App\Http\Controllers\Prod\WIPMaterialController;
-use App\Http\Controllers\Prod\MaterialWIPsController;
-use App\Http\Controllers\Prod\MaterialWIPTempController;
-use App\Http\Controllers\Prod\ProdReportsController;
-
-use App\Http\Controllers\Prod\FoodTypeController;
-use App\Http\Controllers\Prod\FoodProductionController;
-use App\Http\Controllers\Prod\FoodProductionTempController;
-
-use App\Http\Controllers\Prod\PC\ProductPricingController;
-use App\Http\Controllers\Prod\PC\MaterialCostController;
-use App\Http\Controllers\Prod\PC\LabourCostController;
-use App\Http\Controllers\Prod\PC\TransportCostController;
-use App\Http\Controllers\Prod\PC\IndirectCostController;
-use App\Http\Controllers\Prod\PC\LocalIndirectCostController;
-use App\Http\Controllers\Prod\PC\PackagingCostController;
-use App\Http\Controllers\Prod\PC\LocalPackagingCostController;
-use App\Http\Controllers\Prod\PC\ExportHandlingCostController;
-
-//Asset & Depreciations
-use App\Http\Controllers\Asset\DepreciationMethodController;
-use App\Http\Controllers\Asset\AssetRecordController;
-use App\Http\Controllers\Asset\DepreciationController;
-
-// HR Controllers
-use App\Http\Controllers\HR\HRDashController;
-use App\Http\Controllers\HR\PositionController;
-use App\Http\Controllers\HR\EmployeeController;
-use App\Http\Controllers\HR\AcademicInfoController;
-use App\Http\Controllers\HR\EmployeeMedicalInfoController;
-use App\Http\Controllers\HR\NextOfKinController;
-use App\Http\Controllers\HR\LeaveRosterController;
-use App\Http\Controllers\HR\AttendanceController;
-use App\Http\Controllers\HR\DepartmentController;
-use App\Http\Controllers\HR\HolidayController;
-use App\Http\Controllers\HR\EventController;
-use App\Http\Controllers\HR\EmployeeSalaryController;
-use App\Http\Controllers\HR\EmployeeDocController;
-use App\Http\Controllers\HR\AttendanceSettingController;
-
-// Payroll Controllers
+use App\Http\Controllers\MHC\AppointmentController;
+use App\Http\Controllers\MHC\AppointmentProductController;
+use App\Http\Controllers\MHC\AppointmentServiceController;
+use App\Http\Controllers\MHC\DashController;
+use App\Http\Controllers\MHC\DoctorController;
+use App\Http\Controllers\MHC\MedicalHistoryController;
+use App\Http\Controllers\MHC\PatientController;
 use App\Http\Controllers\Payroll\PayrollController;
+use App\Http\Controllers\Payroll\PayrollDeductionController;
+use App\Http\Controllers\Payroll\PayrollDeductionPaymentController;
 use App\Http\Controllers\Payroll\PayrollSettingsController;
 use App\Http\Controllers\Payroll\PayrollTempController;
 use App\Http\Controllers\Payroll\PayrollToExpenseController;
-use App\Http\Controllers\Payroll\PayrollDeductionController;
-use App\Http\Controllers\Payroll\PayrollDeductionPaymentController;
+use App\Http\Controllers\Prod\DLCItemController;
+use App\Http\Controllers\Prod\DlcItemTempController;
+use App\Http\Controllers\Prod\FoodProductionController;
+use App\Http\Controllers\Prod\FoodProductionTempController;
+use App\Http\Controllers\Prod\FoodTypeController;
+use App\Http\Controllers\Prod\MaterialWIPsController;
+
+use App\Http\Controllers\Prod\MaterialWIPTempController;
+use App\Http\Controllers\Prod\MohCostController;
+use App\Http\Controllers\Prod\MohCostItemController;
+use App\Http\Controllers\Prod\MohCostPaymentController;
+use App\Http\Controllers\Prod\MohCostTempController;
+use App\Http\Controllers\Prod\MroApiController;
+use App\Http\Controllers\Prod\MROController;
+use App\Http\Controllers\Prod\MROItemController;
+use App\Http\Controllers\Prod\MroUseController;
+use App\Http\Controllers\Prod\MroUsedItemTempController;
+
+use App\Http\Controllers\Prod\PackingMaterialApiController;
+use App\Http\Controllers\Prod\PackingMaterialController;
+use App\Http\Controllers\Prod\PC\ExportHandlingCostController;
+use App\Http\Controllers\Prod\PC\IndirectCostController;
+
+use App\Http\Controllers\Prod\PC\LabourCostController;
+use App\Http\Controllers\Prod\PC\LocalIndirectCostController;
+
+
+use App\Http\Controllers\Prod\PC\LocalPackagingCostController;
+use App\Http\Controllers\Prod\PC\MaterialCostController;
+use App\Http\Controllers\Prod\PC\PackagingCostController;
+use App\Http\Controllers\Prod\PC\ProductPricingController;
+use App\Http\Controllers\Prod\PC\TransportCostController;
+
+use App\Http\Controllers\Prod\PlcPaymentController;
+
+//VFD
+use App\Http\Controllers\Prod\PmDamageController;
+use App\Http\Controllers\Prod\PmItemController;
+use App\Http\Controllers\Prod\PmPurchaseController;
+
+// PRODUCTION Controllers
+use App\Http\Controllers\Prod\PmPurchaseItemApiController;
+use App\Http\Controllers\Prod\PmPurchasePaymentController;
+use App\Http\Controllers\Prod\PmSupplierTransactionController;
+use App\Http\Controllers\Prod\PmTransferController;
+use App\Http\Controllers\Prod\PmTransferItemController;
+use App\Http\Controllers\Prod\PmUseController;
+use App\Http\Controllers\Prod\PmUseItemTempController;
+use App\Http\Controllers\Prod\PPStageController;
+use App\Http\Controllers\Prod\ProdCostItemController;
+use App\Http\Controllers\Prod\ProdHomeController;
+use App\Http\Controllers\Prod\ProdLabourCostController;
+use App\Http\Controllers\Prod\ProdLabourCostItemController;
+use App\Http\Controllers\Prod\ProdLabourCostTempController;
+use App\Http\Controllers\Prod\ProdReportsController;
+use App\Http\Controllers\Prod\ProdSettingController;
+use App\Http\Controllers\Prod\ProdTransferController;
+use App\Http\Controllers\Prod\ProductionApiController;
+use App\Http\Controllers\Prod\ProductionCostController;
+use App\Http\Controllers\Prod\ProductionStageController;
+use App\Http\Controllers\Prod\RawMaterialApiController;
+use App\Http\Controllers\Prod\RawMaterialController;
+use App\Http\Controllers\Prod\RmDamageController;
+use App\Http\Controllers\Prod\RmItemController;
+use App\Http\Controllers\Prod\RmPurchaseController;
+use App\Http\Controllers\Prod\RmPurchaseItemApiController;
+use App\Http\Controllers\Prod\RmPurchasePaymentController;
+use App\Http\Controllers\Prod\RmSupplierTransactionController;
+use App\Http\Controllers\Prod\RmUseController;
+use App\Http\Controllers\Prod\RmUsedItemController;
+use App\Http\Controllers\Prod\RmUseItemTempController;
+use App\Http\Controllers\Prod\WIPMaterialController;
+use App\Http\Controllers\Prod\WIPsController;
+use App\Http\Controllers\Prod\WIPTempController;
+use App\Http\Controllers\Sales\AnSaleController;
+use App\Http\Controllers\Sales\AnSaleItemController;
+use App\Http\Controllers\Sales\CreditNoteController;
+use App\Http\Controllers\Sales\CustomerCategoryController;
+use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Sales\DeliveryAddressController;
+use App\Http\Controllers\Sales\DeliveryNoteController;
+use App\Http\Controllers\Sales\InvoiceController;
+use App\Http\Controllers\Sales\InvoiceItemTempController;
+use App\Http\Controllers\Sales\InvoiceNoteController;
+use App\Http\Controllers\Sales\ProInvoiceController;
+use App\Http\Controllers\Sales\RefundRequestController;
+use App\Http\Controllers\Sales\SaleController;
+use App\Http\Controllers\Sales\SaleDashController;
+use App\Http\Controllers\Sales\SaleItemTempController;
+use App\Http\Controllers\Sales\SaleOrderController;
+use App\Http\Controllers\Sales\SaleOrderItemController;
+use App\Http\Controllers\Sales\SalePaymentController;
+use App\Http\Controllers\Sales\SaleReturnController;
+
+use App\Http\Controllers\Sales\SaleReturnItemController;
+use App\Http\Controllers\Sales\ServiceInvoiceItemTempController;
+use App\Http\Controllers\Sales\ServiceSaleItemController;
+
+use App\Http\Controllers\Sales\ServiceSaleItemTempController;
+use App\Http\Controllers\SandProd\MaintenanceRecordController;
+use App\Http\Controllers\SandProd\ProductionRunController;
+use App\Http\Controllers\SandProd\QualityTestController;
+use App\Http\Controllers\SandProd\RawMaterialSourceController;
+use App\Http\Controllers\SandProd\RMSourcingController;
+use App\Http\Controllers\SandProd\SandDashController;
+use App\Http\Controllers\SandProd\StorageLocationController;
+use App\Http\Controllers\SandProd\WashingEquipmentController;
+
+//Asset & Depreciations
+use App\Http\Controllers\SandProd\WashingPlantController;
+use App\Http\Controllers\Service\DeviceController;
+use App\Http\Controllers\Service\GradeController;
+
+// HR Controllers
+use App\Http\Controllers\Service\ServCategoryController;
+use App\Http\Controllers\Service\ServiceController;
+use App\Http\Controllers\Service\ShopServiceApiController;
+use App\Http\Controllers\Service\TripLogsController;
+use App\Http\Controllers\Settings\CompanyController;
+use App\Http\Controllers\Settings\CompanyRoleController;
+use App\Http\Controllers\Settings\DeliveryRateController;
+use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\SettingsController;
+use App\Http\Controllers\Settings\ShopController;
+use App\Http\Controllers\Settings\UnitEquivalentController;
+use App\Http\Controllers\Shop\OrderController;
+use App\Http\Controllers\Shop\OrderDeliveryController;
+use App\Http\Controllers\Shop\OrderPaymentController;
+
+// Payroll Controllers
+use App\Http\Controllers\Shop\ProductImageController;
+use App\Http\Controllers\Shop\QuotationController;
+use App\Http\Controllers\Shop\QuoteRequestController;
+use App\Http\Controllers\VFD\RctInfoController;
+use App\Http\Controllers\VFD\RegInfoController;
+use App\Http\Controllers\VFD\ZReportController;
 
 //MHC Controllers
-use App\Http\Controllers\MHC\DashController;
-use App\Http\Controllers\MHC\DoctorController;
-use App\Http\Controllers\MHC\PatientController;
-use App\Http\Controllers\MHC\AppointmentController;
-use App\Http\Controllers\MHC\AppointmentServiceController;
-use App\Http\Controllers\MHC\AppointmentProductController;
-use App\Http\Controllers\MHC\MedicalHistoryController;
-
-
-use App\Http\Controllers\VMS\VehicleController;
-use App\Http\Controllers\VMS\VehicleTypeController;
-use App\Http\Controllers\VMS\OwnershipController;
-use App\Http\Controllers\VMS\LegalDocumentController;
+use App\Http\Controllers\VML\VisitorController;
+use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\InsuranceController;
-use App\Http\Controllers\VMS\VehicleRequisitionController;
+use App\Http\Controllers\VMS\LegalDocumentController;
 use App\Http\Controllers\VMS\MaintenanceController;
-use App\Http\Controllers\VMS\RefuelingController;
-use App\Http\Controllers\VMS\VendorController;
-use App\Http\Controllers\VMS\PartsController;
+use App\Http\Controllers\VMS\OwnershipController;
+
+
 use App\Http\Controllers\VMS\PartCategoryController;
+use App\Http\Controllers\VMS\PartItemTempApiController;
 use App\Http\Controllers\VMS\PartLocationController;
 use App\Http\Controllers\VMS\PartPurchaseController;
 use App\Http\Controllers\VMS\PartPurchaseItemController;
-use App\Http\Controllers\VMS\PartItemTempApiController;
+use App\Http\Controllers\VMS\PartsController;
 use App\Http\Controllers\VMS\PartsUsageController;
 use App\Http\Controllers\VMS\PartUsageItemController;
+use App\Http\Controllers\VMS\RefuelingController;
+use App\Http\Controllers\VMS\VehicleController;
+use App\Http\Controllers\VMS\VehicleRequisitionController;
+use App\Http\Controllers\VMS\VehicleTypeController;
+use App\Http\Controllers\VMS\VendorController;
 use App\Http\Controllers\VMS\VMSExpenseController;
-
-use App\Http\Controllers\VML\VisitorController;
+use App\Http\Controllers\Web\ActionLogsController;
+use App\Http\Controllers\Web\ApprovalRequestController;
+use App\Http\Controllers\Web\CompanyReportsController;
+use App\Http\Controllers\Web\FinancialReportsController;
+use App\Http\Controllers\Web\PurchaseReportController;
 
 use App\Http\Controllers\Web\RecycleBinController;
-use App\Http\Controllers\Web\ActionLogsController;
+
+use App\Http\Controllers\Web\ReportsController;
+use App\Http\Controllers\Web\SmsTemplateController;
 //Api Test
-use App\Http\Controllers\ApiTestController;
-use App\Http\Controllers\AutoCompleteSearch;
+use App\Http\Controllers\Web\StockReportController;
+use App\Http\Controllers\Web\VerifyPaymentController;
+use App\Http\Controllers\WelcomeController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -390,6 +392,15 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
     Route::get('generate-key', [PaymentAuthController::class, 'generateKey']);
 });
 
+//VMl Routes
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/badges',            [BadgeController::class, 'index'])->name('badges.index');
+    Route::post('/badges/bulk',      [BadgeController::class, 'storeBulk'])->name('badges.storeBulk');
+    Route::delete('/{id}',    [BadgeController::class, 'destroy'])->name('badges.destroy');
+    Route::get('badges/auto-print', [BadgeController::class, 'autoPrint'])
+        ->name('badges.auto.print');
+}
+);
 //SmartMauzo customers routes
 Route::group(['middleware' => 'auth'], function () {
     
@@ -1329,7 +1340,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-hr-salaries', [EmployeeSalaryController::class, 'index']);
     Route::resource('hr-salaries' , EmployeeSalaryController::class);
     Route::resource('employee-docs' , EmployeeDocController::class);
-
+    Route::get('/employees/download-id/{id}', [EmployeeController::class, 'downloadIdCard'])->name('employees.download_id');
+Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])->name('employees.id_card');
     //Payrolls
     Route::resource('payrolls', PayrollController::class);
     Route::post('payrolls/create', [PayrollController::class, 'create']);
@@ -1446,9 +1458,10 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('visitors-dash', [VisitorController::class, 'dashboard']);
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
+    Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
     Route::resource('visitors', VisitorController::class);
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
-
+    Route::get('manage-badge', [VisitorController::class, 'manageBadge'])->name('manage-badge');
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);
     Route::post('del-multiple-recycle-purchases', [RecycleBinController::class, 'delMultipleRecyclePurchases']);
@@ -1488,3 +1501,4 @@ Route::post('efdms-rct-ack-infos', [ApiTestController::class, 'storeRctAck']);
 Route::post('efdms-zreport-ack-infos', [ApiTestController::class, 'storeZReportAck']);
 //Auto search
 Route::get('/autocomplete-search', [RecycleBinController::class, 'autocompleteSearch']);
+//

@@ -335,7 +335,7 @@ class AttendanceController extends Controller
             
             foreach($request->employee as $value){
                 $att = EmployeeAttendance::whereDate('created_at' , $date )->where('employee_id' , $value)->first();
-                if (is_null($att)) {
+                if (!is_null($att)) {
 
                     $att->end_of_day = $request->end_of_day;
 

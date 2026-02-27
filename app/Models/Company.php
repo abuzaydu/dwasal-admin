@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Badge;
+use App\Models\Employee;
+use App\Models\Shop;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
 
 class Company extends Model
 {
+    protected $guarded = [];
    
     public function users()
     {
@@ -21,5 +26,13 @@ class Company extends Model
     public function shops()
     {
         return $this->hasMany(Shop::class);
+    }
+    public function employee()
+    {
+        return $this->hasMany(Employee::class);
+    }
+    public function badges()
+    {
+        return $this->hasMany(Badge::class);
     }
 }

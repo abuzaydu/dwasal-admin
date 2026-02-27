@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\AppAPI;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use File;
 use \Carbon\Carbon;
-use App\Models\Visitor;
+use App\Http\Controllers\Controller;
+use App\Models\Badge;
 use App\Models\Company;
-use App\Models\Employee;
 use App\Models\Department;
+use App\Models\Employee;
+use App\Models\Visitor;
+use File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Log;
 
 class VisitorsController extends Controller
@@ -19,7 +21,7 @@ class VisitorsController extends Controller
      */
     public function index(Request $request)
     {
-        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')->get();
+        $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitors.visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname', 'visitors.came_in_with', 'visitors.came_out_with')->get();
             // Log::info($visitors);
         return response()->json($visitors);
     }
@@ -61,46 +63,88 @@ class VisitorsController extends Controller
             $visitor->badge_no = $request['badge_no'];
             $visitor->purpose = $request['purpose'];
             $visitor->status = 'Awaiting Host permission';
+            $visitor->came_in_with = $request['came_in_with'] ?? null;
+            $visitor->came_out_with = $request['came_out_with'] ?? null;
             $visitor->save();
+
+            Badge::where('badge_number', $request['badge_no'])
+            ->update(['status' => 'in_use']);
         }
         // Log::info($visitor);
         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Initialized successfully']);
     }
 
+    // public function visitorPhoto(Request $request)
+    // {
+    //     $visitor = Visitor::find($request['visitor_id']);
+    //     if (!is_null($visitor)) {
+    //         $location = null;
+    //         if ($request->hasFile('photo')) {
+    //             //  Let's do everything here
+    //             if ($request->file('photo')->isValid()) {
+    //                 //
+    //                 $validated = $request->validate([
+    //                     'image' => 'mimes:jpeg,png|max:1014',
+    //                 ]);
+
+    //                 $photo_path = storage_path('/visitors/'.$visitor->visitor_photo);
+    //                 if (File::exists($photo_path)) {
+    //                     unlink($photo_path);
+    //                 }
+
+    //                 $extension = $request->photo->extension();
+    //                 $request->photo->storeAs('/visitors', $visitor->id.'.'.$extension);
+    //                 $location = $visitor->id.'.'.$extension;
+    //             }
+    //         }else{
+    //             $location = $visitor->visitor_photo;
+    //         }
+    //         $visitor->visitor_photo = $location;
+    //         $visitor->save();
+
+    //         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
+
+    //     }else{
+    //         return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
+    //     }
+    // }
     public function visitorPhoto(Request $request)
-    {
-        $visitor = Visitor::find($request['visitor_id']);
-        if (!is_null($visitor)) {
-            $location = null;
-            if ($request->hasFile('photo')) {
-                //  Let's do everything here
-                if ($request->file('photo')->isValid()) {
-                    //
-                    $validated = $request->validate([
-                        'image' => 'mimes:jpeg,png|max:1014',
-                    ]);
+{
+    $visitor = Visitor::find($request['visitor_id']);
+    if (!is_null($visitor)) {
+        $location = null;
+        if ($request->hasFile('photo')) {
+            if ($request->file('photo')->isValid()) {
 
-                    $photo_path = storage_path('/visitors/'.$visitor->visitor_photo);
-                    if (File::exists($photo_path)) {
-                        unlink($photo_path);
-                    }
+                $request->validate([
+                    'photo' => 'mimes:jpeg,png|max:2048',
+                ]);
 
-                    $extension = $request->photo->extension();
-                    $request->photo->storeAs('/visitors', $visitor->id.'.'.$extension);
-                    $location = $visitor->id.'.'.$extension;
+                // Delete old photo if exists
+                $old_photo_path = 'visitors/' . $visitor->visitor_photo;
+                if (Storage::disk('public')->exists($old_photo_path)) {
+                    Storage::disk('public')->delete($old_photo_path);
                 }
-            }else{
-                $location = $visitor->visitor_photo;
+
+                $extension = $request->photo->extension();
+                $filename = $visitor->id . '.' . $extension;
+
+                $request->photo->storeAs('visitors', $filename, 'public');
+                $location = $filename;
             }
-            $visitor->visitor_photo = $location;
-            $visitor->save();
-
-            return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
-
-        }else{
-            return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
+        } else {
+            $location = $visitor->visitor_photo;
         }
+
+        $visitor->visitor_photo = $location;
+        $visitor->save();
+
+        return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Photo added successfully']);
+
+    } else {
+        return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
     }
+}
 
     public function visitorCheckIn(Request $request)
     {
@@ -109,6 +153,8 @@ class VisitorsController extends Controller
             $visitor->status = 'Checked In';
             $visitor->time_in = Carbon::now();
             $visitor->save();
+            Badge::where('badge_number', $visitor->badge_no)
+            ->update(['status' => 'in_use']);
 
             return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked In successfully']);
 
@@ -124,7 +170,8 @@ class VisitorsController extends Controller
             $visitor->status = 'Checked Out';
             $visitor->time_out = Carbon::now();
             $visitor->save();
-            
+            Badge::where('badge_number', $visitor->badge_no)
+            ->update(['status' => 'available']);
             return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked Out successfully']);
 
         }else{
@@ -138,6 +185,17 @@ class VisitorsController extends Controller
             // Log::info($visitors);
         return response()->json($visitors);
     }
+
+    public function getAvailableBadges(Request $request)
+{
+    $companyId = $request->company_id;
+    $company = Company::find($companyId);
+    $badges = $company->badges()->where('status', 'available')->get();
+    
+    return response()->json([
+        'badges' => $badges
+    ]);
+}
     /**
      * Display the specified resource.
      */
@@ -169,4 +227,5 @@ class VisitorsController extends Controller
     {
         //
     }
+
 }

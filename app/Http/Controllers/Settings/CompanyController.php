@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Auth;
-use Session;
-use File;
 use App\Models\Company;
 use App\Models\Shop;
+use Auth;
+use File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Session;
 
 class CompanyController extends Controller
 {
@@ -36,35 +37,39 @@ class CompanyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
         $user = Auth::user();
         $company = new Company();
-        $company->cuid = 'SME-'.$this->unique_code(16);
+        $company->cuid = 'SME-' . $this->unique_code(16);
         $company->name = $request['name'];
         $company->slogan = $request['slogan'];
-        $location = null;
-        if ($request->hasFile('logo')) {
-            //  Let's do everything here
-            if ($request->file('logo')->isValid()) {
-                //
-                $validated = $request->validate([
-                    'logo' => 'mimes:jpeg,png|max:1014',
-                ]);
-
-                $extension = $request->logo->extension();
-                $request->logo->storeAs('/clogos', $company->id.'_logo.'.$extension);
-                $location = $company->id.'_logo.'.$extension;
-            }
-        }
-        $company->logo_url = $location;
+        
+        // 1. Save the company first to generate the ID
         $company->save();
+
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $request->validate([
+                'logo' => 'mimes:jpeg,png|max:1014',
+            ]);
+
+            // 2. Now $company->id actually has a value (e.g., 14)
+            $extension = $request->logo->extension();
+            $filename = $company->id . '_logo.' . $extension;
+
+            // 3. Store the file using the now-existing ID
+            $request->logo->storeAs('clogos', $filename, 'public');
+
+            // 4. Update the company record with the filename and save again
+            $company->logo_url = $filename;
+            $company->save();
+        }
 
         $user->companies()->attach($company);
 
         return redirect('user-companies')->with('success', 'New Company Created successfully');
     }
-
     /**
      * Display the specified resource.
      */
@@ -104,7 +109,7 @@ class CompanyController extends Controller
                     'image' => 'mimes:jpeg,png|max:1014',
                 ]);
 
-                $logo_path = storage_path('/clogos/'.$company->logo_url);
+                $logo_path = storage_path('clogos/'.$company->logo_url,);
                 if (File::exists($logo_path)) {
                     unlink($logo_path);
                 }
@@ -163,7 +168,7 @@ class CompanyController extends Controller
         $company->save();
 
         return redirect('user-companies')->with('success', 'New Company Created successfully');
-   }
+    }
 
     /**
      * Remove the specified resource from storage.

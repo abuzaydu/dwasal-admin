@@ -3,12 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Company;
+use App\Models\ProductMadeApiTemp;
+use App\Models\Shop;
+use App\Models\Visitor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -79,7 +83,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function companies()
     {
-       return $this->belongsToMany(Company::class);
+       return $this->belongsToMany(Company::class)->withPivot('is_default')->withTimestamps();
     }
     
     public function shops()
@@ -96,4 +100,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->fcm_token; // Replace with the actual field that stores the user's FCM token
     }
+      public function vistors(){
+            return $this->hasMany(Visitor::class );
+        }
 }
