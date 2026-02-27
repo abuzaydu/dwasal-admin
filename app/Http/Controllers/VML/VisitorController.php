@@ -62,7 +62,7 @@ class VisitorController extends Controller
         'checkedoutVisitors',
         'is_post_query',   
         'start_date',      
-        'end_date',        
+        'end_date',  ));      
 }
 
    
