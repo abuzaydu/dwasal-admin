@@ -186,7 +186,7 @@ if (!is_null($shop)) {
                     <div class="tab-pane fade show active" id="hr_menu" role="tabpanel">
                         <nav class="sidebar-nav">
                             <ul class="metismenu list-unstyled">
-                                <li class="{{ request()->is('home') ? 'active' : '' }}"><a href="{{ url('/hr-dash') }}"><i class="fa fa-tachometer"></i><span>HR Dashboard</span></a></li>
+                                <li class="{{ request()->is('hr-dash') ? 'active' : '' }}"><a href="{{ url('/hr-dash') }}"><i class="fa fa-tachometer"></i><span>HR Dashboard</span></a></li>
                                 <li class="{{ request()->is('hr-attendance') || request()->is('hr-departments') || request()->is('hr-events') || request()->is('hr-holidays') || request()->is('leave-rosters') || request()->is('leave-rosters/create') || request()->is('hr-salaries') ? 'mm-active active' : '' }}">
                                     <a href="#HR" class="has-arrow"><i class="fa fa-briefcase"></i><span>HR Admin</span></a>
                                     <ul class="list-unstyled">

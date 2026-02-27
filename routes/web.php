@@ -452,6 +452,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Route::get('pesapal-update', [PesaPalPaymentsController::class, 'update']);
     Route::get('pesapal-ipn', [PesapalTransactionController::class, 'paymentConfirmation']);
     Route::get('donepayment', ['as' => 'paymentsuccess', 'uses' => [PesapalTransactionController::class, 'paymentsuccess']]);
+
     Route::get('view-receipt/{id}', [ProfileController::class, 'viewReceipt']);
     Route::post('update-profile', [ProfileController::class, 'updateProfile']);
     Route::get('change-password', [ProfileController::class, 'changePassForm']);
@@ -496,6 +497,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('set-currency', [SettingsController::class, 'setCurrency']);
     Route::get('rem-currency/{id}', [SettingsController::class, 'removeCurrency']);
     Route::get('make-default-currency/{id}', [SettingsController::class, 'makeDefaultCurrency']);
+    
     Route::resource('prod-settings', ProdSettingController::class);
 
 
@@ -1387,6 +1389,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('payroll-settings', PayrollSettingsController::class);
 
     Route::get('add-to-expenses/{id}', [PayrollToExpenseController::class, 'create']);
+    
     //MHC
     Route::get('mhc-dashboard', [DashController::class, 'index']);
     Route::post('mhc-dashboard', [DashController::class, 'index']);

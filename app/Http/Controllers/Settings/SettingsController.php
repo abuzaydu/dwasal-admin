@@ -1305,6 +1305,5 @@ class SettingsController extends Controller
                 'decimals' => 0
             ],
         ];
-
     }
 }

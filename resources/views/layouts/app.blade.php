@@ -357,7 +357,7 @@
         </script>
     @endif
 
-        <!-- page script -->
+    <!-- page script -->
     <?php
     $dur = '';
     $cust = '';

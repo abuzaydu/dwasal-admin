@@ -37,67 +37,39 @@ class CompanyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     $user = Auth::user();
-    //     $company = new Company();
-    //     $company->cuid = 'SME-'.$this->unique_code(16);
-    //     $company->name = $request['name'];
-    //     $company->slogan = $request['slogan'];
-    //     $location = null;
-    //     if ($request->hasFile('logo')) {
-    //         //  Let's do everything here
-    //         if ($request->file('logo')->isValid()) {
-    //             //
-    //             $validated = $request->validate([
-    //                 'logo' => 'mimes:jpeg,png|max:1014',
-    //             ]);
-
-    //             $extension = $request->logo->extension();
-    //             $request->logo->storeAs('public/clogos', $company->id.'_logo.'.$extension);
-    //             $location = $company->id.'_logo.'.$extension;
-    //         }
-    //     }
-    //     $company->logo_url = $location;
-    //     $company->save();
-
-    //     $user->companies()->attach($company);
-
-    //     return redirect('user-companies')->with('success', 'New Company Created successfully');
-    // }
 
     public function store(Request $request)
-{
-    $user = Auth::user();
-    $company = new Company();
-    $company->cuid = 'SME-' . $this->unique_code(16);
-    $company->name = $request['name'];
-    $company->slogan = $request['slogan'];
-    
-    // 1. Save the company first to generate the ID
-    $company->save();
-
-    if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-        $request->validate([
-            'logo' => 'mimes:jpeg,png|max:1014',
-        ]);
-
-        // 2. Now $company->id actually has a value (e.g., 14)
-        $extension = $request->logo->extension();
-        $filename = $company->id . '_logo.' . $extension;
-
-        // 3. Store the file using the now-existing ID
-        $request->logo->storeAs('clogos', $filename, 'public');
-
-        // 4. Update the company record with the filename and save again
-        $company->logo_url = $filename;
+    {
+        $user = Auth::user();
+        $company = new Company();
+        $company->cuid = 'SME-' . $this->unique_code(16);
+        $company->name = $request['name'];
+        $company->slogan = $request['slogan'];
+        
+        // 1. Save the company first to generate the ID
         $company->save();
+
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $request->validate([
+                'logo' => 'mimes:jpeg,png|max:1014',
+            ]);
+
+            // 2. Now $company->id actually has a value (e.g., 14)
+            $extension = $request->logo->extension();
+            $filename = $company->id . '_logo.' . $extension;
+
+            // 3. Store the file using the now-existing ID
+            $request->logo->storeAs('clogos', $filename, 'public');
+
+            // 4. Update the company record with the filename and save again
+            $company->logo_url = $filename;
+            $company->save();
+        }
+
+        $user->companies()->attach($company);
+
+        return redirect('user-companies')->with('success', 'New Company Created successfully');
     }
-
-    $user->companies()->attach($company);
-
-    return redirect('user-companies')->with('success', 'New Company Created successfully');
-}
     /**
      * Display the specified resource.
      */
@@ -123,74 +95,80 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // public function update(Request $request, string $id)
-    // {
-    //     $company = Company::find(decrypt($id));
-    //     $company->name = $request['name'];
-    //     $company->slogan = $request['slogan'];
-    //     $location = null;
-    //     if ($request->hasFile('logo')) {
-    //         //  Let's do everything here
-    //         if ($request->file('logo')->isValid()) {
-    //             //
-    //             $validated = $request->validate([
-    //                 'image' => 'mimes:jpeg,png|max:1014',
-    //             ]);
-
-    //             $logo_path = storage_path('clogos/'.$company->logo_url,);
-    //             if (File::exists($logo_path)) {
-    //                 unlink($logo_path);
-    //             }
-
-    //             $extension = $request->logo->extension();
-    //             $request->logo->storeAs('/clogos', $company->id.'_logo.'.$extension);
-    //             $location = $company->id.'_logo.'.$extension;
-    //         }
-    //     }else{
-    //         $location = $company->logo_url;
-    //     }
-    //     $company->logo_url = $location;
-    //     $company->save();
-
-    //     return redirect('user-companies')->with('success', 'New Company Created successfully');
-    // }
     public function update(Request $request, string $id)
-{
-    $company = Company::find(decrypt($id));
-    $company->name = $request['name'];
-    $company->slogan = $request['slogan'];
+    {
+        $company = Company::find(decrypt($id));
+        $company->name = $request['name'];
+        $company->slogan = $request['slogan'];
+        $location = null;
+        if ($request->hasFile('logo')) {
+            //  Let's do everything here
+            if ($request->file('logo')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'image' => 'mimes:jpeg,png|max:1014',
+                ]);
 
-    if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-        
-        // 1. Validate (Note: Ensure the key matches your input name 'logo')
-        $request->validate([
-            'logo' => 'mimes:jpeg,png|max:1014',
-        ]);
+                $logo_path = storage_path('clogos/'.$company->logo_url,);
+                if (File::exists($logo_path)) {
+                    unlink($logo_path);
+                }
 
-        // 2. Delete the old logo if it exists
-        if ($company->logo_url) {
-            // Use the Storage facade - it's cleaner and handles paths automatically
-            if (Storage::disk('public')->exists('clogos/' . $company->logo_url)) {
-                Storage::disk('public')->delete('clogos/' . $company->logo_url);
+                $extension = $request->logo->extension();
+                $request->logo->storeAs('/clogos', $company->id.'_logo.'.$extension);
+                $location = $company->id.'_logo.'.$extension;
+            }
+        }else{
+            $location = $company->logo_url;
+        }
+
+        $banner_url = $company->banner_url;
+        if ($request->hasFile('banner')) {
+            //  Let's do everything here
+            if ($request->file('banner')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'banner' => 'mimes:jpeg, jpg, png|max:1014',
+                ]);
+
+                $banner_path = storage_path('/banners/'.$company->banner_url);
+                if (File::exists($banner_path)) {
+                    unlink($banner_path);
+                }
+
+                $extension = $request->banner->extension();
+                $request->banner->storeAs('/banners', $company->id.'_banner.'.$extension);
+                $banner_url = $company->id.'_banner.'.$extension;
             }
         }
 
-        // 3. Prepare new file info
-        $extension = $request->logo->extension();
-        $filename = $company->id . '_logo.' . $extension;
+        $stamp = $company->stamp;
+        if ($request->hasFile('stamp')) {
+            //  Let's do everything here
+            if ($request->file('stamp')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'stamp' => 'mimes:jpeg,jpg,png|max:1014',
+                ]);
 
-        // 4. Store using the 'public' disk (This puts it in storage/app/public/clogos)
-        $request->logo->storeAs('clogos', $filename, 'public');
+                $stamp_path = storage_path('/stamps/'.$company->stamp);
+                if (File::exists($stamp_path)) {
+                    unlink($stamp_path);
+                }
 
-        // 5. Update the path in the database object
-        $company->logo_url = $filename;
+                $extension = $request->stamp->extension();
+                $request->stamp->storeAs('/stamps', $company->id.'_stamp.'.$extension);
+                $stamp = $company->id.'_stamp.'.$extension;
+            }
+        }
+        $company->logo_url = $location;
+        $company->use_invoice_banner = $request['use_invoice_banner'];
+        $company->banner_url = $banner_url;
+        $company->stamp = $stamp;
+        $company->save();
+
+        return redirect('user-companies')->with('success', 'New Company Created successfully');
     }
-
-    // If no new file is uploaded, $company->logo_url remains its old value
-    $company->save();
-
-    return redirect('user-companies')->with('success', 'Company updated successfully');
-}
 
     /**
      * Remove the specified resource from storage.
