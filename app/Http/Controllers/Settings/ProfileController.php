@@ -28,6 +28,7 @@ use App\Models\Employee;
 
 class ProfileController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      *
@@ -38,16 +39,6 @@ class ProfileController extends Controller
         $page = 'My Profile';
         $title = 'My Profile';
         $title_sw = 'Wsifu Wangu';
-        // $user = Auth::user();
-        // if ($user->phone == '0772119707') {
-        //     $role = $user->roles()->first();
-        //     Log::info($role);
-        //     $role->syncPermissions();
-        //     $permissions = Permission::all();
-        //     foreach ($permissions as $key => $value) {
-        //         $role->givePermissionTo($value);
-        //     }
-        // }
         $company = Company::find(Session::get('company_id'));
         if (!is_null($company)) {
             $users = $company->users()->get();

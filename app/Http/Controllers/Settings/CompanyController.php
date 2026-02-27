@@ -116,11 +116,54 @@ class CompanyController extends Controller
         }else{
             $location = $company->logo_url;
         }
+
+        $banner_url = $company->banner_url;
+        if ($request->hasFile('banner')) {
+            //  Let's do everything here
+            if ($request->file('banner')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'banner' => 'mimes:jpeg, jpg, png|max:1014',
+                ]);
+
+                $banner_path = storage_path('/banners/'.$company->banner_url);
+                if (File::exists($banner_path)) {
+                    unlink($banner_path);
+                }
+
+                $extension = $request->banner->extension();
+                $request->banner->storeAs('/banners', $company->id.'_banner.'.$extension);
+                $banner_url = $company->id.'_banner.'.$extension;
+            }
+        }
+
+        $stamp = $company->stamp;
+        if ($request->hasFile('stamp')) {
+            //  Let's do everything here
+            if ($request->file('stamp')->isValid()) {
+                //
+                $validated = $request->validate([
+                    'stamp' => 'mimes:jpeg,jpg,png|max:1014',
+                ]);
+
+                $stamp_path = storage_path('/stamps/'.$company->stamp);
+                if (File::exists($stamp_path)) {
+                    unlink($stamp_path);
+                }
+
+                $extension = $request->stamp->extension();
+                $request->stamp->storeAs('/stamps', $company->id.'_stamp.'.$extension);
+                $stamp = $company->id.'_stamp.'.$extension;
+            }
+        }
         $company->logo_url = $location;
+        $company->use_invoice_banner = $request['use_invoice_banner'];
+        $company->banner_url = $banner_url;
+        $company->stamp = $stamp;
         $company->save();
 
         return redirect('user-companies')->with('success', 'New Company Created successfully');
-    }
+   }
 
     /**
      * Remove the specified resource from storage.

@@ -304,7 +304,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         $roles = array(
             [
-                'name' => 'super_admin', 'display_name' => 'Administrator', 'description' => 'Smartmauzo system Admin who monitors configuration, and reliable operation of Smart Mauzo App and its infrastracture'
+                'name' => 'super_admin', 'display_name' => 'Administrator', 'description' => 'Smartmauzo system Admin who monitors configuration, and reliable operation of the system and its infrastracture'
             ]
         );
 
