@@ -68,9 +68,18 @@
                     </div>
 
                     <div id="item-list">
-                        <table  id="employees" class="table table-striped table-bordered items" style="width:100%; font-size 14px; white-space: nowrap;">
+
+                        {{-- Print Selected Button --}}
+                        <div class="mb-3">
+                            <button id="printSelectedBtn" class="btn btn-primary" disabled>
+                                <i class="fa fa-print me-1"></i> Print Selected (<span id="selectedCount">0</span>)
+                            </button>
+                        </div>
+
+                        <table id="employees" class="table table-striped table-bordered items" style="width:100%; font-size 14px; white-space: nowrap;">
                             <thead>
                                 <tr>
+                                    <th style="text-align: center;"><input type="checkbox" id="selectAll" title="Select All"></th>
                                     <th style="text-align: center;">#</th>
                                     <th style="text-align: center;">Emp ID</th>
                                     <th style="text-align: center;">Photo</th>
@@ -83,6 +92,11 @@
                             <tbody>
                                 @foreach($employees as $key => $employee)
                                 <tr>
+                                    <td style="text-align: center;">
+                                        <input type="checkbox"
+                                               class="employee-checkbox"
+                                               value="{{ encrypt($employee->id) }}">
+                                    </td>
                                     <th scope="row">{{$key+1}}</th>
                                     <td>{{$employee->emp_id}}</td>
                                     <td class="width45" style="text-align: center;">
@@ -120,14 +134,12 @@
     <script type="text/javascript">
             
         async function AutoID(url) {
-
             let response = await fetch(url);
             let data = await response.json();
             document.getElementsByName('emp_id')[0].value = data;
         }
 
         function Allowance(elem){
-
             var positions = @php echo json_encode($positions) @endphp;
             let position = positions.find(o => o.id == elem.value);
             if(elem.value !== ''){
@@ -140,39 +152,105 @@
                 document.getElementsByName('com_allowance')[0].value =  position.com_allowance;
                 document.getElementsByName('basic_pay_monthly')[0].value = position.basic_pay_monthly;
             }else{
-
                 document.getElementsByName('trans_allowance')[0].value = 0;
                 document.getElementsByName('house_allowance')[0].value = 0;
                 document.getElementsByName('com_allowance')[0].value = 0;
                 document.getElementsByName('basic_pay_monthly')[0].value = 0;
 
-                 document.getElementById('trans_allowance').style.display = 'none';
+                document.getElementById('trans_allowance').style.display = 'none';
                 document.getElementById('house_allowance').style.display = 'none';        
                 document.getElementById('com_allowance').style.display = 'none';
             }
-
         }
 
     </script>
     <script type="text/javascript">
-        window.addEventListener('DOMContentLoaded', function()
-        {
+        window.addEventListener('DOMContentLoaded', function() {
             var start = document.querySelector('[name="start_date"]');
             var end = document.querySelector('[name="end_date"]');
 
-             start.DatePickerX.init({
+            start.DatePickerX.init({
                 mondayFirst: true,
-                // minDate    : new Date(),
                 format     : 'yyyy-mm-dd',
-                // maxDate    : new Date()
             });
              
             end.DatePickerX.init({
                 mondayFirst: true,
-                // minDate    : new Date(),
                 format     : 'yyyy-mm-dd',
-                // maxDate    : new Date()
             });
         });
+    </script>
+
+    <script>
+    $(function () {
+
+        // 1. Init DataTable
+        const table = $('#employees').DataTable({
+            destroy: true,
+            columnDefs: [
+                { orderable: false, searchable: false, targets: [0, 7] } // disable sort on checkbox & actions cols
+            ]
+        });
+
+        //  2. Refs 
+        const $selectAll    = $('#selectAll');
+        const printBtn      = document.getElementById('printSelectedBtn');
+        const selectedCount = document.getElementById('selectedCount');
+
+        //  3. Helper: get ALL checked checkboxes across ALL pages
+        function getChecked() {
+            return $(table.rows().nodes()).find('.employee-checkbox:checked');
+        }
+
+        //  4. Helper: sync UI 
+        function syncUI() {
+            const totalOnPage   = $(table.rows({ page: 'current' }).nodes()).find('.employee-checkbox').length;
+            const checkedOnPage = $(table.rows({ page: 'current' }).nodes()).find('.employee-checkbox:checked').length;
+            const totalChecked  = getChecked().length;
+
+            if (checkedOnPage === 0) {
+                $selectAll.prop('checked', false).prop('indeterminate', false);
+            } else if (checkedOnPage === totalOnPage) {
+                $selectAll.prop('checked', true).prop('indeterminate', false);
+            } else {
+                $selectAll.prop('checked', false).prop('indeterminate', true);
+            }
+
+            selectedCount.textContent = totalChecked;
+            printBtn.disabled = totalChecked === 0;
+        }
+
+        //  5. Select All (current page only) 
+        $selectAll.on('change', function () {
+            $(table.rows({ page: 'current' }).nodes())
+                .find('.employee-checkbox')
+                .prop('checked', this.checked);
+            syncUI();
+        });
+
+        //  6. Individual checkbox 
+        $('#employees tbody').on('change', '.employee-checkbox', function () {
+            syncUI();
+        });
+
+        //  7. On DataTable page change / search / sort 
+        table.on('draw', function () {
+            $selectAll.prop('checked', false).prop('indeterminate', false);
+            syncUI();
+        });
+
+        //  8. Print button 
+        printBtn.addEventListener('click', function () {
+            const ids = getChecked().map(function () {
+                return 'ids[]=' + encodeURIComponent(this.value);
+            }).get();
+
+            if (ids.length === 0) return;
+
+            const url = "{{ route('employees.print.selected-id-card') }}?" + ids.join('&');
+            window.open(url, '_blank');
+        });
+
+    });
     </script>
 @endsection

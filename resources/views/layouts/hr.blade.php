@@ -77,7 +77,7 @@ if (!is_null($shop)) {
                                     </select>
                                 </form>
                             </li>
-                            @if(Auth::user()->unreadNotifications->count() > 0)
+                            {{-- @if(Auth::user()->unreadNotifications->count() > 0)
                             <li class="dropdown">
                                 <a class="dropdown-toggle icon-menu" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fa fa-bell"></i>
@@ -116,6 +116,14 @@ if (!is_null($shop)) {
                                     </ul>
                                 </div>
                             </li>
+                            @endif --}}
+                             @if(Auth::user()->unreadNotifications->count() > 0)
+                                <li>
+                                    <a href="{{ url('/notifications') }}" class="icon-menu">
+                                        <i class="fa fa-bell"></i>
+                                        <span class="notification-dot"></span>
+                                    </a>
+                                </li>
                             @endif
                             <li class="dropdown">
                                 <a class="dropdown-toggle icon-menu" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-sliders"></i></a>
@@ -434,9 +442,11 @@ if (!is_null($shop)) {
                 $($.fn.dataTable.tables(true)).DataTable().columns.adjust().responsive.recalc();
             });
 
+            if (!$.fn.DataTable.isDataTable('#employees')) {
             $('#employees').dataTable({
-                scrollX: true,
+            scrollX: true,
             });
+        }
 
              $('#emp-leaves').dataTable({
                 scrollX: true,

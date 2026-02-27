@@ -22,7 +22,6 @@
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#badgeModal">
                     <i class="fa fa-plus-square"></i> New Badge
                 </button>
-                
             </div>
         </div>
     </div>
@@ -42,9 +41,18 @@
                     <div class="tab-content pt-2">
                         <div class="tab-pane fade show active" id="tab_0" role="tabpanel">
                             <div class="table-responsive" id="badge-list">
+
+                                {{-- Print Selected Button --}}
+                                <div class="mb-3">
+                                    <button id="printSelectedBtn" class="btn btn-primary" disabled>
+                                        <i class="fa fa-print me-1"></i> Print Selected (<span id="selectedCount">0</span>)
+                                    </button>
+                                </div>
+
                                 <table id="badges" class="table table-striped display nowrap" style="width: 100%;">
                                     <thead>
                                         <tr>
+                                            <th><input type="checkbox" id="selectAll" title="Select All"></th>
                                             <th>#</th>
                                             <th>Badge No.</th>
                                             <th>Company</th>
@@ -55,8 +63,17 @@
                                     <tbody>
                                         @foreach($badges as $key => $badge)
                                         <tr>
+                                            <td>
+                                                <input type="checkbox"
+                                                       class="badge-checkbox"
+                                                       value="{{ encrypt($badge->id) }}">
+                                            </td>
                                             <td>{{ $key + 1 }}</td>
-                                            <td>{{ $badge->badge_number }}</td>
+                                            <td>
+                                                <a href="{{ route('badges.show', encrypt($badge->id)) }}">
+                                                    {{ $badge->badge_number }}
+                                                </a>
+                                            </td>
                                             <td>{{ $badge->company->name ?? 'N/A' }}</td>
                                             <td>
                                                 @php
@@ -73,20 +90,24 @@
                                                 </span>
                                             </td>
                                             <td style="text-align: center;">
-                                               
-                                                <form method="POST" action="{{ route('badges.destroy', encrypt($badge->id)) }}" id="delete-form-{{ $key }}" style="display: inline;">
+                                                <form method="POST"
+                                                      action="{{ route('badges.destroy', encrypt($badge->id)) }}"
+                                                      id="delete-form-{{ $key }}"
+                                                      style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" onclick="return confirm({{ $key }})" class="btn btn-sm">
+                                                    <button type="submit"
+                                                            onclick="return confirm('Are you sure you want to delete this badge?')"
+                                                            class="btn btn-sm">
                                                         <i class="fa fa-trash" style="color: red;"></i>
                                                     </button>
-                                                </form> 
-                                                
+                                                </form>
                                             </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
+
                             </div>
                         </div>
                     </div>
@@ -108,22 +129,6 @@
                 <div class="modal-body">
                     <form class="form row g-3" method="POST" action="{{ route('badges.storeBulk') }}">
                         @csrf
-
-                        {{-- Company --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Company <span style="color: red; font-weight: bold;">*</span></label>
-                            <select name="company_id" id="company_id" class="form-select form-select-sm mb-1" required>
-                                <option value="">-- Select Company --</option>
-                                @foreach ($companies as $company)
-                                    <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
-                                        {{ $company->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('company_id')
-                                <span class="text-danger small">{{ $message }}</span>
-                            @enderror
-                        </div>
 
                         {{-- Badge Prefix --}}
                         <div class="col-md-6">
@@ -182,19 +187,86 @@
     <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
 
     <script>
-        $(function () {
-            $('#badges').DataTable();
+    $(function () {
+
+        // 1. Init DataTable 
+        const table = $('#badges').DataTable({
+            columnDefs: [
+                { orderable: false, searchable: false, targets: [0, 5] } // disable sort on checkbox & actions cols
+            ]
         });
 
-        // Live preview for badge generation
+        //  2. Refs 
+        const $selectAll    = $('#selectAll');
+        const printBtn      = document.getElementById('printSelectedBtn');
+        const selectedCount = document.getElementById('selectedCount');
+
+        //  3. Helper: get ALL checked checkboxes across ALL pages 
+        function getChecked() {
+            // DataTables hides non-visible rows in the DOM but keeps them
+            // in its internal node list — query all nodes, not just visible
+            return $(table.rows().nodes()).find('.badge-checkbox:checked');
+        }
+
+        //  4. Helper: sync UI 
+        function syncUI() {
+            const totalOnPage   = $(table.rows({ page: 'current' }).nodes()).find('.badge-checkbox').length;
+            const checkedOnPage = $(table.rows({ page: 'current' }).nodes()).find('.badge-checkbox:checked').length;
+            const totalChecked  = getChecked().length;
+
+            // Sync select-all checkbox state
+            if (checkedOnPage === 0) {
+                $selectAll.prop('checked', false).prop('indeterminate', false);
+            } else if (checkedOnPage === totalOnPage) {
+                $selectAll.prop('checked', true).prop('indeterminate', false);
+            } else {
+                $selectAll.prop('checked', false).prop('indeterminate', true);
+            }
+
+            // Update button
+            selectedCount.textContent = totalChecked;
+            printBtn.disabled = totalChecked === 0;
+        }
+
+        //  5. Select All (current page only) 
+        $selectAll.on('change', function () {
+            $(table.rows({ page: 'current' }).nodes())
+                .find('.badge-checkbox')
+                .prop('checked', this.checked);
+            syncUI();
+        });
+
+        //  6. Individual checkbox (event delegation — survives redraws) 
+        $('#badges tbody').on('change', '.badge-checkbox', function () {
+            syncUI();
+        });
+
+        //  7. On DataTable page change / search / sort — reset select-all 
+        table.on('draw', function () {
+            $selectAll.prop('checked', false).prop('indeterminate', false);
+            syncUI();
+        });
+
+        //8. Print button 
+        printBtn.addEventListener('click', function () {
+            const ids = getChecked().map(function () {
+                return 'ids[]=' + encodeURIComponent(this.value);
+            }).get();
+
+            if (ids.length === 0) return;
+
+            const url = "{{ route('badges.print.selected-badge') }}?" + ids.join('&');
+            window.open(url, '_blank');
+        });
+
+        //  9. Badge generation live preview 
         const countInput  = document.getElementById('badge_count');
         const prefixInput = document.getElementById('badge_prefix');
         const preview     = document.getElementById('preview');
 
         function updatePreview() {
             const count  = parseInt(countInput.value) || 0;
-            const prefix = prefixInput.value || 'B';
-
+            const prefix = prefixInput.value.trim() || 'B';
             if (count > 0) {
                 preview.style.display = 'block';
                 document.getElementById('preview-count').textContent   = count;
@@ -207,5 +279,7 @@
 
         countInput.addEventListener('input', updatePreview);
         prefixInput.addEventListener('input', updatePreview);
+
+    });
     </script>
 @endsection

@@ -285,6 +285,8 @@ use App\Http\Controllers\Web\SmsTemplateController;
 use App\Http\Controllers\Web\StockReportController;
 use App\Http\Controllers\Web\VerifyPaymentController;
 use App\Http\Controllers\WelcomeController;
+use App\Models\User;
+use App\Notifications\FcmNotification;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -395,11 +397,35 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
 
 //VMl Routes
 Route::group(['middleware' => 'auth'], function () {
-    Route::get('/badges',            [BadgeController::class, 'index'])->name('badges.index');
+
+Route::get('/test-fcm', function () {
+    $user = User::find(1); // user whose token came from the app
+
+    $notificationData = [
+        'title' => 'Test from Laravel',
+        'body'  => 'This is a push-only notification',
+        'data'  => [
+            'type' => 'general',
+            // add extra fields if you want to use them in Flutter
+        ],
+    ];
+
+    $user->notify(new FcmNotification($notificationData));
+
+    return 'Sent';
+});
+    Route::get('/badges',[BadgeController::class, 'index'])->name('badges.index');
+     Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
+    ->name('badges.auto.print-one-badge');
+    Route::get('badge/{id}',[BadgeController::class, 'show'])->name('badges.show');
     Route::post('/badges/bulk',      [BadgeController::class, 'storeBulk'])->name('badges.storeBulk');
     Route::delete('/{id}',    [BadgeController::class, 'destroy'])->name('badges.destroy');
     Route::get('badges/auto-print', [BadgeController::class, 'autoPrint'])
         ->name('badges.auto.print');
+    Route::get('badges/print-selected-badge', [BadgeController::class, 'printSelected'])
+        ->name('badges.print.selected-badge');
+    Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
+    ->name('badges.auto.print-one-badge');
 }
 );
 //SmartMauzo customers routes
@@ -1340,7 +1366,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('hr-salaries' , EmployeeSalaryController::class);
     Route::resource('employee-docs' , EmployeeDocController::class);
     Route::get('/employees/download-id/{id}', [EmployeeController::class, 'downloadIdCard'])->name('employees.download_id');
-Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])->name('employees.id_card');
+    Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])->name('employees.id_card');
+    // Route::get('printIdCard/{id}', [EmployeeController::class, 'printSelctedIdCards'])->name('employees.print.selected-id-card');
+    Route::get('employees/print/selected-id-card',[EmployeeController::class, 'printSelectedIdCard'])
+    ->name('employees.print.selected-id-card');
     //Payrolls
     Route::resource('payrolls', PayrollController::class);
     Route::post('payrolls/create', [PayrollController::class, 'create']);
@@ -1454,10 +1483,21 @@ Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])-
     Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
     Route::resource('vms-expenses', VMSExpenseController::class);
 
-    Route::get('visitors-dash', [VisitorController::class, 'dashboard']);
+    Route::get('visitors-dash', [VisitorController::class, 'dashboard'])->name('visitors.dashboard');
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
+        Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
+
+    Route::get('/visitors/list', [VisitorController::class, 'list'])->name('visitors.list');
+    Route::get('visitorslist', [VisitorController::class, 'index']);
+    Route::post('visitorslist', [VisitorController::class, 'index']);
+    Route::get('add-visitor', [VisitorController::class, 'create']);
+      Route::post('visitors', [VisitorController::class, 'store'])->name('visitors.store');
+      Route::get('visitors/{id}', [VisitorController::class, 'show'])->name('visitors.show');
+      Route::get('edit-visitor/{id}', [VisitorController::class, 'edit']);
+      Route::post('update-visitor/{id}', [VisitorController::class, 'update']);
+      Route::get('delete-visitor/{id}', [VisitorController::class, 'destroy']);
     Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
-    Route::resource('visitors', VisitorController::class);
+    // Route::resource('visitors', VisitorController::class);
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);

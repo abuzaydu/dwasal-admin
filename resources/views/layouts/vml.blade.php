@@ -82,46 +82,7 @@
                                     </select>
                                 </form>
                             </li>
-                            {{-- @if(Auth::user()->unreadNotifications->count() > 0)
-                            <li class="dropdown">
-                                <a class="dropdown-toggle icon-menu" href="/notifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa fa-bell"></i>
-                                    <span class="notification-dot"></span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end p-0 shadow notification">
-                                    <ul class="list-unstyled feeds_widget">
-                                        <?php 
-                                            $nottypes = array();
-                                            $latest = null;
-                                            foreach(Auth::user()->unreadNotifications as $notification) {
-                                                $type = '';
-                                                $type = str_replace('App\Notification', '', $notification->type);
-                                                $type = str_replace("s\\", "New ", $type);
-                                                $type = str_replace("tA", "t A", $type);
-                                                $type = str_replace("lN", "l N", $type);
-                                                array_push($nottypes, $type);
-                                                $latest = $notification->created_at;
-                                            }
-
-                                            $types = array_count_values($nottypes);
-                                        ?>
-                                        @foreach($types as $key => $not)
-                                        <li class="d-flex">
-                                            <div class="feeds-left"><i class="fa fa-thumbs-o-up"></i></div>
-                                            <div class="feeds-body flex-grow-1">
-                                                <h6 class="mb-1"> {{ $not }} {{ $key }}<small class="float-end text-muted small">{{$latest->diffForHumans()}}</small></h6>
-                                                <span class="text-muted"><a href="{{ url('approval-requests') }}"> Click here to Approve</a></span>
-                                                <br>
-                                            </div>
-                                        </li>
-                                        @endforeach
-                                        <li class="d-flex text-center">
-                                            <a href="{{ url('mark-all-as-read')}}" class="text-warning">Mark All As Read</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            @endif --}}
+                          
                             @if(Auth::user()->unreadNotifications->count() > 0)
                                 <li>
                                     <a href="{{ url('/notifications') }}" class="icon-menu">
@@ -189,7 +150,7 @@
                                 <li class="{{ request()->is('visitors-dash') ? 'active' : '' }}"><a href="{{ url('visitors-dash') }}" class="has-arrow"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
                                 @endif
                                 <hr>
-                                <li class="{{ request()->is('visitors') ? 'active' : '' }}"><a href="{{ url('visitors') }}"><i class="fa fa-truck"></i> Visitors</a></li>
+                                <li class="{{ request()->is('visitorslist') ? 'active' : '' }}"><a href="{{ url('visitorslist') }}"><i class="fa fa-truck"></i> Visitors</a></li>
                                 <hr>
                                 <li class="{{ request()->is('badges') ? 'active' : '' }}"><a href="{{ url('badges') }}"><i class="fa fa-truck"></i> Manage Badges</a></li>
 
@@ -357,7 +318,7 @@
         }
     }
     
-    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'API Payment Transactions' || $page == 'Proforma Invoices' || $page == 'Expenses' || $page == 'Expense Payments' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
+    if ($page == 'Home' ||  $page == 'visitor Dashboard' ||$page == 'Reports' || $page == 'Stock Reports' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'API Payment Transactions' || $page == 'Proforma Invoices' || $page == 'Expenses' || $page == 'Expense Payments' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
         $is_post = $is_post_query;
         $startdate = $start_date;
         $enddate = $end_date;
@@ -423,9 +384,10 @@
             var reportrangequery = false;
             var startstring = "<?php echo $startdate; ?>";
             var endstring = "<?php echo $enddate; ?>";
-            start = moment(startstring, 'YYYY-MM-DD');
-            end = moment(endstring, 'YYYY-MM-DD');
-            
+             // Guard: if empty strings, fall back to today so moment() never gets ""
+            start = startstring ? moment(startstring, 'YYYY-MM-DD', true) : moment();
+            end   = endstring   ? moment(endstring,   'YYYY-MM-DD', true) : moment();
+                
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 if (reportrangequery) {

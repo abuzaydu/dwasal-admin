@@ -324,4 +324,58 @@ class EmployeeController extends Controller
 
     return view('hr.employees.employee-id-card', compact('employee', 'position', 'user_photo'));
 }
+
+// public function printSelctedIdCards(Request $request)
+// {
+//     $ids = $request->input('ids', []);
+//     $employees = Employee::with('company')->whereIn('id', $ids)->get();
+
+//     return view('hr.employees.print_id_cards', compact('employees'));
+// }
+public function printSelectedIdCard(Request $request)
+    {
+        // ── 1. Validate ───────────────────────────────────────────────
+        $request->validate([
+            'ids'   => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['required', 'string'],
+        ]);
+
+        // ── 2. Decrypt IDs ────────────────────────────────────────────
+        //    The index view passes encrypt($employee->id), so we decrypt
+        //    each value before hitting the database.
+        $decryptedIds = [];
+
+        foreach ($request->input('ids', []) as $encryptedId) {
+            try {
+                $decryptedIds[] = decrypt($encryptedId);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Skip any tampered / invalid tokens silently
+                continue;
+            }
+        }
+
+        if (empty($decryptedIds)) {
+            abort(400, 'No valid employee IDs provided.');
+        }
+
+        // ── 3. Fetch employees ────────────────────────────────────────
+        //    Eager-load every relationship the ID card template needs so
+        //    we hit the DB once, not N times.
+        $employees = Employee::with([
+                'company',   // card header, back-side contact info & logo
+                'position',  // designation line on the front
+            ])
+            ->whereIn('id', $decryptedIds)
+            ->get();
+
+        if ($employees->isEmpty()) {
+            abort(404, 'No employees found for the given IDs.');
+        }
+
+        // ── 4. Render ─────────────────────────────────────────────────
+        return view('hr.employees.print-selected-id-cards', compact('employees'));
+    }
+
+    // ── (your existing methods below) ────────────────────────────────
+
 }

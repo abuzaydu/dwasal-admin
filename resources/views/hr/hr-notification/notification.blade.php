@@ -45,8 +45,7 @@
     {{-- ALL --}}
     <div class="tab-panel active" id="tab-all">
         @forelse($allNotifications as $notification)
-            <div class="notif-card {{ is_null($notification->read_at) ? 'unread' : '' }}">
-                {{-- <div class="notif-icon {{ is_null($notification->read_at) ? 'icon-unread' : 'icon-read' }}"> --}}
+            <div class="notif-card {{ is_null($notification->read_at) ? 'icon-unread' : 'icon-read' }}">
                     <a href="{{ route('visitors.show', encrypt($notification->data['visitor_id'])) }}" 
                         class="notif-icon {{ is_null($notification->read_at) ? 'icon-unread' : 'icon-read' }}" 
                         title="View visitor">
@@ -88,7 +87,6 @@
     <div class="tab-panel" id="tab-unread">
         @forelse($unreadNotifications as $notification)
             <div class="notif-card unread">
-                {{-- <div class="notif-icon icon-unread"> --}}
                     <a href="{{ route('visitors.show', encrypt($notification->data['visitor_id'])) }}" 
                         class="notif-icon {{ is_null($notification->read_at) ? 'icon-unread' : 'icon-read' }}" 
                         title="View visitor">
@@ -126,9 +124,8 @@
     <div class="tab-panel" id="tab-read">
         @forelse($readNotifications as $notification)
             <div class="notif-card">
-                {{-- <div class="notif-icon icon-read"> --}}
                     <a href="{{ route('visitors.show', encrypt($notification->data['visitor_id'])) }}" 
-                        class="notif-icon {{ is_null($notification->read_at) ? 'icon-unread' : 'icon-read' }}" 
+                        class="notif-icon {{ is_null($notification->read_at) ? 'icon-read' : 'icon-unread' }}" 
                         title="View visitor">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </a>

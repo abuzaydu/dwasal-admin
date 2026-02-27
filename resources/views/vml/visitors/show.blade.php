@@ -5,6 +5,11 @@
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
+                     <li class="breadcrumb-item">
+                <a href="javascript:history.back();" class="btn btn-sm btn-link ps-0 btn-toggle-fullwidth">
+                    <i class="fa fa-arrow-left"></i>
+                </a>
+            </li>
                     <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
                     <li class="breadcrumb-item">Visitors Management</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>

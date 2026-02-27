@@ -70,8 +70,8 @@
         color: #fff;
     }
 
-    .idc-switcher-btn.active.btn-wave { background: linear-gradient(135deg, #1a3a6b, #4a7ab5); }
-    .idc-switcher-btn.active.btn-gold { background: linear-gradient(135deg, #d4a017, #9a6e00); }
+    .idc-switcher-btn.active.btn-wave { background: linear-gradient(135deg, #FFA733, #FFA733); }
+    .idc-switcher-btn.active.btn-gold { background: linear-gradient(135deg, #FFA733, #FFA733); }
 
     /* TEMPLATE PANELS  (each hidden by default) */
     .idc-template-panel {
@@ -162,7 +162,7 @@
 
     #idc-wave-front .wf-header .co-logo-placeholder {
         width: 38px; height: 38px;
-        background: #1a3a6b;
+        background: #FFA733;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -175,7 +175,7 @@
     #idc-wave-front .wf-header .co-name {
         font-size: 0.82rem;
         font-weight: 800;
-        color: #1a3a6b;
+        color: #E67E00;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         line-height: 1.25;
@@ -187,7 +187,7 @@
     #idc-wave-front .wf-photo-ring {
         width: 96px; height: 96px;
         border-radius: 50%;
-        border: 4px solid #1a3a6b;
+        border: 4px solid #FFA733;
         padding: 3px;
         box-shadow: 0 4px 18px rgba(26,58,107,0.22);
         background: #fff;
@@ -211,7 +211,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #1a3a6b;
+        color: #E67E00;
         font-size: 2.2rem;
     }
 
@@ -219,7 +219,7 @@
         margin-top: 14px;
         font-size: 1.1rem;
         font-weight: 900;
-        color: #1a3a6b;
+        color: #E67E00;
         text-transform: uppercase;
         letter-spacing: 1px;
         text-align: center;
@@ -231,7 +231,7 @@
         margin-top: 4px;
         font-size: 0.7rem;
         font-weight: 700;
-        color: #4a7ab5;
+        color: #E67E00;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         text-align: center;
@@ -258,7 +258,7 @@
 
     #idc-wave-front .wf-info-label {
         font-weight: 700;
-        color: #1a3a6b;
+        color: #E67E00;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -315,7 +315,7 @@
 
     /* BACK — wave */
     #idc-wave-back {
-        background: #1a3a6b;
+        background: #E67E00;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -416,8 +416,7 @@
         text-align: center;
     }
 
-    /* TEMPLATE 2 — GOLD 
-       Original gold gradient header design */
+    /* TEMPLATE 2 — GOLD  */
 
     /* FRONT */
     #idc-gold-front {
@@ -429,7 +428,7 @@
 
     #idc-gold-front .front-header {
         width: 100%;
-        background: linear-gradient(135deg, #d4a017 0%, #b8860b 100%);
+        background: linear-gradient(135deg, #FFA733 0%, #FFA733 100%);
         padding: 14px 16px 12px;
         display: flex;
         align-items: center;
@@ -472,9 +471,9 @@
     #idc-gold-front .photo-ring {
         width: 100px; height: 100px;
         border-radius: 50%;
-        border: 3px solid #d4a017;
+        border: 3px solid #F7941D;
         padding: 3px;
-        box-shadow: 0 4px 16px rgba(212,160,23,0.35);
+        box-shadow: 0 4px 16px rgba(136, 99, 4, 0.35);
         background: #fff;
         overflow: hidden;
         display: flex;
@@ -516,7 +515,7 @@
         margin-top: 4px;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #d4a017;
+        color: #F7941D;
         text-transform: uppercase;
         letter-spacing: 1px;
         text-align: center;
@@ -537,7 +536,7 @@
     #idc-gold-front .front-footer {
         margin-top: auto;
         width: 100%;
-        background: linear-gradient(180deg, #d4a017 0%, #9a6e00 100%);
+        background: linear-gradient(180deg, #F7941D 0%, #F7941D 100%);
         height: 150px;
         display: flex;
         align-items: center;
@@ -561,7 +560,7 @@
 
     /* BACK — gold */
     #idc-gold-back {
-        background: linear-gradient(160deg, #c9950f 0%, #7a5500 100%);
+        background: linear-gradient(160deg, #F7941D 0%, #F7941D 100%);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -698,19 +697,19 @@
 
                     <div class="wf-info-table">
                         <div class="wf-info-row">
-                            <span class="wf-info-label">ID Number</span>
+                            <span class="wf-info-label">ID Number:</span>
                             <span class="wf-info-value">{{ $employee->emp_id ?? 'N/A' }}</span>
                         </div>
                         <div class="wf-info-row">
-                            <span class="wf-info-label">Valid Through</span>
+                            <span class="wf-info-label">Valid Through:</span>
                             <span class="wf-info-value">{{ date('d/m/Y', strtotime($employee->created_at)) }}</span>
                         </div>
                     </div>
 
                     <div class="wf-wave-footer">
                         <svg class="wave-bg" viewBox="0 0 280 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0,65 C60,15 140,100 200,50 C240,18 265,38 280,28 L280,150 L0,150 Z" fill="#1a3a6b"/>
-                            <path d="M0,82 C50,38 120,110 190,65 C230,38 260,54 280,44 L280,150 L0,150 Z" fill="#2a5298" opacity="0.6"/>
+                            <path d="M0,65 C60,15 140,100 200,50 C240,18 265,38 280,28 L280,150 L0,150 Z" fill="#FFA733"/>
+                            <path d="M0,82 C50,38 120,110 190,65 C230,38 260,54 280,44 L280,150 L0,150 Z" fill="#E67E00" opacity="0.6"/>
                         </svg>
                         <div class="wf-valid-text">
                             <div>Authorized</div>
@@ -729,10 +728,10 @@
                 <p class="idc-card-label">Back Side</p>
                 <div class="idc-shell" id="idc-wave-back">
                     <svg class="back-wave-top" viewBox="0 0 280 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0,0 L280,0 L280,50 C200,80 100,20 0,60 Z" fill="#2a5298" opacity="0.5"/>
+                        <path d="M0,0 L280,0 L280,50 C200,80 100,20 0,60 Z" fill="#FFA733" opacity="0.5"/>
                     </svg>
                     <svg class="back-wave-bottom" viewBox="0 0 280 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0,0 L280,0 L280,50 C200,80 100,20 0,60 Z" fill="#2a5298" opacity="0.5"/>
+                        <path d="M0,0 L280,0 L280,50 C200,80 100,20 0,60 Z" fill="#FFA733" opacity="0.5"/>
                     </svg>
                     <div class="back-content">
                         @if($employee->company && $employee->company->logo_url)
@@ -766,7 +765,7 @@
         <div style="text-align:center;">
             <button class="idc-download-btn"
                     id="idc-wave-download-btn"
-                    style="background:linear-gradient(135deg,#1a3a6b,#4a7ab5);box-shadow:0 4px 14px rgba(26,58,107,0.35);"
+                    style="background:linear-gradient(135deg,#E67E00,#E67E00);box-shadow:0 4px 14px rgba(26,58,107,0.35);"
                     onclick="idcDownload('wave')">
                 <i class="fa fa-file-pdf"></i> Download PDF Card
             </button>
@@ -857,7 +856,7 @@
         <div style="text-align:center;">
             <button class="idc-download-btn"
                     id="idc-gold-download-btn"
-                    style="background:linear-gradient(135deg,#d4a017,#9a6e00);box-shadow:0 4px 14px rgba(212,160,23,0.4);"
+                    style="background:linear-gradient(135deg,#FFA733 0%, #FFA733 100%);box-shadow:0 4px 14px rgba(212,160,23,0.4);"
                     onclick="idcDownload('gold')">
                 <i class="fa fa-file-pdf"></i> Download PDF Card
             </button>

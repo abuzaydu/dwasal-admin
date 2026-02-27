@@ -34,6 +34,7 @@ class User extends Authenticatable implements JWTSubject
         'country_code',
         'dial_code',
         'default_page',
+        'fcm_token',
     ];
 
     /**

@@ -21,13 +21,28 @@ class NotificationController extends Controller
     }
 
     // Mark a single notification as read
-    public function markRead(string $id)
-    {
-        $notification = Auth::user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
+    // public function markRead(string $id)
+    // {
+    //     $notification = Auth::user()->notifications()->findOrFail($id);
+    //     $notification->markAsRead();
 
-        return back()->with('success', 'Notification marked as read.');
+    //     return back()->with('success', 'Notification marked as read.');
+    // }
+   // <?php
+
+public function markRead(string $id)
+{
+    $notification = Auth::user()->notifications()->findOrFail($id);
+    $notification->markAsRead();
+
+    // AJAX call (from the notification click) — return JSON
+    if (request()->expectsJson() || request()->ajax()) {
+        return response()->json(['success' => true]);
     }
+
+    // Normal form POST (fallback ✓ button) — redirect back
+    return back()->with('success', 'Notification marked as read.');
+}
 
     // Mark all notifications as read
     public function markAllRead()

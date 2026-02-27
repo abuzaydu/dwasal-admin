@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Models\Company;
 use App\Models\Department;
+use App\Models\Event;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Notifications\FcmNotification;
@@ -27,58 +28,90 @@ class VisitorController extends Controller
     }
 
     public function dashboard(Request $request)
-    {
-        $page = 'Visitors Dashboard';
-            $company = Company::find(Session::get('company_id'));
-        $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
-        $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
-        $visitorsLogs = Visitor::whereDate('created_at', Carbon::today())
-            ->latest()
-            ->limit(10)
-            ->get();
+{
+    $page = 'visitor Dashboard'; 
+ 
+    [$from, $to] = $this->getDateRange($request);
+    $is_post_query = $request->filled('start_date') || $request->has('period');
+    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
     
-    $period = $request->get('period', 'today');
 
-    // Build the date range based on period
-    $dateRange = match($period) {
-        'weekly'  => [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->endOfDay()],
-        'monthly' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-        'yearly'  => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
-        'total'   => [null, null], // no date filter
-        default   => [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()], // 'today'
-    };
+    // Visitor logs — scoped to same range, latest 10
+    $visitorsLogs = Visitor::where('shop_id', Session::get('shop_id'))
+        // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+        ->orderBy('created_at', 'desc')
+        ->take(10)
+        ->get();
 
-    // Helper closure to apply date range
-    $applyRange = function ($query) use ($dateRange) {
-        if ($dateRange[0] && $dateRange[1]) {
-            $query->whereBetween('created_at', $dateRange);
+    // Base query for card counts
+    $base = Visitor::query()
+        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
+
+    $totalVisitors      = (clone $base)->count();
+    $pendingVisitors    = (clone $base)->whereIn('status', ['Awaiting Host permission', 'Permission Granted'])->count();
+    $checkedinVisitors  = (clone $base)->where('status', 'Checked In')->count();
+    $checkedoutVisitors = (clone $base)->where('status', 'Checked Out')->count();
+
+    return view('vml.index', compact(
+        'page',
+        'visitorsLogs',
+        'totalVisitors',
+        'pendingVisitors',
+        'checkedinVisitors',
+        'checkedoutVisitors',
+        'is_post_query',   
+        'start_date',      
+        'end_date',        
+}
+
+   
+    // Priority: custom start_date/end_date  >  period keyword  >  default (today)
+    public static function getDateRange(Request $request): array
+    {
+        // 1. Custom range supplied (from date-range picker)
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            return [
+                Carbon::parse($request->start_date)->startOfDay(),
+                Carbon::parse($request->end_date)->endOfDay(),
+            ];
         }
-        return $query;
-    };
 
-    $totalVisitors    = $applyRange(Visitor::query())->count();
-    $pendingVisitors  = $applyRange(Visitor::whereIn('status', ['Awaiting Host permission', 'Permission Granted']))->count();
-    $checkedinVisitors = $applyRange(Visitor::where('status', 'Checked In'))->count();
-    $checkedoutVisitors  = $applyRange(Visitor::where('status', 'Checked Out'))->count(); // reuse same period
-
-      
-
-        return view('vml.index', compact('page', 'visitorsLogs','departments', 'employees', 'totalVisitors', 'pendingVisitors', 'checkedinVisitors', 'checkedoutVisitors','period'));
+        // 2. Period keyword
+        return match ($request->get('period', 'today')) {
+            'weekly'  => [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->endOfDay()],
+            'monthly' => [Carbon::now()->startOfMonth(),           Carbon::now()->endOfMonth()],
+            'yearly'  => [Carbon::now()->startOfYear(),            Carbon::now()->endOfYear()],
+            'total'   => [null, null],
+            default   => [Carbon::today()->startOfDay(),           Carbon::today()->endOfDay()], // today
+        };
     }
 
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Visitors';
         $company = Company::find(Session::get('company_id'));
         $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
         $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
-        $visitors = Visitor::where('visitors.shop_id', Session::get('shop_id'))
-        ->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname')
-        ->orderBy('visitors.created_at', 'desc')->get();
+        
+    [$from, $to] = $this->getDateRange($request);
+
+    
+    $is_post_query = $request->filled('start_date') || $request->has('period');
+    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
+    
+
+    // Visitor logs — scoped to same range, latest 10
+    $visitors = Visitor::where('shop_id', Session::get('shop_id'))
+        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get();
         $visitorids = array(
             ['name' => 'NIL'],
             ['name' => 'NIN'],
@@ -88,7 +121,7 @@ class VisitorController extends Controller
         );
         $badges = $company->badges()->where('status', 'available')->get();
 
-        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids', 'badges'));
+        return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids', 'badges', 'is_post_query', 'start_date', 'end_date'));
     }
 
     /**
@@ -171,6 +204,7 @@ class VisitorController extends Controller
             ];
 
             $user->notify(new FcmNotification($notificationData));
+           
         }
 
         return redirect()
@@ -244,5 +278,51 @@ class VisitorController extends Controller
             return redirect('visitors')->with('success', 'visitor deleted successfully');
         }
     }
+
+    public function list(Request $request)
+{
+    $page = 'Visitor List';
+
+    [$from, $to] = $this->getDateRange($request);
+
+    $is_post_query = $request->filled('start_date') || $request->has('period');
+    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
+
+    $type = $request->get('type', 'total');
+
+    // Base query scoped to shop + date range
+    $query = Visitor::query()
+        ->where('shop_id', Session::get('shop_id'))
+        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
+
+    // Filter by card type
+    $query = match ($type) {
+        'pending'    => $query->whereIn('status', ['Awaiting Host permission', 'Permission Granted']),
+        'checkedin'  => $query->where('status', 'Checked In'),
+        'checkedout' => $query->where('status', 'Checked Out'),
+        default      => $query, // 'total' — no extra filter
+    };
+
+    $visitors = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+
+    // Human-readable label for the page heading
+    $typeLabel = match ($type) {
+        'pending'    => 'Pending Visitors',
+        'checkedin'  => 'Checked-in Visitors',
+        'checkedout' => 'Checked-out Visitors',
+        default      => 'All Visitors',
+    };
+
+    return view('vml.visitors.filtered_visitor_list', compact(
+        'page',
+        'visitors',
+        'type',
+        'typeLabel',
+        'is_post_query',
+        'start_date',
+        'end_date',
+    ));
+}
 
 }

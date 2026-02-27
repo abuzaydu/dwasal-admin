@@ -40,20 +40,43 @@
     </script>
 @section('content')
     <!--breadcrumb-->
-    <div class="block-header pt-4">
-        <div class="row">
-            <div class="col-lg-5 col-md-5 col-sm-12">
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
-                    <li class="breadcrumb-item">Visitors Managment</li>                         
-                    <li class="breadcrumb-item active">{{$page}}</li>
+    <div class="block-header pt-4 py-lg-4 py-3">
+        <div class="row g-3 align-items-center">
+
+            <div class="col-md-6 col-sm-12">
+                <ul class="breadcrumb mb-0 pt-2">
+                    <li class="breadcrumb-item">
+                        <a href="javascript:void(0);" class="btn btn-sm btn-link ps-0 btn-toggle-fullwidth">
+                            <i class="fa fa-arrow-left"></i>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>
+                    <li class="breadcrumb-item">Visitors Management</li>
+                    <li class="breadcrumb-item active">{{ $page }}</li>
                 </ul>
-            </div>            
-            <div class="col-lg-7 col-md-7 col-sm-12 text-end">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#visitorModal">
-                    <i class="fa fa-plus-square"></i> New Visitor</button>
             </div>
-            
+
+            <div class="col-md-6 col-sm-12 text-md-end d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+
+                <form class="dashform report-form d-inline"
+                    action="{{ url('visitorslist') }}"
+                    method="POST">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="{{ $start_date }}">
+                    <input type="hidden" name="end_date"   id="end_input"   value="{{ $end_date }}">
+                    <button type="button" class="btn btn-white btn-sm" id="reportrange">
+                        <span><i class="fa fa-calendar"></i></span>
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                </form>
+
+                <button type="button" class="btn btn-primary btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#visitorModal">
+                    <i class="fa fa-plus-square"></i> New Visitor
+                </button>
+
+            </div>
+
         </div>
     </div>
     <!--end breadcrumb-->
@@ -104,7 +127,7 @@
                                             <td>@if(!empty($visitor->time_out)) {{date('d/m/Y', strtotime($visitor->time_out)) }}@endif</td>
                                             <td>{{$visitor->created_at}}</td>
                                             <td style="text-align: center;">
-                                                <a href="{{route('visitors.edit', encrypt($visitor->id))}}">
+                                                {{-- <a href="{{route('visitors.edit', encrypt($visitor->id))}}">
                                                     <i class="fa fa-edit" style="color: blue;"></i>
                                                 </a> | 
                                                 <form method="POST" action="{{route('visitors.destroy' , encrypt($visitor->id))}}" id="delete-form-{{$key}}" style="display: inline;"> 
@@ -113,7 +136,7 @@
                                                     <a href="javascript:;" onclick="return confirmDelete({{$key}})">
                                                         <i class="fa fa-trash" style="color: red;"></i>
                                                     </a>                        
-                                                </form>    
+                                                </form>     --}}
                                             </td>
                                         </tr>
                                         @endforeach
