@@ -41,29 +41,31 @@ class EmployeeImport implements ToModel, WithStartRow
             }
         }
         
-        return new Employee([
-            'company_id' => $company->id,
-            'emp_id' => $row[0],
-            'fname' => $row[1],
-            'mname' => $row[2],
-            'lname' => $row[3],
-            'nin' => $row[4],
-            'tin' => $row[5],
-            'gender' => $row[6],
-            'marital_status' => $row[7],
-            'address' => $row[8],
-            'mobile' => $row[9],
-            'email' => $row[10],
-            'type' => $row[11],
-            'position_id' => $position_id,
-            'basic_pay_monthly' => $row[13],
-            'trans_allowance' => $row[14],
-            'house_allowance' => $row[15],
-            'com_allowance' => $row[16],
-            'account_number' => $row[17],
-            'account_name' => $row[18],
-            'bank_name' => $row[19],
-        ]);
+        $employee = new Employee();
+        $employee->company_id = $company->id;
+        $employee->emp_id = $this->empID();
+        $employee->fname = $row[1];
+        $employee->mname = $row[2];
+        $employee->lname = $row[3];
+        $employee->nin = $row[4];
+        $employee->tin = $row[5];
+        $employee->gender = $row[6];
+        $employee->marital_status = $row[7];
+        $employee->address = $row[8];
+        $employee->mobile = $row[9];
+        $employee->email = $row[10];
+        $employee->type = $row[11];
+        $employee->position_id = $position_id;
+        $employee->basic_pay_monthly = $row[13];
+        $employee->trans_allowance = $row[14];
+        $employee->house_allowance = $row[15];
+        $employee->com_allowance = $row[16];
+        $employee->account_number = $row[17];
+        $employee->account_name = $row[18];
+        $employee->bank_name = $row[19];
+        $employee->save();
+
+        return $employee;
     }
     
     /**
@@ -72,5 +74,24 @@ class EmployeeImport implements ToModel, WithStartRow
     public function startRow(): int
     {
         return 2;
+    }
+
+    public function empID(){
+        $company = Company::find(Session::get('company_id'));
+        $words = preg_split("/[\s,_-]+/", $company->name);
+        $acronym = "";
+        foreach ($words as $w) {
+          $acronym .= mb_substr($w, 0, 1);
+        }
+
+        $emp = Employee::latest()->first();
+        if (!is_null($emp)) {
+            $last =$emp->id  ;
+            $id = $acronym.'-'.sprintf('%03d', $last+1);
+            return $id;   
+        }else{
+            $id = $acronym.'-'.sprintf('%03d', 1);
+            return $id; 
+        }
     }
 }
