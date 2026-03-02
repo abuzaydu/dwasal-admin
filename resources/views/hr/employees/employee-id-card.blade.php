@@ -15,6 +15,7 @@
     $qr_base64 = 'data:image/svg+xml;base64,' . base64_encode($qr_svg);
 @endphp
 
+
 <style>
     /*FONTS*/
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
@@ -716,7 +717,8 @@
                             <div>by Company</div>
                         </div>
                         <div class="wf-qr-wrap">
-                            <img src="{{ $qr_base64 }}" width="106" height="106" alt="QR Code">
+                            <!-- <img src="{{ $qr_base64 }}" width="106" height="106" alt="QR Code"> -->
+                            <img src="data:image/png;base64,{{DNS2D::getBarcodePNG(encrypt($qr_empDbId.'&'.$qr_empID), 'QRCODE', 10, 10)}}" alt="barcode" />
                         </div>
                     </div>
 
