@@ -81,14 +81,20 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-4 text-center">
-                            <img src="{{ asset('storage/visitors/'.$visitor->visitor_photo) }}" alt="" width="60%" />
-                            <hr>
-                            @if(!$visitor->is_granted)
-                            <a href="{{ url('grant-permission/'.encrypt($visitor->id))}}" class="btn btn-outline-success font-13">
-                            <i class="fa fa-check"></i> Grant Permission</a>
-                            @endif
-                        </div>
+                            <div class="col-md-4 text-center">
+                                @if($visitor->visitor_photo)
+                                        <img src="{{ asset('storage/visitors/' . $visitor->visitor_photo) }}" 
+                                            alt="Visitor Photo"
+                                            width="150">
+                                @else
+                                        <img src="{{ asset('images/default-avatar.png') }}" alt="No Photo">
+                                @endif
+                                <hr>
+                                @if(!$visitor->is_granted)
+                                <a href="{{ url('grant-permission/'.encrypt($visitor->id))}}" class="btn btn-outline-success font-13">
+                                <i class="fa fa-check"></i> Grant Permission</a>
+                                @endif
+                            </div>
                     </div>
                 </div>
             </div>

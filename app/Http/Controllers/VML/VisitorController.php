@@ -28,48 +28,43 @@ class VisitorController extends Controller
     }
 
     public function dashboard(Request $request)
-{
-    $page = 'visitor Dashboard'; 
- 
-    [$from, $to] = $this->getDateRange($request);
-    $is_post_query = $request->filled('start_date') || $request->has('period');
-    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
-    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
+    {
+        $page = 'visitor Dashboard'; 
     
+        [$from, $to] = $this->getDateRange($request);
+        $is_post_query = $request->filled('start_date') || $request->has('period');
+        $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+        $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
+        
+        $visitorsLogs = Visitor::where('shop_id', Session::get('shop_id'))
+            // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
 
-    // Visitor logs — scoped to same range, latest 10
-    $visitorsLogs = Visitor::where('shop_id', Session::get('shop_id'))
-        // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
-        ->orderBy('created_at', 'desc')
-        ->take(10)
-        ->get();
+        $base = Visitor::query()
+            ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
 
-    // Base query for card counts
-    $base = Visitor::query()
-        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
+        $totalVisitors      = (clone $base)->count();
+        $pendingVisitors    = (clone $base)->whereIn('status', ['Awaiting Host permission', 'Permission Granted'])->count();
+        $checkedinVisitors  = (clone $base)->where('status', 'Checked In')->count();
+        $checkedoutVisitors = (clone $base)->where('status', 'Checked Out')->count();
 
-    $totalVisitors      = (clone $base)->count();
-    $pendingVisitors    = (clone $base)->whereIn('status', ['Awaiting Host permission', 'Permission Granted'])->count();
-    $checkedinVisitors  = (clone $base)->where('status', 'Checked In')->count();
-    $checkedoutVisitors = (clone $base)->where('status', 'Checked Out')->count();
-
-    return view('vml.index', compact(
-        'page',
-        'visitorsLogs',
-        'totalVisitors',
-        'pendingVisitors',
-        'checkedinVisitors',
-        'checkedoutVisitors',
-        'is_post_query',   
-        'start_date',      
-        'end_date',  ));      
-}
+        return view('vml.index', compact(
+            'page',
+            'visitorsLogs',
+            'totalVisitors',
+            'pendingVisitors',
+            'checkedinVisitors',
+            'checkedoutVisitors',
+            'is_post_query',   
+            'start_date',      
+            'end_date',  ));      
+    }
 
    
-    // Priority: custom start_date/end_date  >  period keyword  >  default (today)
     public static function getDateRange(Request $request): array
     {
-        // 1. Custom range supplied (from date-range picker)
         if ($request->filled('start_date') && $request->filled('end_date')) {
             return [
                 Carbon::parse($request->start_date)->startOfDay(),
@@ -77,7 +72,6 @@ class VisitorController extends Controller
             ];
         }
 
-        // 2. Period keyword
         return match ($request->get('period', 'today')) {
             'weekly'  => [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->endOfDay()],
             'monthly' => [Carbon::now()->startOfMonth(),           Carbon::now()->endOfMonth()],
@@ -98,28 +92,25 @@ class VisitorController extends Controller
         $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
         $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
         
-    [$from, $to] = $this->getDateRange($request);
+        [$from, $to] = $this->getDateRange($request);
 
-    
-    $is_post_query = $request->filled('start_date') || $request->has('period');
-    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
-    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
-    
+        $is_post_query = $request->filled('start_date') || $request->has('period');
+        $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+        $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
 
-    // Visitor logs — scoped to same range, latest 10
-    $visitors = Visitor::where('shop_id', Session::get('shop_id'))
-        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
-        $visitorids = array(
-            ['name' => 'NIL'],
-            ['name' => 'NIN'],
-            ['name' => 'Driving License'],
-            ['name' => 'Voters Number'],
-            ['name' => 'Passport']
-        );
-        $badges = $company->badges()->where('status', 'available')->get();
+        $visitors = Visitor::where('shop_id', Session::get('shop_id'))
+            ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+            $visitorids = array(
+                ['name' => 'NIL'],
+                ['name' => 'NIN'],
+                ['name' => 'Driving License'],
+                ['name' => 'Voters Number'],
+                ['name' => 'Passport']
+            );
+         $badges = $company->badges()->where('status', 'available')->get();
 
         return view('vml.visitors.index', compact('page', 'visitors', 'employees', 'departments', 'visitorids', 'badges', 'is_post_query', 'start_date', 'end_date'));
     }
@@ -157,7 +148,7 @@ class VisitorController extends Controller
         Badge::where('badge_number', $request['badge_no'])
         ->update(['status' => 'in_use']);
        
-     }
+        }
 
         return redirect('visitors')->with('success', 'New visitor added successfully');
     }
@@ -172,7 +163,6 @@ class VisitorController extends Controller
         $visitor = Visitor::where('visitors.id', decrypt($id))->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'user_id', 'name', 'mobile',  'visitors.email as email', 'address', 'id_type', 'id_number', 'visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'is_granted', 'came_in_with', 'came_out_with', 'first_name as fname', 'last_name as lname', 'visitors.created_at as created_at')->first();
         if (!is_null($visitor)) {
             $guard = User::find($visitor->user_id);
-            // return $visitor;
             return view('vml.visitors.show', compact('page', 'visitor', 'guard', 'codetype'));
         }else{
             return redirect('visitors');
@@ -180,44 +170,41 @@ class VisitorController extends Controller
     }
 
     public function grantPermission($id)
-{
-    try {
-        $visitor = Visitor::findOrFail(decrypt($id));
+    {
+        try {
+            $visitor = Visitor::findOrFail(decrypt($id));
+            
+            $user = User::find($visitor->user_id);
+            
+            $visitor->update([
+                'is_granted' => true,
+                'status' => 'Permission Granted'
+            ]);
 
-        $user = User::find($visitor->user_id);
+            if ($user) {
+                $notificationData = [
+                    'title' => 'Visitor Entry Approved',
+                    'body' => 'Entry permission has been granted for visitor ' . $visitor->name . '. Kindly allow access at the entrance.',
+                    'data' => [
+                        'visitor_id' => $visitor->id,
+                        'type' => 'visitor_permission'
+                    ],
+                ];
+                $user->notify(new FcmNotification($notificationData));
+            
+            }
 
-        // Update visitor status
-        $visitor->update([
-            'is_granted' => true,
-            'status' => 'Permission Granted'
-        ]);
+             return redirect()
+                ->route('visitors.show', encrypt($visitor->id))
+                ->with('success', 'Visitor permission granted successfully.');
 
-        // Prepare professional notification message
-        if ($user) {
-            $notificationData = [
-                'title' => 'Visitor Entry Approved',
-                'body' => 'Entry permission has been granted for visitor ' . $visitor->name . '. Kindly allow access at the entrance.',
-                'data' => [
-                    'visitor_id' => $visitor->id,
-                    'type' => 'visitor_permission'
-                ],
-            ];
+            } catch (\Exception $e) {
 
-            $user->notify(new FcmNotification($notificationData));
-           
-        }
-
-        return redirect()
-            ->route('visitors.show', encrypt($visitor->id))
-            ->with('success', 'Visitor permission granted successfully.');
-
-    } catch (\Exception $e) {
-
-        return redirect()
-            ->back()
-            ->with('error', 'An error occurred while granting permission.');
+                return redirect()
+                    ->back()
+                    ->with('error', $e->getMessage());
+            }
     }
-}
 
     /**
      * Show the form for editing the specified resource.
@@ -270,7 +257,7 @@ class VisitorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+      public function destroy(string $id)
     {
         $visitor = Visitor::find(decrypt($id));
         if (!is_null($visitor)) {
@@ -280,49 +267,46 @@ class VisitorController extends Controller
     }
 
     public function list(Request $request)
-{
-    $page = 'Visitor List';
+    {
+        $page = 'Visitor List';
 
-    [$from, $to] = $this->getDateRange($request);
+        [$from, $to] = $this->getDateRange($request);
 
-    $is_post_query = $request->filled('start_date') || $request->has('period');
-    $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
-    $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
+        $is_post_query = $request->filled('start_date') || $request->has('period');
+        $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
+        $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
 
-    $type = $request->get('type', 'total');
+        $type = $request->get('type', 'total');
 
-    // Base query scoped to shop + date range
-    $query = Visitor::query()
-        ->where('shop_id', Session::get('shop_id'))
-        ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
+        $query = Visitor::query()
+            ->where('shop_id', Session::get('shop_id'))
+            ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]));
 
-    // Filter by card type
-    $query = match ($type) {
-        'pending'    => $query->whereIn('status', ['Awaiting Host permission', 'Permission Granted']),
-        'checkedin'  => $query->where('status', 'Checked In'),
-        'checkedout' => $query->where('status', 'Checked Out'),
-        default      => $query, // 'total' — no extra filter
-    };
+        $query = match ($type) {
+            'pending'    => $query->whereIn('status', ['Awaiting Host permission', 'Permission Granted']),
+            'checkedin'  => $query->where('status', 'Checked In'),
+            'checkedout' => $query->where('status', 'Checked Out'),
+            default      => $query, 
+        };
 
-    $visitors = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+        $visitors = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
-    // Human-readable label for the page heading
-    $typeLabel = match ($type) {
-        'pending'    => 'Pending Visitors',
-        'checkedin'  => 'Checked-in Visitors',
-        'checkedout' => 'Checked-out Visitors',
-        default      => 'All Visitors',
-    };
+        $typeLabel = match ($type) {
+            'pending'    => 'Pending Visitors',
+            'checkedin'  => 'Checked-in Visitors',
+            'checkedout' => 'Checked-out Visitors',
+            default      => 'All Visitors',
+        };
 
-    return view('vml.visitors.filtered_visitor_list', compact(
-        'page',
-        'visitors',
-        'type',
-        'typeLabel',
-        'is_post_query',
-        'start_date',
-        'end_date',
-    ));
-}
+        return view('vml.visitors.filtered_visitor_list', compact(
+            'page',
+            'visitors',
+            'type',
+            'typeLabel',
+            'is_post_query',
+            'start_date',
+            'end_date',
+        ));
+    }
 
 }

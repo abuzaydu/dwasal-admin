@@ -21,6 +21,7 @@ class FcmChannel
             $notifiable->routeNotificationFor('fcm'),
             $fcmNotification
         );
+        //\Log::info('FCM Response:', ['response' => $response]); 
         return $response;
     }
 }

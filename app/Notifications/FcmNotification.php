@@ -6,7 +6,8 @@ use App\Services\Firebase\FcmClient;
 // use Illuminate\Bus\Queueable;
 // use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Fcm\FcmChannel;
+// use NotificationChannels\Fcm\FcmChannel;
+use App\Notifications\Channels\FcmChannel;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 
@@ -27,43 +28,33 @@ class FcmNotification extends Notification
         return [FcmChannel::class];
     }
 
-    // public function toFcm($notifiable)
-    // {
-    //     // Get the FCM token for the notifiable entity (user or device)
-    //     $token = $notifiable->routeNotificationFor('fcm');
-    //     // Create the FirebaseNotification instance
-    //     $notification = FirebaseNotification::create(
-    //         $this->notificationData['title'],
-    //         $this->notificationData['body']
-    //     );
-    //     // Create the CloudMessage instance with target token and data
-    //     $message = CloudMessage::withTarget('token', $token)
-    //         ->withNotification($notification)
-    //         ->withData($this->notificationData['data'] ?? []);
-    //     return $message;
-    // }
+   
     public function toFcm($notifiable)
-{
-    $token = $notifiable->routeNotificationFor('fcm');
-    
-    //\Log::info('Attempting to send FCM to token: ' . $token);
-    
-    if (!$token) {
-       // \Log::error('No FCM token found for user: ' . $notifiable->id);
-        return null;
-    }
-    
-    $notification = FirebaseNotification::create(
-        $this->notificationData['title'],
-        $this->notificationData['body']
-    );
-    
-    $message = CloudMessage::withTarget('token', $token)
+    {
+        $token = $notifiable->routeNotificationFor('fcm');
+        
+        //\Log::info('Attempting to send FCM to token: ' . $token);
+        
+        if (!$token) {
+        // \Log::error('No FCM token found for user: ' . $notifiable->id);
+            return null;
+        }
+        
+        $notification = FirebaseNotification::create(
+            $this->notificationData['title'],
+            $this->notificationData['body']
+        );
+        
+        // $message = CloudMessage::withTarget('token', $token)
+        //     ->withNotification($notification)
+        //     ->withData($this->notificationData['data'] ?? []);
+        $message = CloudMessage::new()
+        ->toToken($token)
         ->withNotification($notification)
-        ->withData($this->notificationData['data'] ?? []);
-    
-    return $message;
-}
+        ->withData(array_map('strval', $this->notificationData['data'] ?? []));
+        
+        return $message;
+    }
 
     public function toArray($notifiable)
     {

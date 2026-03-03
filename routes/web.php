@@ -1540,6 +1540,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications',          [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.markRead');
     Route::patch('/notifications/read-all',  [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+    Route::get('/notifications/{id}/read-redirect', [NotificationController::class, 'readAndRedirect'])
+    ->name('notifications.readAndRedirect');
 });
 
 Route::post('efdms-reg-ack-infos', [ApiTestController::class, 'store']);

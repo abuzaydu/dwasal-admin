@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-//use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -20,35 +19,33 @@ class NotificationController extends Controller
         ]);
     }
 
-    // Mark a single notification as read
-    // public function markRead(string $id)
-    // {
-    //     $notification = Auth::user()->notifications()->findOrFail($id);
-    //     $notification->markAsRead();
+    public function markRead(string $id)
+    {
+        $notification = Auth::user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
 
-    //     return back()->with('success', 'Notification marked as read.');
-    // }
-   // <?php
-
-public function markRead(string $id)
-{
-    $notification = Auth::user()->notifications()->findOrFail($id);
-    $notification->markAsRead();
-
-    // AJAX call (from the notification click) — return JSON
-    if (request()->expectsJson() || request()->ajax()) {
-        return response()->json(['success' => true]);
+        return back()->with('success', 'Notification marked as read.');
     }
 
-    // Normal form POST (fallback ✓ button) — redirect back
-    return back()->with('success', 'Notification marked as read.');
-}
-
-    // Mark all notifications as read
+    
     public function markAllRead()
     {
         Auth::user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'All notifications marked as read.');
     }
+    public function readAndRedirect($id)
+    {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+
+        
+        if (is_null($notification->read_at)) {
+            $notification->markAsRead();
+        }
+
+        $visitorId = $notification->data['visitor_id'];
+
+        return redirect()->route('visitors.show', encrypt($visitorId));
+    }
+
 }
