@@ -71,17 +71,21 @@
                             <div class="p-4 border rounded">
                                 <form class="form row g-3" method="POST" action="{{route('user-companies.store')}}" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Company Name<span style="color: red; font-weight: bold;">*</span></label>
                                         <input id="name" type="text" name="name" required placeholder="Enter Your Company Name" class="form-control form-control-sm mb-1">
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Company Slogan</label>
                                         <input id="name" type="text" name="slogan" placeholder="Enter Your Company Slogan" class="form-control form-control-sm mb-1">
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Company Logo</label>
                                         <input type="file" name="logo" class="form-control form-control-sm mb-1">
+                                    </div>
+                                    <div class="col-md-3">
+                                    <label class="form-label">Brand Color<span style="color: red; font-weight: bold;">*</span></label>
+                                    <input  value="#FFA733" type="color" name="brand_color" required placeholder="Choose Your Company Brand Color" class="form-control form-control-sm mb-1">
                                     </div>
                                     <div class="col-md-6">
                                         <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">{{trans('navmenu.btn_save')}}</button>

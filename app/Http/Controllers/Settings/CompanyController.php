@@ -45,8 +45,7 @@ class CompanyController extends Controller
         $company->cuid = 'SME-' . $this->unique_code(16);
         $company->name = $request['name'];
         $company->slogan = $request['slogan'];
-        
-        // 1. Save the company first to generate the ID
+        $company->brand_color = $request['brand_color'];
         $company->save();
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
@@ -54,14 +53,11 @@ class CompanyController extends Controller
                 'logo' => 'mimes:jpeg,png|max:1014',
             ]);
 
-            // 2. Now $company->id actually has a value (e.g., 14)
             $extension = $request->logo->extension();
             $filename = $company->id . '_logo.' . $extension;
 
-            // 3. Store the file using the now-existing ID
             $request->logo->storeAs('clogos', $filename, 'public');
 
-            // 4. Update the company record with the filename and save again
             $company->logo_url = $filename;
             $company->save();
         }
@@ -102,7 +98,6 @@ class CompanyController extends Controller
         $company->slogan = $request['slogan'];
         $location = null;
         if ($request->hasFile('logo')) {
-            //  Let's do everything here
             if ($request->file('logo')->isValid()) {
                 //
                 $validated = $request->validate([
