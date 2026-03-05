@@ -299,69 +299,48 @@
     @endif
 
     <?php
-    $dur = '';
-    $cust = '';
-    $supp = '';
-    $is_post = '';
-    $startdate = '';
-    $enddate = '';
-    $is_pos = false;
-    $loadcountries = false;
-    $is_school = false;
-    $is_filling_station = false;
-    if (!is_null($settings)) {
-        if ($settings->is_school) {
-            $is_school = true;
+        $dur = '';
+        $cust = '';
+        $supp = '';
+        $is_post = '';
+        $startdate = '';
+        $enddate = '';
+        $is_pos = false;
+        $loadcountries = false;
+        $is_school = false;
+        $is_filling_station = false;
+        if (!is_null($settings)) {
+            if ($settings->is_school) {
+                $is_school = true;
+            }
+            if ($settings->is_filling_station) {
+                $is_filling_station = true;
+            }
         }
-        if ($settings->is_filling_station) {
-            $is_filling_station = true;
+        
+        if ($page == 'Home' ||  $page == 'visitor Dashboard' || $page == 'Visitors' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'API Payment Transactions' || $page == 'Proforma Invoices' || $page == 'Expenses' || $page == 'Expense Payments' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
+            $is_post = $is_post_query;
+            $startdate = $start_date;
+            $enddate = $end_date;
         }
-    }
-    
-    if ($page == 'Home' ||  $page == 'visitor Dashboard' ||$page == 'Reports' || $page == 'Stock Reports' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'API Payment Transactions' || $page == 'Proforma Invoices' || $page == 'Expenses' || $page == 'Expense Payments' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
-        $is_post = $is_post_query;
-        $startdate = $start_date;
-        $enddate = $end_date;
-    }
-    
-    if ($page == 'Customers' || $page == 'Suppliers' || $page == 'Profile') {
-        $loadcountries = true;
-    }
-    
-    if ($page == 'Point of Sale') {
-        $is_pos = true;
-    }
-    
-    if ($page == 'Reports') {
-        if (app()->getLocale() == 'en') {
-            $dur = $duration;
-        } else {
-            $dur = $duration_sw;
+        
+        if ($page == 'Customers' || $page == 'Suppliers' || $page == 'Profile') {
+            $loadcountries = true;
         }
-    }
+        
+        if ($page == 'Point of Sale') {
+            $is_pos = true;
+        }
+        
+        if ($page == 'Reports') {
+            if (app()->getLocale() == 'en') {
+                $dur = $duration;
+            } else {
+                $dur = $duration_sw;
+            }
+        }
     ?>
-    <script>
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
-        (function() {
-            'use strict'
-
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.querySelectorAll('.needs-validation')
-
-            // Loop over them and prevent submission
-            Array.prototype.slice.call(forms)
-                .forEach(function(form) {
-                    form.addEventListener('submit', function(event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-        })()
-    </script>
+    
     <script>
         $(document).ready(function() {
             var d = new Date();
@@ -446,30 +425,7 @@
                     .columns.adjust();
             });
         });
-        // Prevent Double Submits
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', (e) => {
-            // Prevent if already submitting
-            if (form.classList.contains('is-submitting')) {
-              e.preventDefault();
-              console.info('Successive submit suppressed');
-            }else {
-            
-                // Add a visual indicator to show the user it is submitting
-                form.classList.add('is-submitting');
-                form.submit();
-            }
-          });
-        });
-
-
-        // Extra snippet here to also prevent form submissions the first submit
-        // as a viewer of this demo would otherwise be guided to outside of CodePen …
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', e => {
-            e.preventDefault();
-          });
-        });
+       
     </script>
     @yield('page-scripts')
 </body>
