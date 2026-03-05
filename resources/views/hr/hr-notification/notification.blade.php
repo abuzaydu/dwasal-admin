@@ -1,5 +1,4 @@
 @extends('layouts.hr')
-
 @section('content')
 
     <div class="notif-wrapper">

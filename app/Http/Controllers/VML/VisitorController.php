@@ -37,9 +37,9 @@ class VisitorController extends Controller
         $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
         
         $visitorsLogs = Visitor::where('shop_id', Session::get('shop_id'))
-            // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
+           // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
             ->orderBy('created_at', 'desc')
-            ->take(10)
+            ->take(100)
             ->get();
 
         $base = Visitor::query()
@@ -101,7 +101,7 @@ class VisitorController extends Controller
         $visitors = Visitor::where('shop_id', Session::get('shop_id'))
             ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
             ->orderBy('created_at', 'desc')
-            ->take(5)
+           // ->take(5)
             ->get();
             $visitorids = array(
                 ['name' => 'NIL'],
@@ -191,7 +191,15 @@ class VisitorController extends Controller
                     ],
                 ];
                 $user->notify(new FcmNotification($notificationData));
-            
+                
+                $user = Auth::user(); 
+    
+                $user->unreadNotifications
+                    ->filter(function ($notification) use ($visitor) {
+                        return isset($notification->data['visitor_id']) 
+                            && $notification->data['visitor_id'] == $visitor->id;
+                    })
+                    ->each->markAsRead();
             }
 
              return redirect()
