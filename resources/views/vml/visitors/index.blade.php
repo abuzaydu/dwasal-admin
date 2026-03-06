@@ -95,7 +95,6 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Badge No.</th>
                                             <th>visitor Name</th>
                                             <th>Mobile</th>
                                             <th>Address</th>
@@ -114,8 +113,7 @@
                                         @foreach($visitors as $key => $visitor)
                                         <tr>
                                             <td>{{$key+1}}</td>
-                                            <td><a href="{{ route('visitors.show', encrypt($visitor->id))}}">{{$visitor->badge_no}}</a></td>
-                                            <td>{{$visitor->name}}</td>
+                                            <td><a href="{{ route('visitors.show', encrypt($visitor->id))}}">{{$visitor->name}}</a></td>
                                             <td>{{$visitor->mobile}}</td>
                                             <td>{{$visitor->address}}</td>
                                             <td>{{$visitor->id_type}}</td>

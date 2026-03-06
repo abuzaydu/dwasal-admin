@@ -81,6 +81,9 @@
                             <div class="col-md-4">
                                 <label class="form-label">Company Logo</label>
                                 <input type="file" name="logo" class="form-control form-control-sm mb-1">
+                                @if($company->logo_url)
+                                    <img src="{{ asset('storage/clogos/' . $company->logo_url) }}" alt="Current Logo" width="80" class="mt-1">
+                                @endif
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Use Invoice Header Banner<span style="color:red">*</span></label>
@@ -102,6 +105,11 @@
                                 <label class="form-label">Company Stamp</label>
                                 <input type="file" id="stamp" name="stamp">
                             </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Brand Color<span style="color: red; font-weight: bold;">*</span></label>
+                                <input value="{{ $company->brand_color }}" type="color" name="brand_color" required class="form-control form-control-sm mb-1">
+                            </div>
+                            
                             <div class="col-md-6">
                                 <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">{{trans('navmenu.btn_save')}}</button>
                                 <button type="button" class="btn btn-warning btn-sm px-4 radius-30" onclick="showHideForm('hide')">{{trans('navmenu.btn_cancel')}}</button>

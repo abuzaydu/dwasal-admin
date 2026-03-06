@@ -95,7 +95,6 @@
             <div class="col-lg-3 col-md-6 col-sm-12 d-flex align-items-stretch">
                 <div class="card w-100 shadow-sm border-0 position-relative">
 
-                    {{-- Export dropdown --}}
                     <div class="dropdown position-absolute top-0 end-0 m-2" style="z-index: 10;">
                         <button class="btn btn-sm btn-light border-0 shadow-none"
                                 type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Export">
@@ -115,7 +114,6 @@
                         </ul>
                     </div>
 
-                    {{-- Clickable card body --}}
                     <a href="{{ $listUrl }}" class="card-body text-center text-decoration-none text-reset stretched-link">
                         <div class="mb-2">
                             <i class="fa {{ $card['icon'] }} fa-2x {{ $card['color'] }}"></i>

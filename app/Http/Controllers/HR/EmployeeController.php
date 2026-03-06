@@ -229,12 +229,6 @@ class EmployeeController extends Controller
         return redirect('employees')->with('success', 'Employee Details was uploaded successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $emp = Employee::find(decrypt($id));
@@ -286,8 +280,6 @@ class EmployeeController extends Controller
 
     public function downloadSample()
     {   
-        // return Excel::download(new EmployeeExport, 'employees.xlsx');
-
         if(File::exists(public_path('sample-employees.xlsx'))){
             return response()->download(public_path('sample-employees.xlsx'));
         }else {
@@ -305,51 +297,39 @@ class EmployeeController extends Controller
     public function downloadIdCard($id)
     {
         $employee = Employee::with('company','position')->findOrFail($id);
-        $position = $employee->position; // Adjust based on your relationship
+        $position = $employee->position;
         $user_photo = $employee->photo; 
         
         // Build QR content
         $qrContent = "FULL NAME: {$employee->fname} {$employee->lname}\nID: " . ($employee->emp_id ?? 'N/A');
 
         $pdf = Pdf::loadView('hr.employees.id_card_pdf', compact('employee', 'position', 'user_photo', 'qrContent'))
-                ->setPaper([0, 0, 400, 600], 'portrait'); // Custom ID card size
+                ->setPaper([0, 0, 400, 600], 'portrait'); 
 
         return $pdf->download($employee->fname.'_ID_Card.pdf');
     }
+
     public function showIdCard($id)
-{
-    $employee   = Employee::with('company')->findOrFail($id);
-    $position   = $employee->position;       // adjust to your relationship
-    $user_photo = $employee->user->photo ?? null; // adjust to your relationship
-
-    return view('hr.employees.employee-id-card', compact('employee', 'position', 'user_photo'));
-}
-
-// public function printSelctedIdCards(Request $request)
-// {
-//     $ids = $request->input('ids', []);
-//     $employees = Employee::with('company')->whereIn('id', $ids)->get();
-
-//     return view('hr.employees.print_id_cards', compact('employees'));
-// }
-public function printSelectedIdCard(Request $request)
     {
-        // ── 1. Validate ───────────────────────────────────────────────
+        $employee   = Employee::with('company')->findOrFail($id);
+        $position   = $employee->position;     
+        $user_photo = $employee->user->photo ?? null;
+
+        return view('hr.employees.employee-id-card', compact('employee', 'position', 'user_photo'));
+    }
+
+    public function printSelectedIdCard(Request $request)
+    {
         $request->validate([
             'ids'   => ['required', 'array', 'min:1', 'max:100'],
             'ids.*' => ['required', 'string'],
         ]);
-
-        // ── 2. Decrypt IDs ────────────────────────────────────────────
-        //    The index view passes encrypt($employee->id), so we decrypt
-        //    each value before hitting the database.
         $decryptedIds = [];
 
         foreach ($request->input('ids', []) as $encryptedId) {
             try {
                 $decryptedIds[] = decrypt($encryptedId);
             } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-                // Skip any tampered / invalid tokens silently
                 continue;
             }
         }
@@ -358,12 +338,9 @@ public function printSelectedIdCard(Request $request)
             abort(400, 'No valid employee IDs provided.');
         }
 
-        // ── 3. Fetch employees ────────────────────────────────────────
-        //    Eager-load every relationship the ID card template needs so
-        //    we hit the DB once, not N times.
         $employees = Employee::with([
-                'company',   // card header, back-side contact info & logo
-                'position',  // designation line on the front
+                'company',   
+                'position',  
             ])
             ->whereIn('id', $decryptedIds)
             ->get();
@@ -372,10 +349,7 @@ public function printSelectedIdCard(Request $request)
             abort(404, 'No employees found for the given IDs.');
         }
 
-        // ── 4. Render ─────────────────────────────────────────────────
         return view('hr.employees.print-selected-id-cards', compact('employees'));
     }
-
-    // ── (your existing methods below) ────────────────────────────────
 
 }

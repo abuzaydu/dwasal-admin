@@ -2,13 +2,12 @@
 
 use App\Helpers\QrCodeEncryption;
 use App\Http\Controllers\Admin\UserController;
-
 use App\Http\Controllers\AppAPI\AttendanceController;
-
 use App\Http\Controllers\AppAPI\AuthenticateController;
 use App\Http\Controllers\AppAPI\QrCodeController;
 use App\Http\Controllers\AppAPI\TruckScanController;
 use App\Http\Controllers\AppAPI\VisitorsController;
+use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,19 +52,22 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('visitor-check-in', [VisitorsController::class, 'visitorCheckIn']);
         Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
         Route::post('available-badges', [VisitorsController::class, 'getAvailableBadges']);
+        Route::post('checkin-with-badge', [VisitorsController::class, 'Vcheckinwithbadge']);
+
     });
+        //check in visitor
+       Route::post('checkin-with-badge', [VisitorsController::class, 'Vcheckinwithbadge']);
+
 
     // QR Code API
-    Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
+        Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
-    
+        // Attendance API
+        Route::middleware('auth:api')->group(function(){
+            Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
+            Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
 
-    // Attendance API
-    Route::middleware('auth:api')->group(function(){
-        Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
-        Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
-
+            });
+            
         });
-        
-    });
 

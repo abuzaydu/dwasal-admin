@@ -1549,4 +1549,6 @@ Route::post('efdms-rct-ack-infos', [ApiTestController::class, 'storeRctAck']);
 Route::post('efdms-zreport-ack-infos', [ApiTestController::class, 'storeZReportAck']);
 //Auto search
 Route::get('/autocomplete-search', [RecycleBinController::class, 'autocompleteSearch']);
+
+
 //

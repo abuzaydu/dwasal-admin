@@ -105,8 +105,9 @@
                         <div class="card-body py-4">
                             @if(!is_null($company->logo_url))
                             <figure>
-                                <img class="invoice-logo" src="{{asset('storage/clogos/'.$company->logo_url)}}" alt="" width="150">
-                            </figure>
+                            @if($company->logo_url)
+                                <img class="invoice-logo" src="{{ asset('storage/clogos/' . $company->logo_url) }}" alt="Company Logo" width="150">
+                            @endif                            </figure>
                             @endif
                         </div>
                         <div class="card-footer border-bottom border-top py-3">
