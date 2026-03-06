@@ -139,7 +139,7 @@
                 flex-shrink: 0;
             }
             .idc-wave-front .co-logo {
-                width: 10mm; height: 10mm;
+                width: 20mm; height: 20mm;
                 object-fit: contain; border-radius: 1.5mm; flex-shrink: 0;
             }
             .idc-wave-front .co-logo-placeholder {
@@ -239,7 +239,7 @@
                 padding: 3mm 3mm; width: 100%;
             }
             .idc-wave-back .back-logo-img {
-                width: 11mm; height: 11mm; object-fit: contain; border-radius: 2mm;
+                width: 20mm; height: 20mm; object-fit: contain; border-radius: 2mm;
                 background: rgba(255,255,255,0.12); padding: 0.5mm; margin-bottom: 1.5mm;
             }
             .idc-wave-back .back-logo-placeholder {
