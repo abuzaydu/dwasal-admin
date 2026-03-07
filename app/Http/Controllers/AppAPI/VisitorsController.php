@@ -142,67 +142,7 @@ class VisitorsController extends Controller
         }
     }
 
-    // public function Vcheckinwithbadge(Request $request){
-    //   Log::info($request);
-    //  $request->validate([
-    //         'visitor_id' => 'required|exists:visitors,id',
-    //          'qr_data'    => 'required|string',
-    //     ]);
-
-    //     try {
-    //         $data = decrypt($request['qr_data']);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'statusCode' => 422,
-    //             'message'    => 'Invalid QR code.',
-    //         ], 422);
-    //     }
-
-    //     $badg =explode('&', $data, 2);
-    //     // Log::info($badg);
-
-    //     $bdge = Badge::find($badg[0]);
-    //     if (!$bdge) {
-    //         return response()->json([
-    //             'message' => 'Invalid badge'
-    //         ], 404);
-    //     }
-    //     if ($bdge->badge_number !== $badg[1]) {
-    //         return response()->json([
-    //             'statusCode' => 422,
-    //             'message'    => 'Badge number mismatch. QR code is invalid.',
-    //         ], 422);
-    //     }
-        
-    //     if ($bdge->status === 'in_use') {
-    //         return response()->json([
-    //             'statusCode' => 409,
-    //             'message'    => 'Badge is already in use.',
-    //         ], 409);
-    //     }
-       
-    //     $visitor = Visitor::find($request['visitor_id']);
-    //     if(!is_null($visitor)){
-    //         $visitor->status = 'Checked In';
-    //         $visitor->time_in = Carbon::now();
-    //         $visitor->badge_no = $badg[1];
-    //         $visitor->save();
-    //         Badge::where('badge_number', $visitor->badge_no)
-    //         ->update(['status' => 'in_use']);
-    //         $host = User::find($visitor->host_id);
-    //         if ($host) {
-    //             $host->notify(new ChekInNotification($visitor));
-    //         }
-            
-    //         return response()->json(['statusCode' => 200, 'visitor' => $visitor, 'message' => 'Visitor Checked In successfully']);
-
-    //     }else{
-    //         return response()->json(['statuscode' => 400, 'message' => 'Visitor not found']);
-    //     }
-
-
-    // }
-    public function Vcheckinwithbadge(Request $request)
+   public function Vcheckinwithbadge(Request $request)
     {
         Log::info($request);
 
@@ -234,7 +174,7 @@ class VisitorsController extends Controller
         if ($bdge->badge_number !== $badg[1]) {
             return response()->json([
                 'statusCode' => 422,
-                'message' => 'Badge number mismatch. QR code is invalid.',
+                'message' => 'Badge number mismatch.',
             ], 422);
         }
 
@@ -249,12 +189,19 @@ class VisitorsController extends Controller
 
         if ($visitor->status === 'Checked In') {
 
+            if ($visitor->badge_no !== $bdge->badge_number) {
+                return response()->json([
+                    'statusCode' => 403,
+                    'message' => 'Badge mismatch. Please scan the badge used during check-in.',
+                ], 403);
+            }
+
             $visitor->status = 'Checked Out';
             $visitor->time_out = Carbon::now();
             $visitor->save();
 
-            Badge::where('badge_number', $visitor->badge_no)
-                ->update(['status' => 'available']);
+            $bdge->status = 'available';
+            $bdge->save();
 
             return response()->json([
                 'statusCode' => 200,
@@ -272,11 +219,11 @@ class VisitorsController extends Controller
 
         $visitor->status = 'Checked In';
         $visitor->time_in = Carbon::now();
-        $visitor->badge_no = $badg[1];
+        $visitor->badge_no = $bdge->badge_number;
         $visitor->save();
 
-        Badge::where('badge_number', $visitor->badge_no)
-            ->update(['status' => 'in_use']);
+        $bdge->status = 'in_use';
+        $bdge->save();
 
         $host = User::find($visitor->host_id);
 
