@@ -139,7 +139,9 @@
                         </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Save Changes</button>
-                            <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">{{ trans('navmenu.btn_cancel') }}</button>
+                            <a href="{{ url()->previous() }}" class="btn btn-warning btn-sm">
+                                {{ trans('navmenu.btn_cancel') }}
+                            </a>                       ,
                         </div>
                     </form>
                 </div>

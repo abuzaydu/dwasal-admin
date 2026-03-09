@@ -42,7 +42,6 @@
                         <div class="tab-pane fade show active" id="tab_0" role="tabpanel">
                             <div class="table-responsive" id="badge-list">
 
-                                {{-- Print Selected Button --}}
                                 <div class="mb-3">
                                     <button id="printSelectedBtn" class="btn btn-primary" disabled>
                                         <i class="fa fa-print me-1"></i> Print Selected (<span id="selectedCount">0</span>)
@@ -96,8 +95,8 @@
                                                       style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                            onclick="return confirm('Are you sure you want to delete this badge?')"
+                                                    <button type="button"
+                                                            onclick="return confirmDelete({{$key}})"
                                                             class="btn btn-sm">
                                                         <i class="fa fa-trash" style="color: red;"></i>
                                                     </button>
@@ -130,7 +129,6 @@
                     <form class="form row g-3" method="POST" action="{{ route('badges.storeBulk') }}">
                         @csrf
 
-                        {{-- Badge Prefix --}}
                         <div class="col-md-6">
                             <label class="form-label">Badge Prefix <small class="text-muted">(optional, default: B)</small></label>
                             <input type="text" name="badge_prefix" id="badge_prefix"
@@ -143,7 +141,6 @@
                             @enderror
                         </div>
 
-                        {{-- Badge Count --}}
                         <div class="col-md-6">
                             <label class="form-label">Number of Badges to Generate <span style="color: red; font-weight: bold;">*</span></label>
                             <input type="number" name="badge_count" id="badge_count"
@@ -157,7 +154,6 @@
                             @enderror
                         </div>
 
-                        {{-- Live Preview --}}
                         <div class="col-md-6 d-flex align-items-center">
                             <div id="preview" class="alert alert-info w-100 mb-1 py-2" style="display: none;">
                                 <p class="mb-1 small">Badges to be generated: <strong id="preview-count"></strong></p>
@@ -165,7 +161,6 @@
                             </div>
                         </div>
 
-                        {{-- Actions --}}
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-success btn-sm px-4 radius-30">
                                 <i class="fa fa-cogs"></i> Generate Badges
@@ -186,35 +181,50 @@
     <script src="{{ asset('assets/vendor/datatable/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
 
-    <script>
+<script>
+
+    function confirmDelete(id){
+            Swal.fire({
+              title: "{{trans('navmenu.are_you_sure')}}",
+              text: "{{trans('navmenu.no_revert')}}",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: "{{trans('navmenu.cancel_it')}}",
+              cancelButtonText: "{{trans('navmenu.no')}}"
+            }).then((result) => {
+              if (result.value) {
+                document.getElementById('delete-form-'+id).submit();
+                Swal.fire(
+                  "{{trans('navmenu.deleted')}}",
+                  "{{trans('navmenu.cancelled')}}",
+                  'success'
+                )
+              }
+            })
+        }
     $(function () {
 
-        // 1. Init DataTable 
         const table = $('#badges').DataTable({
             columnDefs: [
                 { orderable: false, searchable: false, targets: [0, 5] } // disable sort on checkbox & actions cols
             ]
         });
 
-        //  2. Refs 
         const $selectAll    = $('#selectAll');
         const printBtn      = document.getElementById('printSelectedBtn');
         const selectedCount = document.getElementById('selectedCount');
 
-        //  3. Helper: get ALL checked checkboxes across ALL pages 
         function getChecked() {
-            // DataTables hides non-visible rows in the DOM but keeps them
-            // in its internal node list — query all nodes, not just visible
             return $(table.rows().nodes()).find('.badge-checkbox:checked');
         }
 
-        //  4. Helper: sync UI 
         function syncUI() {
             const totalOnPage   = $(table.rows({ page: 'current' }).nodes()).find('.badge-checkbox').length;
             const checkedOnPage = $(table.rows({ page: 'current' }).nodes()).find('.badge-checkbox:checked').length;
             const totalChecked  = getChecked().length;
 
-            // Sync select-all checkbox state
             if (checkedOnPage === 0) {
                 $selectAll.prop('checked', false).prop('indeterminate', false);
             } else if (checkedOnPage === totalOnPage) {
@@ -223,12 +233,10 @@
                 $selectAll.prop('checked', false).prop('indeterminate', true);
             }
 
-            // Update button
             selectedCount.textContent = totalChecked;
             printBtn.disabled = totalChecked === 0;
         }
 
-        //  5. Select All (current page only) 
         $selectAll.on('change', function () {
             $(table.rows({ page: 'current' }).nodes())
                 .find('.badge-checkbox')
@@ -236,18 +244,15 @@
             syncUI();
         });
 
-        //  6. Individual checkbox (event delegation — survives redraws) 
         $('#badges tbody').on('change', '.badge-checkbox', function () {
             syncUI();
         });
 
-        //  7. On DataTable page change / search / sort — reset select-all 
         table.on('draw', function () {
             $selectAll.prop('checked', false).prop('indeterminate', false);
             syncUI();
         });
 
-        //8. Print button 
         printBtn.addEventListener('click', function () {
             const ids = getChecked().map(function () {
                 return 'ids[]=' + encodeURIComponent(this.value);
@@ -259,7 +264,6 @@
             window.open(url, '_blank');
         });
 
-        //  9. Badge generation live preview 
         const countInput  = document.getElementById('badge_count');
         const prefixInput = document.getElementById('badge_prefix');
         const preview     = document.getElementById('preview');
@@ -281,5 +285,5 @@
         prefixInput.addEventListener('input', updatePreview);
 
     });
-    </script>
+</script>
 @endsection

@@ -1,4 +1,4 @@
-@extends('layouts.hr')
+@extends('layouts.vml')
 @section('content')
 
     <div class="notif-wrapper">

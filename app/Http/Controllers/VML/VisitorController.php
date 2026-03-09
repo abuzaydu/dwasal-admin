@@ -10,9 +10,9 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Notifications\FcmNotification;
-use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Session;
 
 class VisitorController extends Controller
@@ -128,6 +128,7 @@ class VisitorController extends Controller
     public function store(Request $request)
     {
         $visitor = Visitor::where('shop_id', Session::get('shop_id'))->where('mobile', $request['mobile'])->whereNull('time_out')->first();
+
         if (is_null($visitor)) {
             $user = Auth::user();
             $visitor = new visitor();
@@ -145,12 +146,15 @@ class VisitorController extends Controller
             $visitor->purpose = $request['purpose'];
             $visitor->came_in_with = $request['came_in_with'];
             $visitor->save();
-        Badge::where('badge_number', $request['badge_no'])
-        ->update(['status' => 'in_use']);
-       
-        }
 
-        return redirect('visitors')->with('success', 'New visitor added successfully');
+            Badge::where('badge_number', $request['badge_no'])
+            ->update(['status' => 'in_use']);
+
+            return redirect('visitor')->with('success', 'New visitor added successfully');
+       
+        }else{
+         return redirect('visitor')->with('error', 'An error occured while adding new visitor');
+        }
     }
 
     /**
@@ -192,16 +196,15 @@ class VisitorController extends Controller
                 ];
                 $user->notify(new FcmNotification($notificationData));
                 
-                $user = Auth::user(); 
+                $userNotification = Auth::user(); 
     
-                $user->unreadNotifications
+                $userNotification->unreadNotifications
                     ->filter(function ($notification) use ($visitor) {
                         return isset($notification->data['visitor_id']) 
                             && $notification->data['visitor_id'] == $visitor->id;
                     })
                     ->each->markAsRead();
             }
-
              return redirect()
                 ->route('visitors.show', encrypt($visitor->id))
                 ->with('success', 'Visitor permission granted successfully.');
@@ -256,9 +259,9 @@ class VisitorController extends Controller
             $visitor->came_out_with = $request['came_out_with'];
             $visitor->save();
 
-            return redirect('visitors')->with('success', 'visitor Details updated successfully');
+            return redirect('visitor')->with('success', 'visitor Details updated successfully');
         }else {
-            return redirect('visitors')->with('error', 'visitor not found');
+            return redirect('visitor')->with('error', 'visitor not found');
         }
     }
 
@@ -270,7 +273,7 @@ class VisitorController extends Controller
         $visitor = Visitor::find(decrypt($id));
         if (!is_null($visitor)) {
             $visitor->delete();
-            return redirect('visitors')->with('success', 'visitor deleted successfully');
+            return redirect()->back()->with('success', 'visitor deleted successfully');
         }
     }
 
@@ -297,7 +300,7 @@ class VisitorController extends Controller
             default      => $query, 
         };
 
-        $visitors = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+        $visitors = $query->orderBy('created_at', 'desc')->get();
 
         $typeLabel = match ($type) {
             'pending'    => 'Pending Visitors',

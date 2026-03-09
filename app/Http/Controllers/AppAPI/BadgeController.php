@@ -90,8 +90,7 @@ class BadgeController extends Controller
         $badge = Badge::findOrFail(decrypt($id));
         $badge->delete();
 
-        return redirect()->route('badges.index')
-            ->with('success', 'Badge deleted successfully.');
+        return redirect()->route('badges.index');
     }
 
     public function printSelected(Request $request)

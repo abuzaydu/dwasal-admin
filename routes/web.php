@@ -415,15 +415,15 @@ Route::get('/test-fcm', function () {
     return 'Sent';
 });
     Route::get('/badges',[BadgeController::class, 'index'])->name('badges.index');
-     Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
+    Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
     ->name('badges.auto.print-one-badge');
     Route::get('badge/{id}',[BadgeController::class, 'show'])->name('badges.show');
     Route::post('/badges/bulk',      [BadgeController::class, 'storeBulk'])->name('badges.storeBulk');
     Route::delete('/{id}',    [BadgeController::class, 'destroy'])->name('badges.destroy');
     Route::get('badges/auto-print', [BadgeController::class, 'autoPrint'])
-        ->name('badges.auto.print');
+    ->name('badges.auto.print');
     Route::get('badges/print-selected-badge', [BadgeController::class, 'printSelected'])
-        ->name('badges.print.selected-badge');
+    ->name('badges.print.selected-badge');
     Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
     ->name('badges.auto.print-one-badge');
 }
@@ -1486,21 +1486,21 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
     Route::resource('vms-expenses', VMSExpenseController::class);
 
+    //visitor route
     Route::get('visitors-dash', [VisitorController::class, 'dashboard'])->name('visitors.dashboard');
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);
-        Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
-
-    Route::get('/visitors/list', [VisitorController::class, 'list'])->name('visitors.list');
-    Route::get('visitorslist', [VisitorController::class, 'index']);
-    Route::post('visitorslist', [VisitorController::class, 'index']);
-    Route::get('add-visitor', [VisitorController::class, 'create']);
-      Route::post('visitors', [VisitorController::class, 'store'])->name('visitors.store');
-      Route::get('visitors/{id}', [VisitorController::class, 'show'])->name('visitors.show');
-      Route::get('edit-visitor/{id}', [VisitorController::class, 'edit']);
-      Route::post('update-visitor/{id}', [VisitorController::class, 'update']);
-      Route::get('delete-visitor/{id}', [VisitorController::class, 'destroy']);
+    Route::get('visitor', [VisitorController::class, 'index'])->name('visitors.index');
+    Route::post('visitor/filter', [VisitorController::class, 'index'])->name('visitors.filter');
     Route::get('/visitors/export', [VisitorExportController::class, 'export'])->name('visitors.export');
-    // Route::resource('visitors', VisitorController::class);
+    Route::get('/visitors/list', [VisitorController::class, 'list'])->name('visitors.list');
+
+    Route::get('add-visitor', [VisitorController::class, 'create']);
+    Route::post('visitor', [VisitorController::class, 'store'])->name('visitors.store');
+    Route::get('visitors/{id}', [VisitorController::class, 'show'])->name('visitors.show');
+
+    Route::get('edit-visitor/{id}', [VisitorController::class, 'edit'])->name('visitors.edit');
+    Route::patch('update-visitor/{id}', [VisitorController::class, 'update'])->name('visitors.update');
+    Route::delete('delete-visitor/{id}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
     Route::get('grant-permission/{id}', [VisitorController::class, 'grantPermission']);
     // RecycleBin Routes
     Route::post('del-multiple-recycle-sales', [RecycleBinController::class, 'delMultipleRecycleSales']);

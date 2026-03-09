@@ -59,7 +59,7 @@
             <div class="col-md-6 col-sm-12 text-md-end d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
 
                 <form class="dashform report-form d-inline"
-                    action="{{ url('visitorslist') }}"
+                    action="{{ route('visitors.filter') }}"
                     method="POST">
                     @csrf
                     <input type="hidden" name="start_date" id="start_input" value="{{ $start_date }}">
@@ -125,7 +125,7 @@
                                             <td>@if(!empty($visitor->time_out)) {{date('d/m/Y', strtotime($visitor->time_out)) }}@endif</td>
                                             <td>{{$visitor->created_at}}</td>
                                             <td style="text-align: center;">
-                                                {{-- <a href="{{route('visitors.edit', encrypt($visitor->id))}}">
+                                                <a href="{{route('visitors.edit', encrypt($visitor->id))}}">
                                                     <i class="fa fa-edit" style="color: blue;"></i>
                                                 </a> | 
                                                 <form method="POST" action="{{route('visitors.destroy' , encrypt($visitor->id))}}" id="delete-form-{{$key}}" style="display: inline;"> 
@@ -134,7 +134,7 @@
                                                     <a href="javascript:;" onclick="return confirmDelete({{$key}})">
                                                         <i class="fa fa-trash" style="color: red;"></i>
                                                     </a>                        
-                                                </form>     --}}
+                                                </form>    
                                             </td>
                                         </tr>
                                         @endforeach

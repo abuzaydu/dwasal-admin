@@ -150,7 +150,7 @@
                                 <li class="{{ request()->is('visitors-dash') ? 'active' : '' }}"><a href="{{ url('visitors-dash') }}" class="has-arrow"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
                                 @endif
                                 <hr>
-                                <li class="{{ request()->is('visitorslist') ? 'active' : '' }}"><a href="{{ url('visitorslist') }}"><i class="fa fa-truck"></i> Visitors</a></li>
+                                <li class="{{ request()->is('visitor') ? 'active' : '' }}"><a href="{{ url('visitor') }}"><i class="fa fa-truck"></i> Visitors</a></li>
                                 <hr>
                                 <li class="{{ request()->is('badges') ? 'active' : '' }}"><a href="{{ url('badges') }}"><i class="fa fa-truck"></i> Manage Badges</a></li>
 
