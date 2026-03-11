@@ -1,14 +1,11 @@
 <?php
 
+use App\Http\Controller\FuelType;
 use App\Http\Controllers\Acc\AccountingDashController;
-
-// Auth Controllers
 use App\Http\Controllers\Acc\AccountsController;
 use App\Http\Controllers\Acc\AccountTransController;
 use App\Http\Controllers\Acc\BalanceSheetsController;
 use App\Http\Controllers\Acc\CashInController;
-
-// Admin routes
 use App\Http\Controllers\Acc\CashOutController;
 use App\Http\Controllers\Acc\COAController;
 use App\Http\Controllers\Acc\EmployeeLoanController;
@@ -23,9 +20,7 @@ use App\Http\Controllers\Acc\PettyCashController;
 use App\Http\Controllers\Admin\BusinessTypeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
-
 use App\Http\Controllers\Admin\PaymentAuthController;
-
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
@@ -33,8 +28,6 @@ use App\Http\Controllers\Admin\SenderIDController;
 use App\Http\Controllers\Admin\ServiceChargeController;
 use App\Http\Controllers\Admin\SmsAccountController;
 use App\Http\Controllers\Admin\SubscriptionTypeController;
-
-// Production
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserTransactionController;
@@ -44,22 +37,16 @@ use App\Http\Controllers\Asset\AssetRecordController;
 use App\Http\Controllers\Asset\DepreciationController;
 use App\Http\Controllers\Asset\DepreciationMethodController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AutoCompleteSearch;
 use App\Http\Controllers\Client\CartController;
-
 use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\HomeController;
-
 use App\Http\Controllers\HR\AcademicInfoController;
 use App\Http\Controllers\HR\AttendanceController;
-// use App\Http\Controllers\Client\DashController;
-
 use App\Http\Controllers\HR\AttendanceSettingController;
 use App\Http\Controllers\HR\DepartmentController;
-
 use App\Http\Controllers\HR\EmployeeController;
 use App\Http\Controllers\HR\EmployeeDocController;
 use App\Http\Controllers\HR\EmployeeMedicalInfoController;
@@ -84,14 +71,12 @@ use App\Http\Controllers\Inventory\PurchaseOrderController;
 use App\Http\Controllers\Inventory\PurchaseOrderItemController;
 use App\Http\Controllers\Inventory\PurchaseOrderTempApiController;
 use App\Http\Controllers\Inventory\PurchasePaymentController;
-
 use App\Http\Controllers\Inventory\PurchasesController;
 use App\Http\Controllers\Inventory\ShopProductsApiController;
 use App\Http\Controllers\Inventory\StockController;
 use App\Http\Controllers\Inventory\StockCorrectionController;
 use App\Http\Controllers\Inventory\StockItemTempApiController;
 use App\Http\Controllers\Inventory\SupplierController;
-
 use App\Http\Controllers\Inventory\TransferOrderController;
 use App\Http\Controllers\Inventory\TransferOrderItemController;
 use App\Http\Controllers\Inventory\TransferOrderItemTempController;
@@ -115,7 +100,6 @@ use App\Http\Controllers\Prod\DlcItemTempController;
 use App\Http\Controllers\Prod\FoodProductionController;
 use App\Http\Controllers\Prod\FoodProductionTempController;
 use App\Http\Controllers\Prod\FoodTypeController;
-
 use App\Http\Controllers\Prod\MaterialWIPsController;
 use App\Http\Controllers\Prod\MaterialWIPTempController;
 use App\Http\Controllers\Prod\MohCostController;
@@ -126,30 +110,21 @@ use App\Http\Controllers\Prod\MroApiController;
 use App\Http\Controllers\Prod\MROController;
 use App\Http\Controllers\Prod\MROItemController;
 use App\Http\Controllers\Prod\MroUseController;
-
 use App\Http\Controllers\Prod\MroUsedItemTempController;
 use App\Http\Controllers\Prod\PackingMaterialApiController;
 use App\Http\Controllers\Prod\PackingMaterialController;
 use App\Http\Controllers\Prod\PC\ExportHandlingCostController;
-
 use App\Http\Controllers\Prod\PC\IndirectCostController;
 use App\Http\Controllers\Prod\PC\LabourCostController;
-
-
 use App\Http\Controllers\Prod\PC\LocalIndirectCostController;
 use App\Http\Controllers\Prod\PC\LocalPackagingCostController;
 use App\Http\Controllers\Prod\PC\MaterialCostController;
 use App\Http\Controllers\Prod\PC\PackagingCostController;
 use App\Http\Controllers\Prod\PC\ProductPricingController;
-
 use App\Http\Controllers\Prod\PC\TransportCostController;
-
-//VFD
 use App\Http\Controllers\Prod\PlcPaymentController;
 use App\Http\Controllers\Prod\PmDamageController;
 use App\Http\Controllers\Prod\PmItemController;
-
-// PRODUCTION Controllers
 use App\Http\Controllers\Prod\PmPurchaseController;
 use App\Http\Controllers\Prod\PmPurchaseItemApiController;
 use App\Http\Controllers\Prod\PmPurchasePaymentController;
@@ -202,11 +177,9 @@ use App\Http\Controllers\Sales\SaleItemTempController;
 use App\Http\Controllers\Sales\SaleOrderController;
 use App\Http\Controllers\Sales\SaleOrderItemController;
 use App\Http\Controllers\Sales\SalePaymentController;
-
 use App\Http\Controllers\Sales\SaleReturnController;
 use App\Http\Controllers\Sales\SaleReturnItemController;
 use App\Http\Controllers\Sales\ServiceInvoiceItemTempController;
-
 use App\Http\Controllers\Sales\ServiceSaleItemController;
 use App\Http\Controllers\Sales\ServiceSaleItemTempController;
 use App\Http\Controllers\SandProd\MaintenanceRecordController;
@@ -216,13 +189,9 @@ use App\Http\Controllers\SandProd\RawMaterialSourceController;
 use App\Http\Controllers\SandProd\RMSourcingController;
 use App\Http\Controllers\SandProd\SandDashController;
 use App\Http\Controllers\SandProd\StorageLocationController;
-
-//Asset & Depreciations
 use App\Http\Controllers\SandProd\WashingEquipmentController;
 use App\Http\Controllers\SandProd\WashingPlantController;
 use App\Http\Controllers\Service\DeviceController;
-
-// HR Controllers
 use App\Http\Controllers\Service\GradeController;
 use App\Http\Controllers\Service\ServCategoryController;
 use App\Http\Controllers\Service\ServiceController;
@@ -237,25 +206,24 @@ use App\Http\Controllers\Settings\ShopController;
 use App\Http\Controllers\Settings\UnitEquivalentController;
 use App\Http\Controllers\Shop\OrderController;
 use App\Http\Controllers\Shop\OrderDeliveryController;
-
-// Payroll Controllers
 use App\Http\Controllers\Shop\OrderPaymentController;
 use App\Http\Controllers\Shop\ProductImageController;
 use App\Http\Controllers\Shop\QuotationController;
 use App\Http\Controllers\Shop\QuoteRequestController;
 use App\Http\Controllers\VFD\RctInfoController;
 use App\Http\Controllers\VFD\RegInfoController;
-
-//MHC Controllers
 use App\Http\Controllers\VFD\ZReportController;
 use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
+use App\Http\Controllers\VMS\DriverController;
+use App\Http\Controllers\VMS\FuelStation;
+use App\Http\Controllers\VMS\FuelStationController;
+use App\Http\Controllers\VMS\FuelTypeController;
 use App\Http\Controllers\VMS\InsuranceController;
 use App\Http\Controllers\VMS\LegalDocumentController;
+use App\Http\Controllers\VMS\LicenseTypeController;
 use App\Http\Controllers\VMS\MaintenanceController;
-
-
 use App\Http\Controllers\VMS\OwnershipController;
 use App\Http\Controllers\VMS\PartCategoryController;
 use App\Http\Controllers\VMS\PartItemTempApiController;
@@ -275,16 +243,14 @@ use App\Http\Controllers\Web\ActionLogsController;
 use App\Http\Controllers\Web\ApprovalRequestController;
 use App\Http\Controllers\Web\CompanyReportsController;
 use App\Http\Controllers\Web\FinancialReportsController;
-
 use App\Http\Controllers\Web\PurchaseReportController;
-
 use App\Http\Controllers\Web\RecycleBinController;
 use App\Http\Controllers\Web\ReportsController;
-//Api Test
 use App\Http\Controllers\Web\SmsTemplateController;
 use App\Http\Controllers\Web\StockReportController;
 use App\Http\Controllers\Web\VerifyPaymentController;
 use App\Http\Controllers\WelcomeController;
+use App\Models\Driver;
 use App\Models\User;
 use App\Notifications\FcmNotification;
 use Illuminate\Support\Facades\Route;
@@ -395,25 +361,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
     Route::get('generate-key', [PaymentAuthController::class, 'generateKey']);
 });
 
-//VMl Routes
 Route::group(['middleware' => 'auth'], function () {
-
-Route::get('/test-fcm', function () {
-    $user = User::find(1); // user whose token came from the app
-
-    $notificationData = [
-        'title' => 'Test from Laravel',
-        'body'  => 'This is a push-only notification',
-        'data'  => [
-            'type' => 'general',
-            // add extra fields if you want to use them in Flutter
-        ],
-    ];
-
-    $user->notify(new FcmNotification($notificationData));
-
-    return 'Sent';
-});
+//vml routes
     Route::get('/badges',[BadgeController::class, 'index'])->name('badges.index');
     Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
     ->name('badges.auto.print-one-badge');
@@ -427,6 +376,9 @@ Route::get('/test-fcm', function () {
     Route::get('badge/print-one-badge', [BadgeController::class, 'autoPrintFOrOneBadge'])
     ->name('badges.auto.print-one-badge');
 }
+
+//Vehicle management
+
 );
 //SmartMauzo customers routes
 Route::group(['middleware' => 'auth'], function () {
@@ -1455,6 +1407,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('vehicle-requisitions', VehicleRequisitionController::class);
     Route::resource('maintenance', MaintenanceController::class);
     Route::resource('refueling', RefuelingController::class);
+    Route::resource('fuel-types', FuelTypeController::class);
+    Route::resource('fuel-stations',FuelStationController::class);
+    Route::resource('drivers', DriverController::class);
+    Route::resource('license-types', LicenseTypeController::class);
     Route::resource('vendors', VendorController::class);
     Route::post('vendor-account-stmt/{id}', [VendorController::class, 'show']);
     Route::post('vendor-acc-payments', [VendorController::class, 'accPayments']);

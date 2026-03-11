@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/parsleyjs/css/parsley.css') }}">
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/font-awesome/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
     <!-- Daterange Picker -->
     <link rel="stylesheet" href="{{ asset('side/assets/vendor/bootstrap-daterangepicker/daterangepicker.css') }}">
@@ -186,7 +187,14 @@
                                 <li class="{{ request()->is('vehicle-requisitions') ? 'active' : '' }}"><a href="{{ url('vehicle-requisitions') }}"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a></li>
                                 <li class="{{ request()->is('insurance') ? 'active' : '' }}"><a href="{{ url('insurance') }}"><i class="fa fa-file-o"></i> Insurance</a></li>
                                 <li class="{{ request()->is('maintenance') ? 'active' : '' }}"><a href="{{ url('maintenance') }}"><i class="fa fa-car"></i> Maintenance</a></li>
-                                <li class="{{ request()->is('refueling') ? 'active' : '' }}"><a href="{{ url('refueling') }}"><i class="fa fa-filter"></i> Refueling</a></li>
+                                <li class="{{ request()->is('refueling') || request()->is('fuel-stations') || request()->is('fuel-types')? 'active' : '' }}">
+                                    <a class="has-arrow" href="#refueling"><i class="fa fa-filter"></i> Refueling</a>
+                                    <ul class="list-unstyled">
+                                        <li><a href="{{ url('refueling') }}" class="{{ request()->is('refueling') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Refueling</a></li>
+                                        <li><a href="{{ url('fuel-stations') }}" class="{{ request()->is('fuel-stations') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Fuel Station</a></li>
+                                        <li><a href="{{ url('fuel-types') }}" class="{{ request()->is('fuel-types') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Fuel Type</a></li>                                    
+                                    </ul>
+                                </li>
                                 <li class="{{ request()->is('parts') || request()->is('parts-usage') || request()->is('part-purchases') ? 'mm-active active' : '' }}">
                                     <a class="has-arrow" href="#Employees"><i class="fa fa-cogs"></i><span>Parts Inventory</span></a>
                                     <ul class="list-unstyled">
@@ -302,6 +310,7 @@
     <!--notification js -->
     <script src="{{ asset('side/assets/vendor/notifications/js/lobibox.min.js') }}"></script>
     <script src="{{ asset('side/assets/vendor/notifications/js/notifications.min.js') }}"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
     <script src="{{ asset('side/assets/vendor/sweetalert/sweetalert.min.js') }}"></script> <!-- SweetAlert Plugin Js --> 
     <script src="{{ asset('side/assets/vendor/sweetalert2/sweetalert2.all.js') }}"></script>
@@ -507,11 +516,11 @@
 
         // Extra snippet here to also prevent form submissions the first submit
         // as a viewer of this demo would otherwise be guided to outside of CodePen …
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', e => {
-            e.preventDefault();
-          });
-        });
+        // document.querySelectorAll('form').forEach(form => {
+        //   form.addEventListener('submit', e => {
+        //     e.preventDefault();
+        //   });
+        // });
     </script>
     @yield('page-scripts')
 </body>

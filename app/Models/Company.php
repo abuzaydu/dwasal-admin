@@ -35,4 +35,10 @@ class Company extends Model
     {
         return $this->hasMany(Badge::class);
     }
+    public function vendor(){
+        return $this->hasMany(Vendor::class);
+    }
+    public function licenseType(){
+        return $this->hasMany(LicenseType::class);
+    }
 }
