@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Driver;
 use App\Models\LicenseType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DriverController extends Controller
 {
@@ -126,6 +127,9 @@ class DriverController extends Controller
 
         $photoPath = $driver->driver_photo;
         if ($request->hasFile('driver_photo')) {
+            if($driver->driver_photo && Storage::disk('public')->exists($driver->driver_photo)){
+                Storage::disk('public')->delete($driver->driver_photo);
+            }
             $photoPath = $request->file('driver_photo')->store('drivers', 'public');
         }
 

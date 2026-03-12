@@ -70,7 +70,7 @@
         // Edit Driver
         function editDriver(id, full_name, mobile, license_type_id, license_no,
             license_issue_date, nid, join_date, working_time_slot,
-            date_of_birth, present_address, permanent_address, is_active) {
+            date_of_birth, present_address, permanent_address, is_active, driver_photo) {
 
             document.getElementById('edit_full_name').value          = full_name;
             document.getElementById('edit_mobile').value             = mobile;
@@ -85,6 +85,15 @@
             document.getElementById('edit_permanent_address').value  = permanent_address;
             document.getElementById('edit_is_active').value          = is_active;
 
+            var photoPreview = document.getElementById('current_photo_preview');
+            if (driver_photo && driver_photo !== '') {
+                photoPreview.innerHTML = `<img src="/storage/${driver_photo}" 
+                    style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:1px solid #ddd;"
+                    onerror="this.src='{{ asset('img/default.png') }}'">`;
+            } else {
+                photoPreview.innerHTML = `<img src="{{ asset('img/default.png') }}" 
+                    style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:1px solid #ddd;">`;
+            }
             document.getElementById('editDriverForm').action = '/drivers/' + id;
 
             var modal = new bootstrap.Modal(document.getElementById('editDriverModal'));
@@ -162,7 +171,7 @@
 
         // Edit Refuel
         function editRefuel(id, vehicle_id, fuel_type_id, fuel_station_id, driver_id,
-            odometer, fuel_qty, price, total_cost, date, time, note) {
+            odometer, fuel_qty, price, total_cost, date, time, note, doc_attachment) { 
 
             document.getElementById('edit_vehicle_id').value      = vehicle_id;
             document.getElementById('edit_fuel_type_id').value    = fuel_type_id;
@@ -176,10 +185,26 @@
             document.getElementById('edit_time').value            = time;
             document.getElementById('edit_note').value            = note;
 
-            // Set form action
-            document.getElementById('editRefuelForm').action = '/refueling/' + id;
+            var previewDiv = document.getElementById('current_attachment_preview');
+            if (doc_attachment && doc_attachment !== '') {
+                var ext = doc_attachment.split('.').pop().toLowerCase();
+                if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                    previewDiv.innerHTML = `
+                        <a href="/storage/${doc_attachment}" target="_blank">
+                            <img src="/storage/${doc_attachment}" 
+                                style="width:80px; height:80px; object-fit:cover; border:1px solid #ddd; border-radius:4px;">
+                        </a>`;
+                } else if (ext === 'pdf') {
+                    previewDiv.innerHTML = `
+                        <a href="/storage/${doc_attachment}" target="_blank" class="btn btn-sm btn-outline-danger">
+                            <i class="fa fa-file-pdf-o"></i> View PDF
+                        </a>`;
+                }
+            } else {
+                previewDiv.innerHTML = '<span class="text-muted small">No attachment uploaded</span>';
+            }
 
-            // Open modal
+            document.getElementById('editRefuelForm').action = '/refueling/' + id;
             var modal = new bootstrap.Modal(document.getElementById('editRefuelModal'));
             modal.show();
         }
@@ -253,6 +278,7 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
+                                            <th>Doc attchment</th>
                                             <th>Company</th>
                                             <th>User Name</th>
                                             <th>Vehicle</th>
@@ -270,7 +296,22 @@
                                     <tbody>
                                         @foreach($refuels as $refuel)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                           <td>{{ $loop->iteration }}</td>
+                                            <td>
+                                                @if($refuel->doc_attachment)
+                                                    <a href="{{ asset('storage/' . $refuel->doc_attachment) }}" target="_blank">
+                                                        @php $ext = pathinfo($refuel->doc_attachment, PATHINFO_EXTENSION); @endphp
+                                                        @if(in_array($ext, ['jpg', 'jpeg', 'png']))
+                                                            <img src="{{ asset('storage/' . $refuel->doc_attachment) }}" 
+                                                                style="width:40px; height:40px; object-fit:cover;">
+                                                        @elseif($ext == 'pdf')
+                                                            <i class="fa fa-file-pdf-o" style="color:red; font-size:24px;"></i>
+                                                        @endif
+                                                    </a>
+                                                @else
+                                                    <span class="badge bg-secondary">No Attachment</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $refuel->company->name }}</td>
                                             <td>{{ $refuel->user->first_name }}</td>
                                             <td>{{ $refuel->vehicle->plate_no }}</td>
@@ -283,22 +324,23 @@
                                             <td>{{ $refuel->total_cost }}</td>
                                             <td>{{ $refuel->note }}</td>
                                             <td style="text-align: center;">
-                                                 <a href="javascript:;" onclick="editRefuel(
-                                                        {{ $refuel->id }},
-                                                        {{ $refuel->vehicle_id }},
-                                                        {{ $refuel->fuel_type_id }},
-                                                        {{ $refuel->fuel_station_id }},
-                                                        {{ $refuel->driver_id }},
-                                                        {{ $refuel->odometer }},
-                                                        {{ $refuel->fuel_qty }},
-                                                        {{ $refuel->price }},
-                                                        {{ $refuel->total_cost }},
-                                                        '{{ $refuel->date }}',
-                                                        '{{ $refuel->time }}',
-                                                        '{{ $refuel->note }}'
-                                                      )">
-                                                        <i class="fa fa-edit" style="color:blue;"></i>
-                                                 </a> 
+                                                <a href="javascript:;" onclick="editRefuel(
+                                                    {{ $refuel->id }},
+                                                    {{ $refuel->vehicle_id }},
+                                                    {{ $refuel->fuel_type_id }},
+                                                    {{ $refuel->fuel_station_id }},
+                                                    {{ $refuel->driver_id }},
+                                                    {{ $refuel->odometer }},
+                                                    {{ $refuel->fuel_qty }},
+                                                    {{ $refuel->price }},
+                                                    {{ $refuel->total_cost }},
+                                                    '{{ $refuel->date }}',
+                                                    '{{ $refuel->time }}',
+                                                    '{{ $refuel->note }}',
+                                                    '{{ $refuel->doc_attachment }}' 
+                                                    )">
+                                                    <i class="fa fa-edit" style="color:blue;"></i>
+                                                </a>
                                                 <form method="POST" action="{{route('refueling.destroy' , encrypt($refuel->id))}}" id="delete-refuel-form-{{$refuel->id}}" style="display: inline;"> 
                                                     @csrf
                                                     @method('DELETE')
@@ -467,8 +509,11 @@
                                         @foreach($drivers as $driver)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td></td>
-                                            <td>{{ $driver->full_name }}</td>
+                                            <td>
+                                                <img src="{{ $driver->driver_photo ? asset('storage/' . $driver->driver_photo) : asset('img/default.png') }}" 
+                                                    alt="{{ $driver->full_name }}"
+                                                    style="width:45px; height:45px; object-fit:cover; border-radius:50%; border:2px solid #ddd;">
+                                            </td>                                            <td>{{ $driver->full_name }}</td>
                                             <td>{{ $driver->mobile }}</td>
                                             <td>{{ $driver->license_no }}</td>
                                             <td>{{ $driver->licenseType->name }}</td>
@@ -498,7 +543,8 @@
                                                         '{{ $driver->date_of_birth }}',
                                                         '{{ $driver->present_address }}',
                                                         '{{ $driver->permanent_address }}',
-                                                        {{ $driver->is_active ? 1 : 0 }}
+                                                         {{ $driver->is_active ? 1 : 0 }},
+                                                         '{{ $driver->driver_photo }}'
                                                     )">
                                                         <i class="fa fa-edit" style="color:blue;"></i>
                                                 </a> 
@@ -658,9 +704,9 @@
                                 <label class="form-label">Vehicle <span style="color:red">*</span></label>
                                 <select name="vehicle_id" id="edit_vehicle_id" required class="form-select form-select-sm select2">
                                     <option value="" disabled>-- Select Vehicle --</option>
-                                     @foreach($refuels as $refuel)
-                                        <option value="{{ $refuel->vehicle->id }}">
-                                            {{ $refuel->vehicle->plate_no }}
+                                     @foreach($vehicles as $vehicle)
+                                        <option value="{{ $vehicle->id }}">
+                                            {{ $vehicle->plate_no }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -670,8 +716,8 @@
                                 <label class="form-label">Fuel Type <span style="color:red">*</span></label>
                                 <select name="fuel_type_id" id="edit_fuel_type_id" required class="form-select form-select-sm select2">
                                     <option value="" disabled>-- Select Fuel Type --</option>
-                                    @foreach($refuels as $refuel)
-                                        <option value="{{ $refuel->fuelType->id }}">{{ $refuel->fuelType->name }}</option>
+                                    @foreach($fuel_types as $fuel_type)
+                                        <option value="{{ $fuel_type->id }}">{{ $fuel_type->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -680,8 +726,8 @@
                                 <label class="form-label">Fuel Station <span style="color:red">*</span></label>
                                 <select name="fuel_station_id" id="edit_fuel_station_id" required class="form-select form-select-sm select2">
                                     <option value="" disabled>-- Select Station --</option>
-                                    @foreach($refuels as $refuel)
-                                        <option value="{{ $refuel->fuelStation->id }}">{{ $refuel->fuelStation->station_name }}</option>
+                                    @foreach($fuel_stations as $fuel_station)
+                                        <option value="{{ $fuel_station->id }}">{{ $fuel_station->station_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -690,8 +736,8 @@
                                 <label class="form-label">Driver <span style="color:red">*</span></label>
                                 <select name="driver_id" id="edit_driver_id" required class="form-select form-select-sm select2">
                                     <option value="" disabled>-- Select Driver --</option>
-                                    @foreach($refuels as $refuel)
-                                        <option value="{{ $refuel->driver->id }}">{{ $refuel->driver->full_name }}</option>
+                                    @foreach($drivers as $driver)
+                                        <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -742,6 +788,8 @@
                                 <label class="form-label">Document Attachment</label>
                                 <input type="file" name="doc_attachment" accept=".pdf,.jpg,.jpeg,.png"
                                     class="form-control form-control-sm">
+                                        <div id="current_attachment_preview" class="mb-2"></div>
+
                                 <small class="text-muted">Leave empty to keep current attachment</small>
                             </div>
 
@@ -1257,6 +1305,7 @@
                                 <label class="form-label">Driver Photo</label>
                                 <input type="file" name="driver_photo" accept="image/*"
                                     class="form-control form-control-sm">
+                                <div id="current_photo_preview" class="mb-2"></div>
                                 <small class="text-muted">Leave empty to keep current photo</small>
                             </div>
 

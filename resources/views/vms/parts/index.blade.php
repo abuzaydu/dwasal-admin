@@ -273,7 +273,9 @@
                         @csrf
                         <div class="col-md-6">
                             <label class="form-label">Part Number <span style="color: red; font-weight: bold;">*</span></label>
-                            <input id="name" type="text" name="part_no" value="{{$part->part_name}}" required placeholder="Enter Part Number" class="form-control form-control-sm mb-1">
+                            {{-- <input id="name" type="text" name="part_no" value="{{$part->part_name}}" required placeholder="Enter Part Number" class="form-control form-control-sm mb-1"> --}}
+                             <input id="name" type="text" name="part_no" required placeholder="Enter Part Number" class="form-control form-control-sm mb-1">
+
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Part Name <span style="color: red; font-weight: bold;">*</span></label>

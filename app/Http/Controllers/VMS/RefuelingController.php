@@ -12,6 +12,7 @@ use App\Models\Vehicle;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class RefuelingController extends Controller
 {
@@ -31,7 +32,7 @@ class RefuelingController extends Controller
     public function index()
     {
         $page = 'Vehicle Refueling';
-        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->get();
+        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->latest()->get();
         $fuel_types = FuelType::latest()->get();
         $vehicles = Vehicle::latest()->get();;
         $drivers = Driver::with('licenseType')->latest()->get();
@@ -144,6 +145,10 @@ class RefuelingController extends Controller
 
         $attachmentPath = $refuel->doc_attachment;
         if ($request->hasFile('doc_attachment')) {
+
+            if ($refuel->doc_attachment && Storage::disk('public')->exists($refuel->doc_attachment)) {
+                Storage::disk('public')->delete($refuel->doc_attachment);
+            }
             $attachmentPath = $request->file('doc_attachment')->store('refuels', 'public');
         }
 
