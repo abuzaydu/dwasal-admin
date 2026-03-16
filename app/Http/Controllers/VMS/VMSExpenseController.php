@@ -217,7 +217,7 @@ class VMSExpenseController extends Controller
             $expense->save();
 
             return redirect()->back()->with('success', 'Expense rejected.');
-        } catch (\Throwable $th) {
+        } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
@@ -269,7 +269,7 @@ class VMSExpenseController extends Controller
             $item->delete();
 
             return redirect()->back()->with('success', 'Item deleted successfully.');
-        } catch (\Throwable $th) {
+        } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
