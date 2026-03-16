@@ -217,6 +217,7 @@ use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\DriverController;
+use App\Http\Controllers\VMS\ExpenseTypeController;
 use App\Http\Controllers\VMS\FuelStation;
 use App\Http\Controllers\VMS\FuelStationController;
 use App\Http\Controllers\VMS\FuelTypeController;
@@ -234,6 +235,7 @@ use App\Http\Controllers\VMS\PartsController;
 use App\Http\Controllers\VMS\PartsUsageController;
 use App\Http\Controllers\VMS\PartUsageItemController;
 use App\Http\Controllers\VMS\RefuelingController;
+use App\Http\Controllers\VMS\TripTypeController;
 use App\Http\Controllers\VMS\VehicleController;
 use App\Http\Controllers\VMS\VehicleRequisitionController;
 use App\Http\Controllers\VMS\VehicleTypeController;
@@ -288,7 +290,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
     Route::get('totals', [DashboardController::class, 'total']);
     Route::get('new-activations', [DashboardController::class, 'newActivations']);
     Route::resource('service-charges', ServiceChargeController::class);
-    Route::resource('sms-templates', SmsTemplateControlle::class);
+    Route::resource('sms-templates', SmsTemplateController::class);
     Route::resource('modules', ModuleController::class);
     Route::resource('payments', PaymentController::class);
     Route::post('f-service-payments', [PaymentController::class, 'index']);
@@ -921,7 +923,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('consolidated', [ReportsController::class, 'consolidated']);
     Route::post('consolidated', [ReportsController::class, 'consolidated']);
 
-
     //Company Reports
     Route::get('company-reports', [CompanyReportsController::class, 'index']);
     Route::get('management-report', [CompanyReportsController::class, 'managementReport']);
@@ -1321,7 +1322,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('employee-docs' , EmployeeDocController::class);
     Route::get('/employees/download-id/{id}', [EmployeeController::class, 'downloadIdCard'])->name('employees.download_id');
     Route::get('employees/{id}/id-card', [EmployeeController::class, 'showIdCard'])->name('employees.id_card');
-    // Route::get('printIdCard/{id}', [EmployeeController::class, 'printSelctedIdCards'])->name('employees.print.selected-id-card');
     Route::get('employees/print/selected-id-card',[EmployeeController::class, 'printSelectedIdCard'])
     ->name('employees.print.selected-id-card');
     //Payrolls
@@ -1440,8 +1440,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('reject-part-usage', [PartsUsageController::class, 'rejectPURequest']);
     Route::get('parts-usage/approve-part-usage/{id}', [PartsUsageController::class, 'approvePURequest']);
     Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
+    Route::resource('expense-type',ExpenseTypeController::class);
     Route::resource('vms-expenses', VMSExpenseController::class);
+    Route::get('vms-expenses/{id}/items', [VMSExpenseController::class, 'getItems']);
+    Route::post('vms-expenses/{id}/close-trip', [VMSExpenseController::class, 'closeTrip'])->name('vms-expenses.close-trip');
+    Route::post('vms-expenses/{id}/approve', [VMSExpenseController::class, 'approveExpense'])->name('vms-expenses.approve');
+    Route::post('vms-expenses/{id}/reject', [VMSExpenseController::class, 'rejectExpense'])->name('vms-expenses.reject');
+    Route::post('vms-expenses/{id}/items', [VMSExpenseController::class, 'storeItem'])->name('vms-expenses.store-item');
+    Route::delete('vms-expense-items/{id}', [VMSExpenseController::class, 'destroyItem'])->name('vms-expense-items.destroy');
 
+    Route::resource('trip-types',TripTypeController::class);
     //visitor route
     Route::get('visitors-dash', [VisitorController::class, 'dashboard'])->name('visitors.dashboard');
     Route::post('visitors-dash', [VisitorController::class, 'dashboard']);

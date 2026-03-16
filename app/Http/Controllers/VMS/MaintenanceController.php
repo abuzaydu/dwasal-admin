@@ -22,7 +22,8 @@ class MaintenanceController extends Controller
      */
     public function index()
     {
-        //
+        $page = 'Vehicle Maintanance';
+        return view('vms.maintenance.index',compact('page'));
     }
 
     /**

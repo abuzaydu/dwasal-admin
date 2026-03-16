@@ -12,6 +12,7 @@ use App\Models\Vehicle;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class RefuelingController extends Controller
@@ -30,15 +31,16 @@ class RefuelingController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
+    {   
+        $companyId = Session::get('company_id');
         $page = 'Vehicle Refueling';
-        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->latest()->get();
-        $fuel_types = FuelType::latest()->get();
-        $vehicles = Vehicle::latest()->get();;
-        $drivers = Driver::with('licenseType')->latest()->get();
-        $vendors = Vendor::latest()->get();
-        $fuel_stations = FuelStation::latest()->get();
-        $license_types = LicenseType::with('company')->latest()->get();
+        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->where('company_id',$companyId)->latest()->get();
+        $fuel_types = FuelType::where('company_id',$companyId)->latest()->get();
+        $vehicles = Vehicle::where('company_id',$companyId)->latest()->get();;
+        $drivers = Driver::where('company_id',$companyId)->with('licenseType')->latest()->get();
+        $vendors = Vendor::where('company_id',$companyId)->latest()->get();
+        $fuel_stations = FuelStation::where('company_id',$companyId)->latest()->get();
+        $license_types = LicenseType::where('company_id',$companyId)->with('company')->latest()->get();
         return view('vms.refuling.index',compact('page','license_types','refuels','vendors','drivers','fuel_stations','vehicles','fuel_types'));
     }
 
@@ -63,16 +65,16 @@ class RefuelingController extends Controller
         }
 
         $request->validate([
-            'vehicle_id'      => 'required|exists:vehicles,id',
-            'fuel_type_id'    => 'required|exists:fuel_types,id',
+            'vehicle_id'  => 'required|exists:vehicles,id',
+            'fuel_type_id' => 'required|exists:fuel_types,id',
             'fuel_station_id' => 'required|exists:fuel_stations,id',
-            'driver_id'       => 'required|exists:drivers,id',
-            'odometer'        => 'required|numeric|min:0',
-            'fuel_qty'        => 'required|numeric|min:0',
-            'price'           => 'required|numeric|min:0',
-            'date'            => 'required|date',
-            'time'            => 'required',
-            'note'            => 'nullable|string|max:500',
+            'driver_id'  => 'required|exists:drivers,id',
+            'odometer' => 'required|numeric|min:0',
+            'fuel_qty' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'time' => 'required',
+            'note' => 'nullable|string|max:500',
             'doc_attachment'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 

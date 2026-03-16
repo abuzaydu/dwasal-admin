@@ -22,7 +22,8 @@ class InsuranceController extends Controller
      */
     public function index()
     {
-        //
+        $page = 'Vehicle Insurance';
+        return view('vms.insurances.index',compact('page'));
     }
 
     /**
