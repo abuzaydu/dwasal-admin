@@ -99,7 +99,9 @@ class TripTypeController extends Controller
         if(!$tripType){
             return redirect()->back()->with('Trip type Not found');
         }
-        $tripType->delete();
+        //$tripType->delete();
+        $tripType -> active = false;
+        $tripType->save();
             return redirect()->back()->with('success','Trip type deleted successfully');
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());

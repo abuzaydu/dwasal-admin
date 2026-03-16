@@ -92,7 +92,9 @@ class ExpenseTypeController extends Controller
         try {
             $expenseType = ExpenseType::find($id);
             if($expenseType){
-                $expenseType->delete();
+               // $expenseType->delete();
+               $expenseType ->active = false;
+               $expenseType ->save();
                 return redirect()->back()->with('success','Expense type deleted succcessfully');
             }
             return redirect()->back()->with('error', 'Expense type not found');

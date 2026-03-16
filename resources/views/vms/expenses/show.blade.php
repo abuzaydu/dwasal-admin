@@ -279,7 +279,7 @@
                             <div class="col-md-6 mb-2">
                                 <label class="form-label">Unit Price <span style="color:red">*</span></label>
                                 <input type="number" name="unit_price" id="add_unit_price" step="any" min="0"
-                                    class="form-control form-control-sm" value="0" onchange="calculateAddTotal()" required>
+                                    class="form-control form-control-sm" value="1" onchange="calculateAddTotal()" required>
                             </div>
                             <div class="col-md-12 mb-2">
                                 <label class="form-label">Total Price</label>

@@ -369,7 +369,7 @@
                             <div class="col-md-6 mb-2">
                                 <label class="form-label">Trip No <span style="color:red">*</span></label>
                                 <input type="text" name="trip_no" class="form-control form-control-sm"
-                                    placeholder="e.g. TRIP-2026-001" required>
+                                    placeholder="Auto genarated" readonly>
                             </div>
 
                             <div class="col-md-6 mb-2">
