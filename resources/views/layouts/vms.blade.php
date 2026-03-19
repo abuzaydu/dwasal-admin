@@ -488,6 +488,8 @@
 
             $('.select2').each(function () {
                 $(this).select2({
+                            placeholder: "-- Select Employee --",
+
                     dropdownParent: $(this).parent(),
                 });
             });

@@ -49,7 +49,16 @@ class RefuelingController extends Controller
      */
     public function create()
     {
-        //
+        $page = 'New Refuel';
+        $companyId = Session::get('company_id');
+        $fuel_types = FuelType::where('company_id',$companyId)->latest()->get();
+        $vehicles = Vehicle::where('company_id',$companyId)->latest()->get();;
+        $drivers = Driver::where('company_id',$companyId)->with('licenseType')->latest()->get();
+        $vendors = Vendor::where('company_id',$companyId)->latest()->get();
+        $fuel_stations = FuelStation::where('company_id',$companyId)->latest()->get();
+        $license_types = LicenseType::where('company_id',$companyId)->with('company')->latest()->get();
+
+        return view('vms.refuling.create',compact('page','license_types','vendors','drivers','fuel_stations','vehicles','fuel_types'));
     }
 
     /**
@@ -57,52 +66,81 @@ class RefuelingController extends Controller
      */
     public function store(Request $request)
     {
-        $companyId = session('company_id');
-        $total_cost = $request->fuel_qty * $request->price; 
+        $companyId  = session('company_id');
+        $total_cost = $request->fuel_qty * $request->price;
 
         if (!$companyId) {
             return redirect()->back()->with('error', 'Company session not found.');
         }
 
-        $request->validate([
-            'vehicle_id'  => 'required|exists:vehicles,id',
-            'fuel_type_id' => 'required|exists:fuel_types,id',
-            'fuel_station_id' => 'required|exists:fuel_stations,id',
-            'driver_id'  => 'required|exists:drivers,id',
-            'odometer' => 'required|numeric|min:0',
-            'fuel_qty' => 'required|numeric|min:0',
-            'price' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'time' => 'required',
-            'note' => 'nullable|string|max:500',
-            'doc_attachment'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
+        $rules = [
+            'vehicle_id'     => 'required|exists:vehicles,id',
+            'fuel_type_id'   => 'required|exists:fuel_types,id',
+            'driver_id'      => 'required|exists:drivers,id',
+            'odometer'       => 'required|numeric|min:0',
+            'fuel_qty'       => 'required|numeric|min:0',
+            'price'          => 'required|numeric|min:0',
+            'date'           => 'required|date',
+            'time'           => 'required',
+            'note'           => 'nullable|string|max:500',
+            'doc_attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ];
 
-        $attachmentPath = null;
-        if ($request->hasFile('doc_attachment')) {
-            $attachmentPath = $request->file('doc_attachment')->store('refuels', 'public');
+        if ($request->station_mode === 'new') {
+            $rules['new_station_name']      = 'required|string|max:255';
+            $rules['new_station_vendor_id'] = 'nullable|exists:vendors,id';
+        } else {
+            $rules['fuel_station_id'] = 'required|exists:fuel_stations,id';
         }
 
-        Refuel::create([
-            'company_id'      => $companyId,
-            'user_id'         => Auth::id(),
-            'vehicle_id'      => $request->vehicle_id,
-            'fuel_type_id'    => $request->fuel_type_id,
-            'fuel_station_id' => $request->fuel_station_id,
-            'driver_id'       => $request->driver_id,
-            'odometer'        => $request->odometer,
-            'fuel_qty'        => $request->fuel_qty,
-            'price'           => $request->price,
-            'total_cost'      => $total_cost,
-            'date'            => $request->date,
-            'time'            => $request->time,
-            'note'            => $request->note,
-            'doc_attachment'  => $attachmentPath,
-        ]);
-        // dd($data);
-        return redirect()->back()->with('success', 'Refuel record added successfully');
-    }
+        $request->validate($rules);
 
+        try {
+
+            if ($request->station_mode === 'new') {
+                $station = FuelStation::create([
+                    'company_id'     => $companyId,
+                    'station_name'   => $request->new_station_name,
+                    'vendor_id'      => $request->new_station_vendor_id,
+                    'contact_person' => $request->new_station_contact_person,
+                    'contact_number' => $request->new_station_contact_number,
+                    'address'        => $request->new_station_address,
+                    'active'         => true,
+                ]);
+                $stationId = $station->id;
+            } else {
+                $stationId = $request->fuel_station_id;
+            }
+
+            $attachmentPath = null;
+            if ($request->hasFile('doc_attachment')) {
+                $attachmentPath = $request->file('doc_attachment')->store('refuels', 'public');
+            }
+
+            Refuel::create([
+                'company_id'      => $companyId,
+                'user_id'         => Auth::id(),
+                'vehicle_id'      => $request->vehicle_id,
+                'fuel_type_id'    => $request->fuel_type_id,
+                'fuel_station_id' => $stationId,
+                'driver_id'       => $request->driver_id,
+                'odometer'        => $request->odometer,
+                'fuel_qty'        => $request->fuel_qty,
+                'price'           => $request->price,
+                'total_cost'      => $total_cost,
+                'date'            => $request->date,
+                'time'            => $request->time,
+                'note'            => $request->note,
+                'doc_attachment'  => $attachmentPath,
+            ]);
+
+            return redirect()->back()->with('success', 'Refuel record added successfully');
+
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+   
     /**
      * Display the specified resource.
      */

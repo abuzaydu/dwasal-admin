@@ -1,429 +1,381 @@
 @extends('layouts.vms')
+
 @section('content')
-
-        <!--breadcrumb-->
-        <div class="block-header pt-4">
-            <div class="row">
-                <div class="col-lg-6 col-md-6 col-sm-12">
-                    <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>
-                        <li class="breadcrumb-item">Vehicle Management</li>
-                        <li class="breadcrumb-item"><a href="{{ route('vms-expenses.index') }}">VMS Expenses</a></li>
-                        <li class="breadcrumb-item active">{{ $page }}</li>
-                    </ul>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-12 text-right">
-
-                    @if($expense->status === 'Open' || $expense->status === 'In Progress' || $expense->status === 'Rejected')
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                            <i class="fa fa-plus"></i> Add Expense Item
-                        </button>
+    <!--breadcrumb-->
+    <div class="block-header pt-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>
+                    <li class="breadcrumb-item">Vehicle Management</li>
+                    <li class="breadcrumb-item"><a href="{{ url('vms-expenses') }}">VMS Expenses</a></li>
+                    <li class="breadcrumb-item active">{{$page}}</li>
+                </ul>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 text-end">
+                <div class="d-flex gap-1 justify-content-md-end justify-content-start">
+                    @if(in_array($expense->status, ['Pending', 'Awaiting For Approval']))
+                        <a href="{{ route('vms-expenses.edit', encrypt($expense->id)) }}" class="btn btn-primary btn-sm">
+                            <i class="fa fa-edit me-1"></i> Edit
+                        </a>
                     @endif
-
-                    @if($expense->status === 'In Progress')
-                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#closeTripModal">
-                            <i class="fa fa-flag-checkered"></i> Close Trip
-                        </button>
-                    @endif
-
-                    @if($expense->status === 'Pending')
-                        <button type="button" class="btn btn-success btn-sm" onclick="confirmApprove('{{ $expense->id }}')">
-                            <i class="fa fa-check"></i> Approve
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                            <i class="fa fa-times"></i> Reject
-                        </button>
-                    @endif
-
-                    @if($expense->status === 'Rejected')
-                        <button type="button" class="btn btn-warning btn-sm" 
-                            onclick="confirmResubmit('{{ $expense->id }}')">
-                            <i class="fa fa-refresh"></i> Resubmit for Approval
-                        </button>
-
-                        <form id="resubmitForm" method="POST" 
-                            action="{{ route('vms-expenses.close-trip', $expense->id) }}" 
-                            style="display:none;">
-                            @csrf
-                            <input type="hidden" name="odometer_mileage" value="{{ $expense->odometer_mileage }}">
-                            <input type="hidden" name="vehicle_rent" value="{{ $expense->vehicle_rent }}">
-                            <input type="hidden" name="return_date" value="{{ now()->format('Y-m-d') }}">
-                            <input type="hidden" name="remarks" value="{{ $expense->remarks }}">
-                        </form>
-                    @endif
-
+                    <a href="{{ url('vms-expenses') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa fa-arrow-left me-1"></i> Back
+                    </a>
                 </div>
             </div>
         </div>
-        <!--end breadcrumb-->
+    </div>
+    <!--end breadcrumb-->
 
         <div class="row clearfix">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-
-                        <div class="mb-3">
-                            <span class="fw-bold">Trip Status: </span>
-                            @if($expense->status === 'Open')
-                                <span class="badge bg-info">Open</span>
-                            @elseif($expense->status === 'In Progress')
-                                <span class="badge bg-primary">In Progress</span>
-                            @elseif($expense->status === 'Pending')
-                                <span class="badge bg-warning text-dark">Pending Approval</span>
-                            @elseif($expense->status === 'Approved')
-                                <span class="badge bg-success">Approved</span>
-                            @elseif($expense->status === 'Rejected')
-                                <span class="badge bg-danger">Rejected</span>
-                            @endif
+            <div class="col-xl-12">
+                <div class="card radius-6 mb-3">
+                    <div class="card-body py-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1 fw-bold">
+                                    <i class="fa fa-car me-2 text-primary"></i>
+                                    Trip: {{ $expense->trip_no }}
+                                </h5>
+                                <span class="text-muted" style="font-size:13px;">
+                                    Recorded by {{ $expense->first_name ?? '' }} {{ $expense->last_name ?? '' }}
+                                    &nbsp;|&nbsp;
+                                    {{ \Carbon\Carbon::parse($expense->created_at)->format('d M Y, h:i A') }}
+                                </span>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                                @if($expense->status === 'Pending')
+                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">Pending</span>
+                                @elseif($expense->status === 'Awaiting For Approval')
+                                    <span class="badge bg-info fs-6 px-3 py-2">Awaiting Approval</span>
+                                @elseif($expense->status === 'In Progress')
+                                    <span class="badge bg-primary fs-6 px-3 py-2">In Progress</span>
+                                @elseif($expense->status === 'Approved')
+                                    <span class="badge bg-success fs-6 px-3 py-2">Approved</span>
+                                @elseif($expense->status === 'Rejected')
+                                    <span class="badge bg-danger fs-6 px-3 py-2">Rejected</span>
+                                @elseif($expense->status === 'Closed')
+                                    <span class="badge bg-secondary fs-6 px-3 py-2">Closed</span>
+                                @else
+                                    <span class="badge bg-light text-dark fs-6 px-3 py-2">{{ $expense->status }}</span>
+                                @endif
+                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <ul class="nav nav-tabs" id="expenseTabs">
-                            <li class="nav-item">
-                                <a class="nav-link active" data-bs-toggle="tab" href="#tripInfoTab">
-                                    <i class="fa fa-info-circle"></i> Trip Info
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-bs-toggle="tab" href="#itemsTab">
-                                    <i class="fa fa-list"></i> Expense Items
-                                    <span class="badge bg-primary">{{ $expense->items->count() }}</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-bs-toggle="tab" href="#timelineTab">
-                                    <i class="fa fa-clock-o"></i> Timeline
-                                </a>
-                            </li>
-                        </ul>
-
-                        <div class="tab-content pt-3">
-
-                            <div class="tab-pane fade show active" id="tripInfoTab">
-                                <div class="row">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card radius-6 mb-3">
+                            <div class="card-header border-bottom pb-2">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="fa fa-info-circle me-2 text-primary"></i> Trip Details
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
                                     <div class="col-md-6">
-                                        <table class="table table-sm table-borderless">
-                                            <tr>
-                                                <th width="40%">Trip No</th>
-                                                <td>{{ $expense->trip_no }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Expense Group</th>
-                                                <td>{{ $expense->exp_group }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Trip Type</th>
-                                                <td>{{ $expense->tripType->trip_type ?? 'N/A' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Date</th>
-                                                <td>{{ $expense->date }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Remarks</th>
-                                                <td>{{ $expense->remarks ?? 'N/A' }}</td>
-                                            </tr>
-                                        </table>
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Vehicle</p>
+                                        <p class="fw-semibold mb-0">
+                                            {{ $expense->plate_no ?? 'N/A' }}
+                                            @if($expense->vehicle_name) — {{ $expense->vehicle_name }} @endif
+                                        </p>
                                     </div>
                                     <div class="col-md-6">
-                                        <table class="table table-sm table-borderless">
-                                            <tr>
-                                                <th width="40%">Driver</th>
-                                                <td>{{ $expense->employee->fname ?? '' }} {{ $expense->employee->lname ?? 'N/A' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Employee ID</th>
-                                                <td>{{ $expense->employee->emp_id ?? 'N/A' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Vehicle</th>
-                                                <td>{{ $expense->vehicle->plate_no ?? 'N/A' }} - {{ $expense->vehicle->vehicle_name ?? '' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Odometer</th>
-                                                <td>{{ $expense->odometer_mileage > 0 ? number_format($expense->odometer_mileage, 2) : 'Not yet filled' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Vehicle Rent</th>
-                                                <td>{{ $expense->vehicle_rent > 0 ? number_format($expense->vehicle_rent, 2) : 'Not yet filled' }}</td>
-                                            </tr>
-                                        </table>
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Employee / Driver</p>
+                                        <p class="fw-semibold mb-0">
+                                            {{ trim(($expense->fname ?? '') . ' ' . ($expense->lname ?? '')) ?: 'N/A' }}
+                                        </p>
                                     </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Vendor</p>
+                                        <p class="fw-semibold mb-0">{{ $expense->vendor_name ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Trip Type</p>
+                                        <p class="fw-semibold mb-0">{{ $expense->trip_type ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Expense Group</p>
+                                        <p class="fw-semibold mb-0">{{ $expense->exp_group ?? '-' }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Expense Date</p>
+                                        <p class="fw-semibold mb-0">{{ $expense->date }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Odometer / Mileage</p>
+                                        <p class="fw-semibold mb-0">{{ number_format($expense->odometer_mileage, 2) }} km</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Vehicle Rent</p>
+                                        <p class="fw-semibold mb-0">{{ number_format($expense->vehicle_rent, 2) }}</p>
+                                    </div>
+                                    @if($expense->remarks)
+                                    <div class="col-md-12">
+                                        <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Remarks</p>
+                                        <p class="fw-semibold mb-0">{{ $expense->remarks }}</p>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="tab-pane fade" id="itemsTab">
+                        <div class="card radius-6 mb-3">
+                            <div class="card-header border-bottom pb-2 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="fa fa-list me-2 text-success"></i> Expense Items
+                                </h6>
+                                <span class="badge bg-success">{{ $expenseItems->count() }} item(s)</span>
+                            </div>
+                            <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered table-sm">
-                                        <thead>
+                                    <table class="table table-striped mb-0">
+                                        <thead class="table-light">
                                             <tr>
-                                                <th>#</th>
+                                                <th class="text-center" style="width:5%;">#</th>
                                                 <th>Expense Type</th>
-                                                <th>Quantity</th>
-                                                <th>Unit Price</th>
-                                                <th>Total Price</th>
-                                                @if($expense->status !== 'Approved')
-                                                <th>Action</th>
-                                                @endif
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-center">Unit Price</th>
+                                                <th class="text-center">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($expense->items as $item)
+                                            @forelse($expenseItems as $index => $item)
                                             <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $item->expenseType->type ?? 'N/A' }}</td>
-                                                <td>{{ number_format($item->quantity, 2) }}</td>
-                                                <td>{{ number_format($item->unit_price, 2) }}</td>
-                                                <td>{{ number_format($item->total_price, 2) }}</td>
-                                                @if($expense->status !== 'Approved')
-                                                <td>
-                                                    <a href="javascript:;" onclick="confirmDeleteItem('{{ $item->id }}')">
-                                                        <i class="fa fa-trash" style="color:red"></i> Delete
-                                                    </a>
-
-                                                    <form id="deleteItemForm_{{ $item->id }}" method="POST"
-                                                        action="{{ route('vms-expense-items.destroy', $item->id) }}" style="display:none;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                    </form>
-                                                </td>
-                                                @endif
+                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td>{{ $item->expense_type }}</td>
+                                                <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
+                                                <td class="text-center">{{ number_format($item->unit_price, 2) }}</td>
+                                                <td class="text-center fw-semibold">{{ number_format($item->total_price, 2) }}</td>
                                             </tr>
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot>
+                                            @empty
                                             <tr>
-                                                <td colspan="{{ $expense->status !== 'Approved' ? 4 : 3 }}" class="text-end fw-bold">Grand Total:</td>
-                                                <td class="fw-bold">{{ number_format($expense->items->sum('total_price'), 2) }}</td>
-                                                @if($expense->status !== 'Approved')<td></td>@endif
+                                                <td colspan="5" class="text-center text-muted py-3">No expense items found.</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th></th>
+                                                <th class="text-end fw-bold">TOTAL</th>
+                                                <th class="text-center fw-bold">{{ number_format($expenseItems->sum('quantity'), 2) }}</th>
+                                                <th></th>
+                                                <th class="text-center fw-bold text-success" style="font-size:15px;">
+                                                    {{ number_format($expenseItems->sum('total_price'), 2) }}
+                                                </th>
                                             </tr>
                                         </tfoot>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
 
-                                @if($expense->items->count() === 0)
-                                    <div class="alert alert-info">No expense items added yet.</div>
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="card radius-6 mb-3" style="border-left: 4px solid #28a745;">
+                            <div class="card-body">
+                                <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Total Expense Amount</p>
+                                <h3 class="fw-bold text-success mb-0">
+                                    {{ number_format($expenseItems->sum('total_price'), 2) }}
+                                </h3>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Items</span>
+                                    <span class="fw-semibold">{{ $expenseItems->count() }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Trip No</span>
+                                    <span class="fw-semibold">{{ $expense->trip_no }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Date</span>
+                                    <span class="fw-semibold">{{ $expense->date }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card radius-6 mb-3">
+                            <div class="card-header border-bottom pb-2 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="fa fa-paperclip me-2 text-warning"></i> Attached Documents
+                                </h6>
+                                <span class="badge bg-warning text-dark">{{ $attachments->count() }} file(s)</span>
+                            </div>
+                            <div class="card-body">
+                                @if($attachments->count() > 0)
+                                    <div class="row g-3">
+                                        @foreach($attachments as $attachment)
+                                            @php
+                                                $ext = strtolower(pathinfo($attachment->file_path, PATHINFO_EXTENSION));
+                                                $url = asset('storage/' . $attachment->file_path);
+                                            @endphp
+
+                                            <div class="col-12">
+                                                @if(in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                    <a href="{{ $url }}" target="_blank">
+                                                        <img src="{{ $url }}"
+                                                            alt="Attachment"
+                                                            class="img-fluid rounded border shadow-sm w-100"
+                                                            style="max-height:300px; object-fit:cover; cursor:pointer;">
+                                                    </a>
+                                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                                        <small class="text-muted">{{ strtoupper($ext) }} Image</small>
+                                                        <a href="{{ $url }}" download class="btn btn-outline-success btn-sm">
+                                                            <i class="fa fa-download me-1"></i> Download
+                                                        </a>
+                                                    </div>
+
+                                                @elseif($ext === 'pdf')
+                                                    <div class="border rounded p-2 mb-2 text-center" style="background:#f8f9fa;">
+                                                        <i class="fa fa-file-pdf-o text-danger" style="font-size:36px;"></i>
+                                                        <p class="text-muted mt-1 mb-0" style="font-size:12px;">PDF Document</p>
+                                                    </div>
+                                                    <iframe src="{{ $url }}"
+                                                            width="100%"
+                                                            height="280px"
+                                                            class="border rounded mb-2">
+                                                    </iframe>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <a href="{{ $url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                            <i class="fa fa-external-link me-1"></i> Open
+                                                        </a>
+                                                        <a href="{{ $url }}" download class="btn btn-outline-success btn-sm">
+                                                            <i class="fa fa-download me-1"></i> Download
+                                                        </a>
+                                                    </div>
+
+                                                @else
+                                                    <div class="border rounded p-3 text-center" style="background:#f8f9fa;">
+                                                        <i class="fa fa-file text-secondary" style="font-size:36px;"></i>
+                                                        <p class="text-muted mt-1 mb-2" style="font-size:12px;">
+                                                            {{ strtoupper($ext) }} Document
+                                                        </p>
+                                                        <div class="d-flex gap-2 justify-content-center">
+                                                            <a href="{{ $url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fa fa-external-link me-1"></i> Open
+                                                            </a>
+                                                            <a href="{{ $url }}" download class="btn btn-outline-success btn-sm">
+                                                                <i class="fa fa-download me-1"></i> Download
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if(!$loop->last)
+                                                    <hr class="my-3">
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="py-4 text-center">
+                                        <i class="fa fa-file-o text-muted" style="font-size:48px;"></i>
+                                        <p class="text-muted mt-2 mb-0">No documents attached.</p>
+                                    </div>
                                 @endif
                             </div>
+                        </div>
 
-                            <div class="tab-pane fade" id="timelineTab">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                        <span class="badge bg-info me-2">1</span>
-                                        <strong>Trip Created</strong> —
-                                        {{ $expense->created_at->format('Y-m-d H:i') }}
-                                        <small class="text-muted">Status set to Open</small>
-                                    </li>
-                                    @if($expense->status !== 'Open')
-                                    <li class="list-group-item">
-                                        <span class="badge bg-primary me-2">2</span>
-                                        <strong>Expense Items Added</strong> —
-                                        <small class="text-muted">Status set to In Progress</small>
-                                    </li>
-                                    @endif
-                                    @if(in_array($expense->status, ['Pending', 'Approved', 'Rejected']))
-                                    <li class="list-group-item">
-                                        <span class="badge bg-warning text-dark me-2">3</span>
-                                        <strong>Trip Closed</strong> —
-                                        <small class="text-muted">Submitted for approval. Status set to Pending</small>
-                                    </li>
-                                    @endif
-                                    @if($expense->status === 'Approved')
-                                    <li class="list-group-item">
-                                        <span class="badge bg-success me-2">4</span>
-                                        <strong>Approved</strong> —
-                                        {{ $expense->updated_at->format('Y-m-d H:i') }}
-                                        <small class="text-muted">Expense locked</small>
-                                    </li>
-                                    @endif
-                                    @if($expense->status === 'Rejected')
-                                    <li class="list-group-item">
-                                        <span class="badge bg-danger me-2">4</span>
-                                        <strong>Rejected</strong> —
-                                        {{ $expense->updated_at->format('Y-m-d H:i') }}
-                                        <br><small class="text-muted">Reason: {{ $expense->remarks }}</small>
-                                    </li>
-                                    @endif
-                                </ul>
+                        @if(in_array($expense->status, ['Approved', 'Rejected', 'Closed']))
+                        <div class="card radius-6 mb-3">
+                            <div class="card-header border-bottom pb-2">
+                                <h6 class="mb-0 fw-semibold">
+                                    <i class="fa fa-check-circle me-2 text-info"></i> Approval Info
+                                </h6>
                             </div>
+                            <div class="card-body">
+                                @if($expense->approved_by)
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Approved / Rejected By</span>
+                                    <span class="fw-semibold">{{ $expense->approved_by }}</span>
+                                </div>
+                                @endif
+                                @if($expense->approved_at)
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Date</span>
+                                    <span class="fw-semibold">{{ \Carbon\Carbon::parse($expense->approved_at)->format('d M Y') }}</span>
+                                </div>
+                                @endif
+                                @if($expense->status === 'Rejected' && $expense->remarks)
+                                <div class="mt-2">
+                                    <p class="text-muted mb-1" style="font-size:11px; text-transform:uppercase;">Rejection Reason</p>
+                                    <div class="alert alert-danger py-2 mb-0">{{ $expense->remarks }}</div>
+                                </div>
+                                @endif
+                                @if($expense->closed_by)
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span class="text-muted">Closed By</span>
+                                    <span class="fw-semibold">{{ $expense->closed_by }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
 
+                    </div>
+                </div>
+
+                <div class="card radius-6">
+                    <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Last updated: {{ \Carbon\Carbon::parse($expense->updated_at)->format('d M Y, h:i A') }}
+                        </small>
+                        <div class="d-flex gap-2">
+                            @if($expense->status === 'Awaiting For Approval')
+                                <form method="POST" action="{{ route('approve-vms-expense', encrypt($expense->id)) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fa fa-check me-1"></i> Approve
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    <i class="fa fa-times me-1"></i> Reject
+                                </button>
+                            @endif
+                            @if(in_array($expense->status, ['Pending', 'Awaiting For Approval']))
+                                <a href="{{ route('vms-expenses.edit', encrypt($expense->id)) }}"
+                                class="btn btn-primary btn-sm">
+                                    <i class="fa fa-edit me-1"></i> Edit
+                                </a>
+                            @endif
+                            <a href="{{ url('vms-expenses') }}" class="btn btn-secondary btn-sm">
+                                <i class="fa fa-arrow-left me-1"></i> Back
+                            </a>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
-        <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Expense Item</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger"><i class="fa fa-times me-1"></i> Reject Expense</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ route('reject-vms-expense') }}">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $expense->id }}">
+                            <div class="modal-body">
+                                <label class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
+                                <textarea name="remarks" rows="3" required
+                                    class="form-control form-control-sm"
+                                    placeholder="Enter reason for rejecting this expense..."></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger btn-sm">Submit Rejection</button>
+                                <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
-                    <form method="POST" action="{{ route('vms-expenses.store-item', $expense->id) }}">
-                        @csrf
-                        <div class="modal-body row">
-                            <div class="col-md-12 mb-2">
-                                <label class="form-label">Expense Type <span style="color:red">*</span></label>
-                                <select name="expense_type_id" class="form-select form-select-sm" required>
-                                    <option value="">-- Select Expense Type --</option>
-                                    @foreach($expenseTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->type }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Quantity <span style="color:red">*</span></label>
-                                <input type="number" name="quantity" id="add_quantity" step="any" min="0"
-                                    class="form-control form-control-sm" value="1" onchange="calculateAddTotal()" required>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Unit Price <span style="color:red">*</span></label>
-                                <input type="number" name="unit_price" id="add_unit_price" step="any" min="0"
-                                    class="form-control form-control-sm" value="1" onchange="calculateAddTotal()" required>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label class="form-label">Total Price</label>
-                                <input type="number" name="total_price" id="add_total_price" step="any"
-                                    class="form-control form-control-sm" value="0" readonly>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-success btn-sm">Save</button>
-                            <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </form>
                 </div>
             </div>
-        </div>
-
-        <div class="modal fade" id="closeTripModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Close Trip</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" action="{{ route('vms-expenses.close-trip', $expense->id) }}">
-                        @csrf
-                        <div class="modal-body row">
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Odometer Mileage <span style="color:red">*</span></label>
-                                <input type="number" name="odometer_mileage" step="any" min="0"
-                                    class="form-control form-control-sm" required>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Vehicle Rent <span style="color:red">*</span></label>
-                                <input type="number" name="vehicle_rent" step="any" min="0"
-                                    class="form-control form-control-sm" required>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Return Date <span style="color:red">*</span></label>
-                                <input type="date" name="return_date" class="form-control form-control-sm" required>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label class="form-label">Final Remarks</label>
-                                <textarea name="remarks" rows="2" class="form-control form-control-sm"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-warning btn-sm">Close Trip & Submit for Approval</button>
-                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Reject Expense</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" action="{{ route('vms-expenses.reject', $expense->id) }}">
-                        @csrf
-                        <div class="modal-body">
-                            <div class="mb-2">
-                                <label class="form-label">Rejection Reason <span style="color:red">*</span></label>
-                                <textarea name="rejection_reason" rows="3"
-                                    class="form-control form-control-sm" required
-                                    placeholder="Enter reason for rejection"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-@endsection
-@section('page-scripts')
-    <script>
-
-        function calculateAddTotal() {
-            var qty         = parseFloat(document.getElementById('add_quantity').value) || 0;
-            var unitPrice   = parseFloat(document.getElementById('add_unit_price').value) || 0;
-            document.getElementById('add_total_price').value = (qty * unitPrice).toFixed(2);
-        }
-
-        function confirmDeleteItem(id) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'This expense item will be permanently deleted!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'No'
-            }).then((result) => {
-                if (result.value) {
-                    document.getElementById('deleteItemForm_' + id).submit();
-                }
-            });
-        }
-
-        function confirmApprove(id) {
-            Swal.fire({
-                title: 'Approve this expense?',
-                text: 'This action will lock the expense and cannot be undone!',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Approve!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.value) {
-                    document.getElementById('approveForm').submit();
-                }
-            });
-        }
-        function confirmResubmit(id) {
-            Swal.fire({
-                title: 'Resubmit for Approval?',
-                text: 'Make sure you have corrected all issues before resubmitting!',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#f6a821',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Resubmit!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.value) {
-                    document.getElementById('resubmitForm').submit();
-                }
-            });
-        }
-
-    </script>
-
-    <form id="approveForm" method="POST" action="{{ route('vms-expenses.approve', $expense->id) }}" style="display:none;">
-        @csrf
-    </form>
 
 @endsection

@@ -217,6 +217,7 @@ use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\DriverController;
+use App\Http\Controllers\VMS\ExpenseAjaxController;
 use App\Http\Controllers\VMS\ExpenseTypeController;
 use App\Http\Controllers\VMS\FuelStation;
 use App\Http\Controllers\VMS\FuelStationController;
@@ -240,6 +241,7 @@ use App\Http\Controllers\VMS\VehicleController;
 use App\Http\Controllers\VMS\VehicleRequisitionController;
 use App\Http\Controllers\VMS\VehicleTypeController;
 use App\Http\Controllers\VMS\VendorController;
+use App\Http\Controllers\VMS\VmsExpenseController;
 use App\Http\Controllers\VMS\VMSExpenseController;
 use App\Http\Controllers\Web\ActionLogsController;
 use App\Http\Controllers\Web\ApprovalRequestController;
@@ -1442,13 +1444,22 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
     Route::resource('expense-type',ExpenseTypeController::class);
     Route::resource('vms-expenses', VMSExpenseController::class);
-    Route::get('vms-expenses/{id}/items', [VMSExpenseController::class, 'getItems']);
-    Route::post('vms-expenses/{id}/close-trip', [VMSExpenseController::class, 'closeTrip'])->name('vms-expenses.close-trip');
-    Route::post('vms-expenses/{id}/approve', [VMSExpenseController::class, 'approveExpense'])->name('vms-expenses.approve');
-    Route::post('vms-expenses/{id}/reject', [VMSExpenseController::class, 'rejectExpense'])->name('vms-expenses.reject');
-    Route::post('vms-expenses/{id}/items', [VMSExpenseController::class, 'storeItem'])->name('vms-expenses.store-item');
-    Route::delete('vms-expense-items/{id}', [VMSExpenseController::class, 'destroyItem'])->name('vms-expense-items.destroy');
-
+    Route::delete('vms-expense-attachment/{id}', [VMSExpenseController::class, 'destroyAttachment'])
+     ->name('vms-expense-attachment.destroy');
+    Route::get('cancel-vms-expense/{id}',  [VmsExpenseController::class, 'destroy']);
+    Route::post('approve-vms-expense/{id}', [VmsExpenseController::class, 'approveExpense'])->name('approve-vms-expense');
+    Route::post('reject-vms-expense',      [VmsExpenseController::class, 'rejectExpense'])->name('reject-vms-expense');
+    Route::get('close-vms-expense/{id}',   [VmsExpenseController::class, 'closeExpense']);
+    Route::post('resume-vms-expense',      [VmsExpenseController::class, 'resumePending']);
+    
+    // AJAX endpoints (add to an AjaxController or inline)
+    Route::get('search-expense-type',   [ExpenseAjaxController::class, 'searchExpenseType']);
+    Route::get('fetch-expense-type',    [ExpenseAjaxController::class, 'fetchExpenseType']);
+    Route::get('fetch-expense-types',   [ExpenseAjaxController::class, 'fetchExpenseTypes']);
+    Route::get('fetch-expense-items',   [ExpenseAjaxController::class, 'fetchExpenseItems']);
+    Route::post('add-expense-item',     [ExpenseAjaxController::class, 'addExpenseItem']);
+    Route::post('update-expense-item',  [ExpenseAjaxController::class, 'updateExpenseItem']);
+    Route::post('remove-expense-item',  [ExpenseAjaxController::class, 'removeExpenseItem']);
     Route::resource('trip-types',TripTypeController::class);
     //visitor route
     Route::get('visitors-dash', [VisitorController::class, 'dashboard'])->name('visitors.dashboard');

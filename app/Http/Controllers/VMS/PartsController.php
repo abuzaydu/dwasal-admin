@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
 use App\Models\Company;
 use App\Models\Part;
 use App\Models\PartCategory;
 use App\Models\PartLocation;
-use App\Models\UnitMeasure;
 use App\Models\PartPurchaseItem;
 use App\Models\PartUsageItem;
+use App\Models\UnitMeasure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class PartsController extends Controller
 {
@@ -91,7 +92,7 @@ class PartsController extends Controller
         if ($request->ajax()) {
             $company = Company::find(Session::get('company_id'));
             if (!empty($request->search_key) && strlen($request->search_key) >= 2) {
-                $data = Part::where('company_id', $company->id)->where(\DB::raw('CONCAT_WS(" ", `part_no`, `part_name`)'),'LIKE', '%'.$request->search_key.'%')->select('id', 'part_no', 'part_name')->get();
+                $data = Part::where('company_id', $company->id)->where(DB::raw('CONCAT_WS(" ", `part_no`, `part_name`)'),'LIKE', '%'.$request->search_key.'%')->select('id', 'part_no', 'part_name')->get();
 
                 return $data;
             }else{

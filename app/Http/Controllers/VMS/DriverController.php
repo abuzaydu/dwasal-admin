@@ -157,13 +157,15 @@ class DriverController extends Controller
      */
     public function destroy(string $id)
     {
-        $driver = Driver::find($id);
+        $driver = Driver::find(decrypt($id));
 
         if (!$driver) {
             return redirect()->back()->with('error', 'Driver not found!');
         }
 
-        $driver->delete();
+        //$driver->delete();
+        $driver -> is_active = false;
+        $driver -> save();
 
         return redirect()->back()->with('success', 'Driver deleted successfully');
     }

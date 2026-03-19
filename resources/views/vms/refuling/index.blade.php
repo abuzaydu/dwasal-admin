@@ -141,18 +141,16 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById('delete-lt-form-' + id).submit();
+                    document.getElementById('delete-license-form-' + id).submit();
                 }
             });
         }
         // Auto calculate total cost
         document.addEventListener('DOMContentLoaded', function () {
 
-            // Add form calculation
             document.getElementById('fuel_qty').addEventListener('input', calculateTotal);
             document.getElementById('price').addEventListener('input', calculateTotal);
 
-            // Edit form calculation
             document.getElementById('edit_fuel_qty').addEventListener('input', calculateEditTotal);
             document.getElementById('edit_price').addEventListener('input', calculateEditTotal);
         });
@@ -230,31 +228,15 @@
      <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
-            <div class="col-lg-4 col-md-8 col-sm-12">
+            <div class="col-lg-6 col-md-8 col-sm-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>  
                     <li class="breadcrumb-item">Vehicles Managment</li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
-            <div class="col-lg-8 col-md-4 col-sm-12 text-right">
-               <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#refuelModal">New Refuel</button>
-               <button type="button" class="btn btn-success btn-sm px-1" data-bs-toggle="modal" data-bs-target="#fuelTypeModal">
-                 <i class="fa fa-plus pt mr-1"></i>
-                   Add Fuel Type
-               </button>
-               <button type="button" class="btn btn-secondary btn-sm px-1" data-bs-toggle="modal" data-bs-target="#fuelStations">
-                  <i class="fa fa-plus mr-1"></i>
-                     Add Fuel Station
-               </button>
-               <button type="button" class="btn btn-warning btn-sm px-1" data-bs-toggle="modal" data-bs-target="#addLicenseTypeModal">
-                  <i class="fa fa-plus mr-1"></i>
-                     Add Licence Type
-               </button>
-               <button type="button" class="btn btn-primary btn-sm px-1" data-bs-toggle="modal" data-bs-target="#drivers">
-                  <i class="fa fa-plus mr-1"></i>
-                     Add Drivers
-               </button>
+            <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+                <a class="btn btn-primary btn-sm" href="{{ route('refueling.create') }}">New Refuel</a>
             </div>
         </div>
     </div>
@@ -471,7 +453,7 @@
                                                <a href="javascript:;" onclick="editLicenseType({{ $type->id }}, '{{ $type->name }}')">
                                                     <i class="fa fa-edit" style="color: blue;"></i>
                                                </a> 
-                                                <form method="POST" action="{{route('license-types.destroy' , encrypt($type->id))}}" id="delete-form-{{$type->id}}" style="display: inline;"> 
+                                                <form method="POST" action="{{route('license-types.destroy' , encrypt($type->id))}}" id="delete-license-form-{{$type->id}}" style="display: inline;"> 
                                                     @csrf
                                                     @method('DELETE')
                                                     <a href="javascript:;" onclick="return confirmDeleteLicenseType({{$type->id}})">
@@ -516,7 +498,7 @@
                                             </td>                                            <td>{{ $driver->full_name }}</td>
                                             <td>{{ $driver->mobile }}</td>
                                             <td>{{ $driver->license_no }}</td>
-                                            <td>{{ $driver->licenseType->name }}</td>
+                                            <td>{{ $driver->licenseType->name ?? 'N/A'}}</td>
                                             <td>{{ $driver->nid }}</td>
                                             <td>{{ $driver->license_issue_date }}</td>
                                             <td><a href=""></a>{{ $driver->date_of_birth }}</td>
@@ -548,7 +530,7 @@
                                                     )">
                                                         <i class="fa fa-edit" style="color:blue;"></i>
                                                 </a> 
-                                                <form method="POST" action="{{route('drivers.destroy' , encrypt($driver->id))}}" id="delete-vt-form-{{$driver->id}}" style="display: inline;"> 
+                                                <form method="POST" action="{{route('drivers.destroy' , encrypt($driver->id))}}" id="delete-driver-form-{{$driver->id}}" style="display: inline;"> 
                                                     @csrf
                                                     @method('DELETE')
                                                     <a href="javascript:;" onclick="return confirmDeleteDriver({{$driver->id}})">
@@ -569,123 +551,6 @@
         </div>
     </div> <!-- end row -->
 
-    <!-- modal for adding refuel-->
-    <div class="modal animated zoomIn" id="refuelModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">New Refuel</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="{{ route('refueling.store') }}" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row g-2">
-
-                            <div class="col-md-4">
-                                <label class="form-label">Vehicle <span style="color:red">*</span></label>
-                                <select name="vehicle_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select Vehicle --</option>
-                                    @foreach($vehicles as $vehicle)
-                                        <option value="{{ $vehicle->id }}">
-                                            {{ $vehicle->plate_no }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Fuel Type <span style="color:red">*</span></label>
-                                <select name="fuel_type_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select Fuel Type --</option>
-                                    @foreach($fuel_types as $fuel_type)
-                                        <option value="{{ $fuel_type->id }}">{{ $fuel_type->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Fuel Station <span style="color:red">*</span></label>
-                                <select name="fuel_station_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select Station --</option>
-                                    @foreach($fuel_stations as $fuel_station)
-                                        <option value="{{ $fuel_station->id }}">{{ $fuel_station->station_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Driver <span style="color:red">*</span></label>
-                                <select name="driver_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select Driver --</option>
-                                    @foreach($drivers as $driver)
-                                        <option value="{{ $driver->id }}">{{ $driver->full_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Odometer <span style="color:red">*</span></label>
-                                <input type="number" step="0.01" name="odometer" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter odometer reading">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Fuel Quantity (L) <span style="color:red">*</span></label>
-                                <input type="number" step="0.01" name="fuel_qty" id="fuel_qty" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter fuel quantity">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Price per Litre <span style="color:red">*</span></label>
-                                <input type="number" step="0.01" name="price" id="price" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter price per litre">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Total Cost <span style="color:red">*</span></label>
-                                <input type="number" step="0.01" name="total_cost" id="total_cost" 
-                                    class="form-control form-control-sm" >
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Date <span style="color:red">*</span></label>
-                                <input type="date" name="date" required
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Time <span style="color:red">*</span></label>
-                                <input type="time" name="time" required
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-8">
-                                <label class="form-label">Note</label>
-                                <input type="text" name="note"
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter note (optional)">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label">Document Attachment <span style="color: red">*</span></label>
-                                <input type="file" name="doc_attachment" accept=".pdf,.jpg,.jpeg,.png"
-                                    class="form-control form-control-sm" required>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success btn-sm">Save Refuel</button>
-                        <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     <!--Modal for editing refuel -->
     <div class="modal fade" id="editRefuelModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -804,44 +669,6 @@
         </div>
     </div>
 
-    <!-- modal for adding fuel type -->
-    <div class="modal fade" id="fuelTypeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title" id="myModalLabel">New Fuel Type</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" action="{{ route('fuel-types.store') }}">
-                    <div class="modal-body">
-                        @csrf
-                        <div class="row g-1 align-items-center">
-                            <div class="col-md-12 pt-2">
-                                <label class="form-label">Fuel Type <span style="color: red;">*</span></label>
-                                <input id="register-username" type="text" name="name" required placeholder="Enter Fuel type name" class="form-control form-control-sm mb-1">
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label">Description?</label>
-                                <input type="text" name="description" class="form-control form-control-sm mb-1" placeholder="Enter Description">
-                            </div>
-                            <div>
-                                <label for="form-label">Status</label>
-                                <select name="active" id="form-select">
-                                    <option value="1">Active</option>
-                                    <option value="0">Inactive</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-success btn-sm" id="btn-submit-new">{{ trans('navmenu.btn_save') }}</button>
-                                <button type="button" class="btn btn-warning btn-sm"
-                                    data-bs-dismiss="modal">{{ trans('navmenu.btn_cancel') }}</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     <!-- modal for editing fuel type -->
     <div class="modal fade" id="editFuelTypeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
@@ -885,75 +712,6 @@
         </div>
     </div>
 
-    <!-- Modal for adding fuel station -->
-    <div class="modal fade" id="fuelStations" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add Fuel Station</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" action="{{ route('fuel-stations.store') }}">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row g-2">
-
-                            <div class="col-md-12">
-                                <label class="form-label">Station Name <span style="color: red;">*</span></label>
-                                <input type="text" name="station_name" required
-                                    placeholder="Enter station name"
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label">Vendor <span style="color: red;">*</span></label>
-                                <select name="vendor_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select Vendor --</option>
-                                    @foreach($vendors as $vendor)
-                                        <option value="{{ $vendor->id }}">{{ $vendor->vendor_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Contact Person</label>
-                                <input type="text" name="contact_person"
-                                    placeholder="Enter contact person"
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Contact Number</label>
-                                <input type="text" name="contact_number"
-                                    placeholder="Enter contact number"
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label">Address</label>
-                                <input type="text" name="address"
-                                    placeholder="Enter address"
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label">Status</label>
-                                <select name="active" class="form-select form-select-sm">
-                                    <option value="1">Active</option>
-                                    <option value="0">Inactive</option>
-                                </select>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success btn-sm">Save Station</button>
-                        <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     <!-- Modal for editing fuel station -->
     <div class="modal fade" id="editFuelStationModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -1025,35 +783,6 @@
         </div>
     </div>
 
-    <!--Modal for adding license tyoe -->
-    <div class="modal fade" id="addLicenseTypeModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add License Type</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="{{ route('license-types.store') }}">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row g-2">
-                            <div class="col-md-12">
-                                <label class="form-label">License Type Name <span style="color:red">*</span></label>
-                                <input type="text" name="name" required
-                                    class="form-control form-control-sm"
-                                    placeholder="e.g. Class A, Class B, CDL">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success btn-sm">Save</button>
-                        <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal for editing license type -->
     <div class="modal fade" id="editLicenseTypeModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -1077,125 +806,6 @@
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
-                        <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal for adding  drivers -->
-    <div class="modal fade" id="drivers" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title">Add Driver</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="{{ route('drivers.store') }}" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row g-2">
-
-                            <div class="col-md-6">
-                                <label class="form-label">Full Name <span style="color:red">*</span></label>
-                                <input type="text" name="full_name" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter full name">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Mobile <span style="color:red">*</span></label>
-                                <input type="text" name="mobile" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter mobile number">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">License Type <span style="color:red">*</span></label>
-                                <select name="license_type_id" required class="form-select form-select-sm select2">
-                                    <option value="" disabled selected>-- Select License Type --</option>
-                                    @foreach($license_types as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">License No <span style="color:red">*</span></label>
-                                <input type="text" name="license_no" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter license number">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">License Issue Date <span style="color:red">*</span></label>
-                                <input type="date" name="license_issue_date" required
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">NID <span style="color:red">*</span></label>
-                                <input type="text" name="nid" required
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter national ID">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Join Date <span style="color:red">*</span></label>
-                                <input type="date" name="join_date" required
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Date of Birth <span style="color:red">*</span></label>
-                                <input type="date" name="date_of_birth" required
-                                    class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Working Time Slot <span style="color:red">*</span></label>
-                                <select name="working_time_slot" required class="form-select form-select-sm">
-                                    <option value="" disabled selected>-- Select Slot --</option>
-                                    <option value="Morning">Morning</option>
-                                    <option value="Afternoon">Afternoon</option>
-                                    <option value="Night">Night</option>
-                                    <option value="Full Day">Full Day</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Status</label>
-                                <select name="is_active" class="form-select form-select-sm">
-                                    <option value="1">Active</option>
-                                    <option value="0">Inactive</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Present Address</label>
-                                <input type="text" name="present_address"
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter present address">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Permanent Address</label>
-                                <input type="text" name="permanent_address"
-                                    class="form-control form-control-sm"
-                                    placeholder="Enter permanent address">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label">Driver Photo</label>
-                                <input type="file" name="driver_photo" accept="image/*"
-                                    class="form-control form-control-sm">
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success btn-sm">Save Driver</button>
                         <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>

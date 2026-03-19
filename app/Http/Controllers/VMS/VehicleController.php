@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
+use App\Models\Department;
+use App\Models\Ownership;
 use App\Models\UnitMeasure;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
-use App\Models\Ownership;
-use App\Models\Department;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class VehicleController extends Controller
 {
@@ -133,13 +133,15 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::find(decrypt($id));
         if (!is_null($vehicle)) {
-            $orderdeliveries = DeliveryNode::where('vehicle_id', $vehicle->id)->count();
-            if ($orderdeliveries > 0) {
-                return redirect()->back()->with('info', "Vehicle with Order details can't be deleted");
-            }else{
-                $vehicle->delete();
+            // $orderdeliveries = DeliveryNode::where('vehicle_id', $vehicle->id)->count();
+            // if ($orderdeliveries > 0) {
+            //     return redirect()->back()->with('info', "Vehicle with Order details can't be deleted");
+            // }else{
+               // $vehicle->delete();
+               $vehicle->status = 'UnAvailable';
+               $vehicle->save();
                 return redirect('vehicles')->with('success', 'Vehicle deleted successfully');
-            }
+            //}
         }
     }
 }

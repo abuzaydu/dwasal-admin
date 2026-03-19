@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\ExpenseAttachment;
 use Illuminate\Database\Eloquent\Model;
 
 class VmsExpense extends Model
@@ -27,5 +28,10 @@ class VmsExpense extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(ExpenseAttachment::class, 'vms_expense_id');
     }
 }

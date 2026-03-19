@@ -93,11 +93,13 @@ class FuelTypeController extends Controller
     public function destroy(string $id)
     {
         $fuel_types = FuelType::find(decrypt($id));
-        //dd($fuel_types);
         if(!$fuel_types){
             return redirect()->back()->with('error', 'Fuel type not found');
         }
-        $fuel_types->delete();
+
+       // $fuel_types->delete();
+       $fuel_types->active = false;
+       $fuel_types->save();
         return redirect()->back()->with('success', 'Fuel type deleted successfully');
     }
 }

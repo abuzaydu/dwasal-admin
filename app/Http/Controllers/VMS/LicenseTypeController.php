@@ -90,13 +90,14 @@ class LicenseTypeController extends Controller
      */
     public function destroy(string $id)
     {
-        $licenseType = LicenseType::find($id);
+        $licenseType = LicenseType::find(decrypt($id));
 
         if (!$licenseType) {
             return redirect()->back()->with('error', 'License type not found!');
         }
 
         $licenseType->delete();
+        //$licenseType->
 
         return redirect()->back()->with('success', 'License type deleted successfully');
     }

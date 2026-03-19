@@ -50,7 +50,6 @@ class FuelStationController extends Controller
             'address' => $request->address,
             'active' => $request->input('active', true),
         ]);
-           // FuelStation::create($validated);
             return redirect()->back()->with('success', 'Fuel station added successfully');
        } catch (\Throwable $e) {
          return redirect()->back()->with('error', $e->getMessage());
@@ -116,7 +115,8 @@ class FuelStationController extends Controller
             return redirect()->back()->with('error', 'Fuel station not found!');
         }
 
-        $fuelStation->delete();
+        $fuelStation ->active = false;
+        $fuelStation->save();
 
         return redirect()->back()->with('success', 'Fuel station deleted successfully');
     
