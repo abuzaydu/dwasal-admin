@@ -91,7 +91,7 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end p-0 shadow notification">
                                     <ul class="list-unstyled feeds_widget">
-                                        <?php 
+                                        <?php
                                             $nottypes = array();
                                             $latest = null;
                                             foreach(Auth::user()->unreadNotifications as $notification) {
@@ -163,7 +163,7 @@
                                         @csrf
                                     </form>
                                 </li>
-                                
+
                             </ul>
                         </div>
                     </div>
@@ -190,7 +190,13 @@
                                         <li><a href="{{ url('legal-documents/status') }}" class="{{ request()->is('legal-documents/status') ? 'active' : '' }}"><i class="fa fa-check-square-o"></i> Vehicle Document Status</a></li>
                                     </ul>
                                 </li>
-                                <li class="{{ request()->is('vehicle-requisitions') ? 'active' : '' }}"><a href="{{ url('vehicle-requisitions') }}"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a></li>
+                                <li class="{{ request()->is('vehicle-requisitions') || request()->is('trip-logs') ? 'active' : '' }}">
+                                    <a class="has-arrow" href="#vehicle-requisition"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a>
+                                    <ul class="list-unstyled">
+                                        <li><a href="{{ url('vehicle-requisitions') }}" class="{{ request()->is('vehicle-requisitions' ? 'active': '') }}"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a></li>
+                                        <li><a href="{{ url('requisition-trip-logs') }}" class="{{ request()->is('requisition-trip-logs' ? 'active': '') }}"><i class="fa fa-road"></i>Requisition Trip Logs</a></li>
+                                    </ul>
+                                </li>
                                 <li class="{{ request()->is('insurance') ? 'active' : '' }}"><a href="{{ url('insurance') }}"><i class="fa fa-file-o"></i> Insurance</a></li>
                                 <li class="{{ request()->is('maintenance*') ? 'active' : '' }}">
                                     <a class="has-arrow" href="javascript:;"><i class="fa fa-car"></i><span>Maintenance</span></a>
@@ -208,7 +214,7 @@
                                     <ul class="list-unstyled">
                                         <li><a href="{{ url('refueling') }}" class="{{ request()->is('refueling') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Refueling</a></li>
                                         <li><a href="{{ url('fuel-stations') }}" class="{{ request()->is('fuel-stations') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Fuel Station</a></li>
-                                        <li><a href="{{ url('fuel-types') }}" class="{{ request()->is('fuel-types') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Fuel Type</a></li>                                    
+                                        <li><a href="{{ url('fuel-types') }}" class="{{ request()->is('fuel-types') ? 'active' : '' }}"><i class="fa fa-check-circle"></i> Fuel Type</a></li>
                                     </ul>
                                 </li>
                                 <li class="{{ request()->is('parts') || request()->is('parts-usage') || request()->is('part-purchases') ? 'mm-active active' : '' }}">
@@ -275,7 +281,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="main-content">
             <div class="container-fluid">
                 @yield('content')
@@ -291,7 +297,7 @@
                     <h6 class="title" id="defaultModalLabel">Switch Shop</h6>
                 </div>
                 <form method="POST" action="{{ url('switch-shop')}}">
-                    @csrf        
+                    @csrf
                     <div class="modal-body">
                         <select name="shop_id" id="auto_submit" onchange='if(this.value != 0) { this.form.submit(); }' class="form-select form-select-sm mb-1 select-bar-box">
                             @foreach (Auth::user()->shops()->get() as $key => $myshop)
@@ -328,9 +334,9 @@
     <script src="{{ asset('side/assets/vendor/notifications/js/notifications.min.js') }}"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    <script src="{{ asset('side/assets/vendor/sweetalert/sweetalert.min.js') }}"></script> <!-- SweetAlert Plugin Js --> 
+    <script src="{{ asset('side/assets/vendor/sweetalert/sweetalert.min.js') }}"></script> <!-- SweetAlert Plugin Js -->
     <script src="{{ asset('side/assets/vendor/sweetalert2/sweetalert2.all.js') }}"></script>
-    
+
     <!-- Jquery Page Js -->
     <script src="{{ asset('side/assets/vendor/notifications/js/notification-custom-script.js') }}"></script>
 
@@ -385,21 +391,21 @@
             $is_filling_station = true;
         }
     }
-    
+
     if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage') {
         $is_post = $is_post_query;
         $startdate = $start_date;
         $enddate = $end_date;
     }
-    
+
     if ($page == 'Customers' || $page == 'Suppliers' || $page == 'Profile') {
         $loadcountries = true;
     }
-    
+
     if ($page == 'Point of Sale') {
         $is_pos = true;
     }
-    
+
     if ($page == 'Reports') {
         if (app()->getLocale() == 'en') {
             $dur = $duration;
@@ -454,7 +460,7 @@
             var endstring = "<?php echo $enddate; ?>";
             start = moment(startstring, 'YYYY-MM-DD');
             end = moment(endstring, 'YYYY-MM-DD');
-            
+
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
                 if (reportrangequery) {
@@ -509,7 +515,7 @@
                     dropdownParent: $(this).parent(),
                 });
             });
-            
+
             $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
                 $($.fn.dataTable.tables(true)).DataTable()
                     .columns.adjust();
@@ -523,7 +529,7 @@
               e.preventDefault();
               console.info('Successive submit suppressed');
             }else {
-            
+
                 // Add a visual indicator to show the user it is submitting
                 form.classList.add('is-submitting');
                 form.submit();
