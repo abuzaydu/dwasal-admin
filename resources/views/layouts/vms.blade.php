@@ -183,10 +183,26 @@
                                 @endif
                                 <hr>
                                 <li class="{{ request()->is('vehicles') ? 'active' : '' }}"><a href="{{ url('vehicles') }}"><i class="fa fa-truck"></i> Vehicles</a></li>
-                                <li class="{{ request()->is('legal-documents') ? 'active' : '' }}"><a href="{{ url('legal-documents') }}"><i class='fa fa-file-pdf-o'></i><span>Leagal Documents</span></a></li>
+                                <li class="{{ request()->is('legal-documents*') ? 'active' : '' }}">
+                                    <a class="has-arrow" href="#legalDocuments"><i class='fa fa-file-pdf-o'></i><span>Legal Documents</span></a>
+                                    <ul class="list-unstyled">
+                                        <li><a href="{{ url('legal-documents') }}" class="{{ request()->is('legal-documents') ? 'active' : '' }}"><i class="fa fa-list"></i> All Documents</a></li>
+                                        <li><a href="{{ url('legal-documents/status') }}" class="{{ request()->is('legal-documents/status') ? 'active' : '' }}"><i class="fa fa-check-square-o"></i> Vehicle Document Status</a></li>
+                                    </ul>
+                                </li>
                                 <li class="{{ request()->is('vehicle-requisitions') ? 'active' : '' }}"><a href="{{ url('vehicle-requisitions') }}"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a></li>
                                 <li class="{{ request()->is('insurance') ? 'active' : '' }}"><a href="{{ url('insurance') }}"><i class="fa fa-file-o"></i> Insurance</a></li>
-                                <li class="{{ request()->is('maintenance') ? 'active' : '' }}"><a href="{{ url('maintenance') }}"><i class="fa fa-car"></i> Maintenance</a></li>
+                                <li class="{{ request()->is('maintenance*') ? 'active' : '' }}">
+                                    <a class="has-arrow" href="javascript:;"><i class="fa fa-car"></i><span>Maintenance</span></a>
+                                    <ul class="list-unstyled">
+                                        <li>
+                                            <a href="{{ url('maintenance') }}" class="{{ request()->is('maintenance') ? 'active' : '' }}"><i class="fa fa-wrench"></i> Vehicle Maintenance</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ url('maintenance-records') }}" class="{{ request()->is('maintenance-records') ? 'active' : '' }}"><i class="fa fa-camera"></i> Equipment Records</a>
+                                        </li>
+                                    </ul>
+                                </li>
                                 <li class="{{ request()->is('refueling') || request()->is('fuel-stations') || request()->is('fuel-types')? 'active' : '' }}">
                                     <a class="has-arrow" href="#refueling"><i class="fa fa-filter"></i> Refueling</a>
                                     <ul class="list-unstyled">

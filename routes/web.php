@@ -223,6 +223,8 @@ use App\Http\Controllers\VMS\FuelStation;
 use App\Http\Controllers\VMS\FuelStationController;
 use App\Http\Controllers\VMS\FuelTypeController;
 use App\Http\Controllers\VMS\InsuranceController;
+use App\Http\Controllers\VMS\InsuranceCompanyController;
+use App\Http\Controllers\VMS\IrPeriodController;
 use App\Http\Controllers\VMS\LegalDocumentController;
 use App\Http\Controllers\VMS\LicenseTypeController;
 use App\Http\Controllers\VMS\MaintenanceController;
@@ -242,7 +244,6 @@ use App\Http\Controllers\VMS\VehicleRequisitionController;
 use App\Http\Controllers\VMS\VehicleTypeController;
 use App\Http\Controllers\VMS\VendorController;
 use App\Http\Controllers\VMS\VmsExpenseController;
-use App\Http\Controllers\VMS\VMSExpenseController;
 use App\Http\Controllers\Web\ActionLogsController;
 use App\Http\Controllers\Web\ApprovalRequestController;
 use App\Http\Controllers\Web\CompanyReportsController;
@@ -1400,14 +1401,29 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('vehicles-dash', [VehicleController::class, 'dashboard']);
     Route::post('vehicles-dash', [VehicleController::class, 'dashboard']);
+    Route::post('vehicles/prepare-documents', [VehicleController::class, 'prepareDocuments'])->name('vehicles.prepare-documents');
+    Route::get('vehicles/documents-step', [VehicleController::class, 'createDocumentsStep'])->name('vehicles.documents.create');
+    Route::post('vehicles/documents-step', [VehicleController::class, 'storeWithDocuments'])->name('vehicles.documents.store');
     Route::resource('vehicles', VehicleController::class);
     Route::resource('vehicle-types', VehicleTypeController::class);
     Route::resource('ownerships', OwnershipController::class);
 
-    Route::resource('legal-documents', LegalDocumentController::class);
+    // IMPORTANT: place literal routes before resource routes.
+    // Otherwise `/legal-documents/status` may be matched by `legal-documents/{id}`.
+    Route::get('legal-documents/status', [LegalDocumentController::class, 'vehicleStatus'])
+        ->name('legal-documents.status');
+
+    Route::resource('legal-documents', LegalDocumentController::class)
+        ->whereNumber('legal_document');
+    Route::get('legal-documents/{id}/download', [LegalDocumentController::class, 'download'])->name('legal-documents.download');
     Route::resource('insurance', InsuranceController::class);
+    Route::get('insurance/{id}/download', [InsuranceController::class, 'download'])->name('insurance.download');
+    Route::resource('insurance-companies', InsuranceCompanyController::class)->except(['show', 'create']);
+    Route::resource('ir-periods', IrPeriodController::class)->except(['show', 'create']);
     Route::resource('vehicle-requisitions', VehicleRequisitionController::class);
+
     Route::resource('maintenance', MaintenanceController::class);
+    Route::resource('maintenance-types', \App\Http\Controllers\VMS\MaintenanceTypeController::class);
     Route::resource('refueling', RefuelingController::class);
     Route::resource('fuel-types', FuelTypeController::class);
     Route::resource('fuel-stations',FuelStationController::class);
@@ -1451,7 +1467,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('reject-vms-expense',      [VmsExpenseController::class, 'rejectExpense'])->name('reject-vms-expense');
     Route::get('close-vms-expense/{id}',   [VmsExpenseController::class, 'closeExpense']);
     Route::post('resume-vms-expense',      [VmsExpenseController::class, 'resumePending']);
-    
+
     // AJAX endpoints (add to an AjaxController or inline)
     Route::get('search-expense-type',   [ExpenseAjaxController::class, 'searchExpenseType']);
     Route::get('fetch-expense-type',    [ExpenseAjaxController::class, 'fetchExpenseType']);
