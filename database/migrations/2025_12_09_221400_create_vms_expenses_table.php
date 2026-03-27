@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('vendor_id')->index();
             $table->unsignedBigInteger('vehicle_id')->index();
             $table->unsignedBigInteger('trip_type_id')->index();
-            $table->string('exp_group');
+            $table->string('exp_group');//this one should be removed later on
             $table->string('trip_no');
             $table->decimal('odometer_mileage', 15,2);
             $table->decimal('vehicle_rent', 15,2);

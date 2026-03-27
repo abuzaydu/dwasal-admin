@@ -20,6 +20,9 @@ class VmsExpense extends Model
     public function vehicle() {
         return $this->belongsTo(Vehicle::class);
     }
+    public function driver() {
+        return $this->belongsTo(Driver::class);
+    }
 
     public function employee() {
         return $this->belongsTo(Employee::class);
@@ -32,6 +35,11 @@ class VmsExpense extends Model
 
     public function attachments()
     {
-        return $this->hasMany(ExpenseAttachment::class, 'vms_expense_id');
+        return $this->hasMany(VmsExpenseAttachment::class, 'vms_expense_id');
+    }
+
+    public function tripLog()
+    {
+        return $this->belongsTo(RequisitionTripLog::class, 'requisition_trip_log_id');
     }
 }

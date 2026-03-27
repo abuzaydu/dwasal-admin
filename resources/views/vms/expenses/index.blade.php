@@ -67,6 +67,7 @@
                                         <tr>
                                             <th>#</th>
                                             <th>Trip No</th>
+                                            <th>Vendor</th>
                                             <th>Driver</th>
                                             <th>Vehicle</th>
                                             <th>Trip Type</th>
@@ -82,9 +83,10 @@
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $expense->trip_no }}</td>
-                                            <td>{{ trim(($expense->fname ?? '') . ' ' . ($expense->lname ?? '')) ?: 'N/A' }}</td>
-                                            <td>{{ $expense->plate_no ?? 'N/A' }} {{ $expense->vehicle_name ? '- ' . $expense->vehicle_name : '' }}</td>
-                                            <td>{{ $expense->trip_type ?? 'N/A' }}</td>
+                                            <td>{{ $expense->vendor->vendor_name  ?? ''}}</td>
+                                            <td>{{ trim(($expense->driver->fname ?? '') . ' ' . ($expense->driver->lname ?? '')) ?: 'N/A' }}</td>
+                                            <td>{{ $expense->vehicle->plate_no ?? 'N/A' }} {{ $expense->vehicle_name ? '- ' . $expense->vehicle_name : '' }}</td>
+                                            <td>{{ $expense->tripType->trip_type ?? 'N/A' }}</td>
                                             <td>{{ $expense->exp_group ?? '-' }}</td>
                                             <td>{{ $expense->date }}</td>
                                             <td>{{ number_format($expense->items->sum('total_price'), 2) }}</td>

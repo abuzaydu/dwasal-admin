@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class RequisitionPurpose extends Model
 {
-    //
+    protected $guarded = [];
 }

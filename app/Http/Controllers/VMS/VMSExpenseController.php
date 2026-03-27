@@ -46,6 +46,8 @@ class VmsExpenseController extends Controller
             $end        = $request['end_date'] . ' 23:59:59';
             $is_post_query = true;
         }
+        // $expenses = VmsExpense::with(['employee','driver','vehicle','vendor','tripLog.vehicleRequisition.driver' // optional relation
+        // ])->latest()->get();
 
         $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
             ->whereBetween('date', [$start, $end])
@@ -87,10 +89,10 @@ class VmsExpenseController extends Controller
             $expense->exp_group    = '';
             $expense->odometer_mileage = 0;
             $expense->vehicle_rent = 0;
-            $expense->employee_id  = $user->id;
-            $expense->vendor_id    = $user->id;
-            $expense->vehicle_id   = $user->id;
-            $expense->trip_type_id = $user->id;
+            $expense->employee_id  = null;
+            $expense->vendor_id    = null;
+            $expense->vehicle_id   = null;
+            $expense->trip_type_id = null;
             $expense->save();
         }
 
@@ -140,7 +142,7 @@ class VmsExpenseController extends Controller
      */
     
 public function store(Request $request)
-{
+{//dd($request->all());
     $request->validate([
         'exp_group'        => 'required|string|max:255',
         'odometer_mileage' => 'required|numeric|min:1',
