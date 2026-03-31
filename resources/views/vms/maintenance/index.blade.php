@@ -47,7 +47,9 @@
                                             <th>Type</th>
                                             <th>Date</th>
                                             <th>Priority</th>
+                                            <th>Remarks</th>
                                             <th>Status</th>
+                                            <th>Charge bear by</th>
                                             <th style="text-align:center;">Charge</th>
                                             <th style="text-align:center;">Actions</th>
                                         </tr>
@@ -66,16 +68,22 @@
                                                 <td>{{ $maintenance->maintenanceType->type ?? '-' }}</td>
                                                 <td>{{ $maintenance->date }}</td>
                                                 <td>{{ $maintenance->priority }}</td>
+                                                <td>{{ $maintenance->remarks }}</td>
                                                 <td>
                                                     @php $s = strtolower((string) $maintenance->status); @endphp
                                                     @if($s === 'completed')
                                                         <span class="badge rounded-pill bg-success">Completed</span>
                                                     @elseif($s === 'in progress' || $s === 'in_progress')
                                                         <span class="badge rounded-pill bg-info text-dark">In Progress</span>
+                                                    @elseif($s === 'approved')
+                                                        <span class="badge rounded-pill bg-success">Approved</span>
+                                                    @elseif($s === 'rejected')
+                                                        <span class="badge rounded-pill bg-danger">Rejected</span>
                                                     @else
                                                         <span class="badge rounded-pill bg-warning text-dark">{{ $maintenance->status }}</span>
                                                     @endif
                                                 </td>
+                                                <td>{{ $maintenance->charge_bear_by }}</td>
                                                 <td style="text-align:center;">{{ number_format((float) ($maintenance->charge ?? 0), 2) }}</td>
                                                 <td style="text-align:center;">
                                                     <a href="{{ route('maintenance.show', encrypt($maintenance->id)) }}" class="text-primary me-2" title="View">
@@ -84,15 +92,63 @@
                                                     <a href="{{ route('maintenance.edit', encrypt($maintenance->id)) }}" class="text-info me-2" title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form method="POST" action="{{ route('maintenance.destroy', encrypt($maintenance->id)) }}" style="display:inline;">
+                                                    <form method="POST" action="{{ route('maintenance.destroy', encrypt($maintenance->id)) }}" id="delete-form-{{$maintenance->id}}" style="display: inline;">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <a href="javascript:;" onclick="if(confirm('Delete this maintenance record?')) { this.closest('form').submit(); }" title="Delete" class="text-danger">
-                                                            <i class="fa fa-trash"></i>
+                                                        <a href="javascript:;" onclick="return confirmDelete({{$maintenance->id}})">
+                                                            <i class="fa fa-trash" style="color: red"></i>
                                                         </a>
+                                                    </form>
+                                                    <form action="{{ route('maintenance.approve', $maintenance->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                    <button type="submit" style="background: none; border: none; padding: 0; color: green;">
+                                                        <i class="fa fa-check-circle py-2"> </i>
+                                                                Approve
+                                                    </button>
+                                                    </form>
+                                                    <a href="javascript:;" class="" data-bs-toggle="modal" data-bs-target="#rejectModal{{$maintenance->id}}" style="color: red;">
+                                                        <i class="fa fa-times-circle py-2"> </i>Reject
+                                                    </a>
+                                                    <form action="{{route('maintenance.complete', $maintenance->id) }}" method="post">
+                                                        @csrf
+                                                        <button type="submit" style="background: none; border: none; padding: 0; color: green;">
+                                                            <i class="fa fa-check py-2"> </i>
+                                                                    Complete
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{route('maintenance.start', $maintenance->id) }}" method="post">
+                                                        @csrf
+                                                        <button type="submit" style="background: none; border: none; padding: 0; color: blue;">
+                                                            <i class="fa fa-play py-2"> </i>
+                                                                    Start
+                                                        </button>
                                                     </form>
                                                 </td>
                                             </tr>
+                                            
+                                            <div class="modal fade" id="rejectModal{{$maintenance->id}}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h6 class="modal-title"><i class="fa fa-list-alt me-1"></i> Reject Maintenance Request</h6>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form method="POST" action="{{ route('maintenance.reject', $maintenance->id) }}" id="rejectForm{{$maintenance->id}}">
+                                                            @csrf
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="rejection_reason" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                                                                    <textarea name="rejection_reason" id="rejection_reason{{$maintenance->id}}" class="form-control form-control-sm" rows="3" required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -143,6 +199,7 @@
                                                             <i class="fa fa-trash"></i>
                                                         </a>
                                                     </form>
+                                                    
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -196,24 +253,26 @@
             </div>
         </div>
     </div>
+    
+
 @endsection
 
 @section('page-scripts')
     <script>
         $(document).ready(function () {
             $('.datatable').DataTable({
-                paging: true,
-                ordering: true,
-                searching: true,
-                responsive: true,
-                autoWidth: false
+                    paging: true,
+                    ordering: true,
+                    searching: true,
+                    responsive: true,
+                    autoWidth: false
             });
 
             $('#btn-open-type-modal').on('click', function () {
                 var tab = document.querySelector('a[href="#tab_maintenance_types"]');
                 if (tab) tab.click();
                 var modal = new bootstrap.Modal(document.getElementById('maintenanceTypeModal'));
-                // reset to add mode
+
                 document.getElementById('maintenanceTypeModalTitle').innerText = 'Add Maintenance Type';
                 document.getElementById('maintenanceTypeForm').action = "{{ route('maintenance-types.store') }}";
                 document.getElementById('maintenanceTypeMethod').value = 'POST';
@@ -222,19 +281,36 @@
                 modal.show();
             });
 
-            // Handle deep link: /maintenance?tab=types&openTypeModal=1
             const params = new URLSearchParams(window.location.search);
-            if (params.get('tab') === 'types') {
-                const tab = document.querySelector('a[href="#tab_maintenance_types"]');
-                if (tab) tab.click();
-            }
-            if (params.get('openTypeModal') === '1') {
-                const tab = document.querySelector('a[href="#tab_maintenance_types"]');
-                if (tab) tab.click();
-                const modal = new bootstrap.Modal(document.getElementById('maintenanceTypeModal'));
-                modal.show();
-            }
+                if (params.get('tab') === 'types') {
+                    const tab = document.querySelector('a[href="#tab_maintenance_types"]');
+                    if (tab) tab.click();
+                }
+                if (params.get('openTypeModal') === '1') {
+                    const tab = document.querySelector('a[href="#tab_maintenance_types"]');
+                    if (tab) tab.click();
+                    const modal = new bootstrap.Modal(document.getElementById('maintenanceTypeModal'));
+                    modal.show();
+                }
         });
+
+        
+        function confirmDelete(id) {
+            Swal.fire({
+                title: "{{trans('navmenu.are_you_sure')}}",
+                text: "{{trans('navmenu.no_revert')}}",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: "Yes, delete it",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + id).submit();
+                }
+            });
+        }
 
         function openEditTypeModal(id, type, active) {
             var tab = document.querySelector('a[href="#tab_maintenance_types"]');

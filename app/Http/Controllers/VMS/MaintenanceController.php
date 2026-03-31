@@ -69,85 +69,153 @@ class MaintenanceController extends Controller
      */
     public function store(Request $request)
     {
-        $companyId = Session::get('company_id');
+       try {
+          $companyId = Session::get('company_id');
 
-        $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'employee_id' => 'required|exists:employees,id',
-            'maintenance_type_id' => 'required|exists:maintenance_types,id',
-            'date' => 'required|date',
-            'maintenance_code' => 'required|string|max:255',
-            'req_type' => 'required|string|max:255',
-            'priority' => 'required|string|max:100',
-            'service_title' => 'required|string|max:255',
-            'charge_bear_by' => 'nullable|string|max:255',
-            'charge' => 'nullable|numeric|min:0',
-            'remarks' => 'nullable|string|max:2000',
-            'status' => 'required|string|max:100',
-            'items' => 'required|array|min:1',
-            'items.*.part_id' => 'required|exists:parts,id',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'photos' => 'nullable|array',
-            'photos.*' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif|max:10240',
-        ]);
+            $request->validate([
+                'vehicle_id' => 'required|exists:vehicles,id',
+                'employee_id' => 'required|exists:employees,id',
+                'maintenance_type_id' => 'required|exists:maintenance_types,id',
+                'date' => 'required|date',
+                'maintenance_code' => 'nullable|string|max:255',
+                'req_type' => 'nullable|string|max:255',
+                'priority' => 'nullable|string|max:100',
+                'service_title' => 'nullable|string|max:255',
+                'charge_bear_by' => 'nullable|string|max:255',
+                'charge' => 'nullable|numeric|min:0',
+                'remarks' => 'nullable|string|max:2000',
+                'items' => 'required|array|min:1',
+                'items.*.part_id' => 'required|exists:parts,id',
+                'items.*.qty' => 'required|numeric|min:0.01',
+                'items.*.unit_price' => 'required|numeric|min:0',
 
-        $items = $request->input('items', []);
-        $status = $request->input('status', 'Pending');
+            ]);
 
-        DB::transaction(function () use ($request, $companyId, $items, $status) {
-            $maintenance = new Maintenance();
-            $maintenance->company_id = $companyId;
-            $maintenance->user_id = Auth::id();
-            $maintenance->employee_id = $request->employee_id;
-            $maintenance->vehicle_id = $request->vehicle_id;
-            $maintenance->maintenance_type_id = $request->maintenance_type_id;
-            $maintenance->date = $request->date;
-            $maintenance->maintenance_code = $request->maintenance_code;
-            $maintenance->req_type = $request->req_type;
-            $maintenance->priority = $request->priority;
-            $maintenance->service_title = $request->service_title;
-            $maintenance->charge_bear_by = $request->charge_bear_by;
-            $maintenance->charge = $request->charge ?? 0;
-            $maintenance->remarks = $request->remarks;
-            $maintenance->status = $status;
-            $maintenance->is_deleted = false;
-            $maintenance->save();
+            $items = $request->input('items', []);
+            $status = $request->input('status', 'Pending');
+            $maintenanceCode = str('M-Code-'.' '.rand(100,5000));
+            DB::transaction(function () use ($request, $companyId, $items, $status, $maintenanceCode) {
+                $maintenance = new Maintenance();
+                $maintenance->company_id = $companyId;
+                $maintenance->user_id = Auth::id();
+                $maintenance->employee_id = $request->employee_id;
+                $maintenance->vehicle_id = $request->vehicle_id;
+                $maintenance->maintenance_type_id = $request->maintenance_type_id;
+                $maintenance->date = $request->date;
+                $maintenance->maintenance_code = $maintenanceCode;
+                $maintenance->req_type = $request->req_type;
+                $maintenance->priority = $request->priority;
+                $maintenance->service_title = $request->service_title;
+                $maintenance->charge_bear_by = $request->charge_bear_by;
+                $maintenance->charge = $request->charge ?? 0;
+                $maintenance->remarks = $request->remarks;
+                $maintenance->status = $status;
+                $maintenance->is_deleted = false;
+                $maintenance->save();
 
-            foreach ($items as $item) {
-                $part = Part::where('company_id', $companyId)->findOrFail($item['part_id']);
+                foreach ($items as $item) {
+                    $part = Part::where('company_id', $companyId)->findOrFail($item['part_id']);
 
-                $maintenanceItem = new MaintenanceItem();
-                $maintenanceItem->maintenance_id = $maintenance->id;
-                $maintenanceItem->part_category_id = $part->part_category_id;
-                $maintenanceItem->part_id = $part->id;
-                $maintenanceItem->date = $request->date . ' 00:00:00';
-                $maintenanceItem->qty = $item['qty'];
-                $maintenanceItem->unit_price = $item['unit_price'];
-                $maintenanceItem->total_price = round(((float) $item['qty']) * ((float) $item['unit_price']), 2);
-                $maintenanceItem->is_deleted = false;
-                $maintenanceItem->save();
-            }
-
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos', []) as $photo) {
-                    if (!$photo->isValid()) {
-                        continue;
-                    }
-
-                    $path = $photo->store('maintenance/vehicle', 'public');
-
-                    $maintenancePhoto = new MaintenancePhoto();
-                    $maintenancePhoto->maintenance_record_id = $maintenance->id;
-                    $maintenancePhoto->photo_url = $path;
-                    $maintenancePhoto->save();
+                    $maintenanceItem = new MaintenanceItem();
+                    $maintenanceItem->maintenance_id = $maintenance->id;
+                    $maintenanceItem->part_category_id = $part->part_category_id;
+                    $maintenanceItem->part_id = $part->id;
+                    $maintenanceItem->date = $request->date . ' 00:00:00';
+                    $maintenanceItem->qty = $item['qty'];
+                    $maintenanceItem->unit_price = $item['unit_price'];
+                    $maintenanceItem->total_price = round(((float) $item['qty']) * ((float) $item['unit_price']), 2);
+                    $maintenanceItem->is_deleted = false;
+                    $maintenanceItem->save();
                 }
-            }
-        });
 
-        return redirect('maintenance')->with('success', 'Maintenance record created successfully.');
+            });
+
+            return redirect('maintenance')->with('success', 'Maintenance record created successfully.');
+       } catch (\Throwable $e) {
+            return redirect()->back()->with('error',$e->getMessage());
+       }
     }
 
+    public function approve($id){
+        try {
+            $maintenance = Maintenance::find($id);
+            //($maintenance);
+            if(!$maintenance){
+                return redirect()->back()->with('error', 'No such maintenance id');
+            }
+            if($maintenance->status !== 'Pending'){
+                return redirect()->back()->with('error', 'Only pending and in progress maintenace can be approved');
+
+            }
+            $maintenance->update([
+                'status' =>'Approved',
+                'rejection_reason' => null,
+            ]);
+            return redirect()->back()->with('success', 'Maintenance approved successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function reject(Request $request,$id){
+       // dd($id);
+        try {
+            $maintenance = Maintenance::find($id);
+            if(!$maintenance){
+                return redirect()->back()->with('error', 'No such maintenance id');
+            }
+            if($maintenance->status !== 'Pending'){
+                return redirect()->back()->with('error', 'Only Pending status can be rejected');
+
+            }
+            $maintenance->update([
+                'status' =>'Rejected',
+                'rejection_reason' => $request->rejection_reason ?? null,
+            ]);
+            return redirect()->back()->with('success', 'Maintenance rejected successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    
+    public function start($id){
+        try {
+            $maintenance = Maintenance::find($id);
+            if(!$maintenance){
+                return redirect()->back()->with('error', 'No such maintenance id');
+            }
+            if($maintenance->status !== 'Approved'){
+                return redirect()->back()->with('error', 'Only Approved status can be started');
+
+            }
+            $maintenance->update([
+                'status' =>'In Progress'
+            ]);
+            return redirect()->back()->with('success', 'Maintenance resumed successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function complete($id){
+        try {
+            $maintenance = Maintenance::find($id);
+            if(!$maintenance){
+                return redirect()->back()->with('error', 'No such maintenance id');
+            }
+            if($maintenance->status !== 'In Progress'){
+                return redirect()->back()->with('error', 'Only In Progress status can be completed');
+
+            }
+            $maintenance->update([
+                'status' =>'Completed',
+                'charge' => $maintenance->items()->where('is_deleted', false)->sum('total_price'),
+            ]);
+            return redirect()->back()->with('success', 'Maintenance completed successfully!');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
     /**
      * Display the specified resource.
      */
@@ -187,100 +255,71 @@ class MaintenanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $companyId = Session::get('company_id');
-        $maintenance = Maintenance::where('company_id', $companyId)
-            ->where('is_deleted', false)
-            ->findOrFail(decrypt($id));
+        try {
+            $companyId = Session::get('company_id');
+            $maintenance = Maintenance::where('company_id', $companyId)
+                ->where('is_deleted', false)
+                ->findOrFail(decrypt($id));
 
-        $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'employee_id' => 'required|exists:employees,id',
-            'maintenance_type_id' => 'required|exists:maintenance_types,id',
-            'date' => 'required|date',
-            'maintenance_code' => 'required|string|max:255',
-            'req_type' => 'required|string|max:255',
-            'priority' => 'required|string|max:100',
-            'service_title' => 'required|string|max:255',
-            'charge_bear_by' => 'nullable|string|max:255',
-            'charge' => 'nullable|numeric|min:0',
-            'remarks' => 'nullable|string|max:2000',
-            'status' => 'required|string|max:100',
-            'items' => 'required|array|min:1',
-            'items.*.part_id' => 'required|exists:parts,id',
-            'items.*.qty' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'delete_photo_ids' => 'nullable|array',
-            'delete_photo_ids.*' => 'integer|distinct',
-            'photos' => 'nullable|array',
-            'photos.*' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif|max:10240',
-        ]);
+            $request->validate([
+                'vehicle_id' => 'required|exists:vehicles,id',
+                'employee_id' => 'required|exists:employees,id',
+                'maintenance_type_id' => 'required|exists:maintenance_types,id',
+                'date' => 'required|date',
+                'maintenance_code' => 'nullable|string|max:255',
+                'req_type' => 'nullable|string|max:255',
+                'priority' => 'nullable|string|max:100',
+                'service_title' => 'nullable|string|max:255',
+                'charge_bear_by' => 'nullable|string|max:255',
+                'charge' => 'nullable|numeric|min:0',
+                'remarks' => 'nullable|string|max:2000',
+                'items' => 'required|array|min:1',
+                'items.*.part_id' => 'required|exists:parts,id',
+                'items.*.qty' => 'required|numeric|min:0.01',
+                'items.*.unit_price' => 'required|numeric|min:0',
+                
+            ]);
 
-        $items = $request->input('items', []);
+            $items = $request->input('items', []);
 
-        DB::transaction(function () use ($request, $maintenance, $companyId, $items) {
-            $maintenance->vehicle_id = $request->vehicle_id;
-            $maintenance->employee_id = $request->employee_id;
-            $maintenance->maintenance_type_id = $request->maintenance_type_id;
-            $maintenance->date = $request->date;
-            $maintenance->maintenance_code = $request->maintenance_code;
-            $maintenance->req_type = $request->req_type;
-            $maintenance->priority = $request->priority;
-            $maintenance->service_title = $request->service_title;
-            $maintenance->charge_bear_by = $request->charge_bear_by;
-            $maintenance->charge = $request->charge ?? 0;
-            $maintenance->remarks = $request->remarks;
-            $maintenance->status = $request->status;
-            $maintenance->save();
+            DB::transaction(function () use ($request, $maintenance, $companyId, $items) {
+                $maintenance->vehicle_id = $request->vehicle_id;
+                $maintenance->employee_id = $request->employee_id;
+                $maintenance->maintenance_type_id = $request->maintenance_type_id;
+                $maintenance->date = $request->date;
+                $maintenance->maintenance_code = $request->maintenance_code;
+                $maintenance->req_type = $request->req_type;
+                $maintenance->priority = $request->priority;
+                $maintenance->service_title = $request->service_title;
+                $maintenance->charge_bear_by = $request->charge_bear_by;
+                $maintenance->charge = $request->charge ?? 0;
+                $maintenance->remarks = $request->remarks;
+                $maintenance->status = 'Pending';
+                $maintenance->save();
 
-            // Non-destructive update: mark old items deleted, then recreate new active items.
-            $maintenance->items()->where('is_deleted', false)->update(['is_deleted' => true]);
+                $maintenance->items()->where('is_deleted', false)->update(['is_deleted' => true]);
 
-            foreach ($items as $item) {
-                $part = Part::where('company_id', $companyId)->findOrFail($item['part_id']);
+                foreach ($items as $item) {
+                    $part = Part::where('company_id', $companyId)->findOrFail($item['part_id']);
 
-                $maintenanceItem = new MaintenanceItem();
-                $maintenanceItem->maintenance_id = $maintenance->id;
-                $maintenanceItem->part_category_id = $part->part_category_id;
-                $maintenanceItem->part_id = $part->id;
-                $maintenanceItem->date = $request->date . ' 00:00:00';
-                $maintenanceItem->qty = $item['qty'];
-                $maintenanceItem->unit_price = $item['unit_price'];
-                $maintenanceItem->total_price = round(((float) $item['qty']) * ((float) $item['unit_price']), 2);
-                $maintenanceItem->is_deleted = false;
-                $maintenanceItem->save();
-            }
-
-            $deleteIds = $request->input('delete_photo_ids', []);
-            if (!empty($deleteIds)) {
-                $photosToDelete = MaintenancePhoto::whereIn('id', $deleteIds)
-                    ->where('maintenance_record_id', $maintenance->id)
-                    ->get();
-
-                foreach ($photosToDelete as $photo) {
-                    if (!empty($photo->photo_url)) {
-                        Storage::disk('public')->delete($photo->photo_url);
-                    }
-                    $photo->delete();
+                    $maintenanceItem = new MaintenanceItem();
+                    $maintenanceItem->maintenance_id = $maintenance->id;
+                    $maintenanceItem->part_category_id = $part->part_category_id;
+                    $maintenanceItem->part_id = $part->id;
+                    $maintenanceItem->date = $request->date . ' 00:00:00';
+                    $maintenanceItem->qty = $item['qty'];
+                    $maintenanceItem->unit_price = $item['unit_price'];
+                    $maintenanceItem->total_price = round(((float) $item['qty']) * ((float) $item['unit_price']), 2);
+                    $maintenanceItem->is_deleted = false;
+                    $maintenanceItem->save();
                 }
-            }
 
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos', []) as $photo) {
-                    if (!$photo->isValid()) {
-                        continue;
-                    }
+            });
 
-                    $path = $photo->store('maintenance/vehicle', 'public');
-
-                    $maintenancePhoto = new MaintenancePhoto();
-                    $maintenancePhoto->maintenance_record_id = $maintenance->id;
-                    $maintenancePhoto->photo_url = $path;
-                    $maintenancePhoto->save();
-                }
-            }
-        });
-
-        return redirect('maintenance')->with('success', 'Maintenance updated successfully.');
+            return redirect('maintenance')->with('success', 'Maintenance updated successfully.');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -288,23 +327,19 @@ class MaintenanceController extends Controller
      */
     public function destroy(string $id)
     {
-        $maintenance = Maintenance::where('is_deleted', false)->findOrFail(decrypt($id));
+        try {
+            $maintenance = Maintenance::where('is_deleted', false)->findOrFail(decrypt($id));
 
-        DB::transaction(function () use ($maintenance) {
-            // Delete physical photos from storage.
-            $photos = $maintenance->photos()->get();
-            foreach ($photos as $photo) {
-                if (!empty($photo->photo_url)) {
-                    Storage::disk('public')->delete($photo->photo_url);
-                }
-                $photo->delete();
-            }
+            DB::transaction(function () use ($maintenance) {                
 
-            $maintenance->items()->where('is_deleted', false)->update(['is_deleted' => true]);
-            $maintenance->is_deleted = true;
-            $maintenance->save();
-        });
+                $maintenance->items()->where('is_deleted', false)->update(['is_deleted' => true]);
+                $maintenance->is_deleted = true;
+                $maintenance->save();
+            });
 
-        return redirect('maintenance')->with('success', 'Maintenance deleted successfully.');
+            return redirect('maintenance')->with('success', 'Maintenance deleted successfully.');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 }

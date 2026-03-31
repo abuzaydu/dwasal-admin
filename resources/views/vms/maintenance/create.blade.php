@@ -78,17 +78,12 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">Maintenance Code <span class="text-danger">*</span></label>
-                                <input type="text" name="maintenance_code" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ old('maintenance_code') }}" required>
+                                <label class="form-label small mb-1">Req Type </label>
+                                <input type="text" name="req_type" class="form-control form-control-sm py-1" style="max-width: 220px;">
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">Req Type <span class="text-danger">*</span></label>
-                                <input type="text" name="req_type" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ old('req_type') }}" required>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label small mb-1">Priority <span class="text-danger">*</span></label>
+                                <label class="form-label small mb-1">Priority </label>
                                 <select name="priority" class="form-select form-select-sm py-1" style="max-width: 220px;" required>
                                     @foreach(['Low','Normal','High','Urgent'] as $p)
                                         <option value="{{ $p }}" {{ old('priority', 'Normal') === $p ? 'selected' : '' }}>{{ $p }}</option>
@@ -97,27 +92,18 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">Status <span class="text-danger">*</span></label>
-                                <select name="status" class="form-select form-select-sm py-1" style="max-width: 220px;" required>
-                                    @foreach(['Pending','In Progress','Completed'] as $st)
-                                        <option value="{{ $st }}" {{ old('status', 'Pending') === $st ? 'selected' : '' }}>{{ $st }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
                                 <label class="form-label small mb-1">Service Title <span class="text-danger">*</span></label>
-                                <input type="text" name="service_title" class="form-control form-control-sm py-1" value="{{ old('service_title') }}" required>
+                                <input type="text" name="service_title" class="form-control form-control-sm py-1" >
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label small mb-1">Charge Bear By</label>
-                                <input type="text" name="charge_bear_by" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ old('charge_bear_by') }}">
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label small mb-1">Charge</label>
-                                <input type="number" name="charge" step="0.01" min="0" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ old('charge', 0) }}">
+                                <select name="charge_bear_by" class="form-select form-select-sm py-2">
+                                    <option value="Company">Company</option>
+                                    <option value="Employee">Employee</option>
+                                    <option value="Vendor">Vendor</option>
+                                    <option value="Insurance">Insurance</option>
+                                </select>                            
                             </div>
 
                             <div class="col-md-12">
@@ -195,18 +181,6 @@
                             </div>
                         </div>
 
-                        <hr class="my-2" />
-
-                        <div class="row g-2">
-                            <div class="col-md-12">
-                                <h6 class="mb-1"><i class="fa fa-camera me-1 text-primary"></i> Photos</h6>
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label small mb-1">Upload multiple photos</label>
-                                <input type="file" name="photos[]" class="form-control form-control-sm" accept="image/*" multiple>
-                                <div class="text-muted small mt-1">Accepted: jpg, jpeg, png, webp, gif</div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="card-footer text-end border-top pt-2">

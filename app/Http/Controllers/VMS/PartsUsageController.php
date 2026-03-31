@@ -74,7 +74,8 @@ class PartsUsageController extends Controller
             $pusage->save();
         }
 
-        $puitems = PartUsageItem::where('part_usage_id', $pusage->id)->join('parts', 'parts.id', '=', 'part_usage_items.part_id')->join('part_categories', 'part_categories.id', '=', 'parts.part_category_id')->select('part_usage_items.id as id', 'part_id', 'name as category', 'part_no', 'part_name', 'uom', 'pu_qty')->get();
+        $puitems = PartUsageItem::where('part_usage_id', $pusage->id)->join('parts', 'parts.id', '=', 'part_usage_items.part_id')->join('part_categories', 'part_categories.id', '=', 'parts.part_category_id')
+        ->select('part_usage_items.id as id', 'part_id', 'name as category', 'part_no', 'part_name', 'uom', 'pu_qty')->get();
         // return $puitems;
 
         return view('vms.parts.usage.create', compact('page', 'vehicles', 'pusage', 'puitems'));

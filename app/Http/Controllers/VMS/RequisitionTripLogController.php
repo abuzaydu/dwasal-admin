@@ -145,9 +145,11 @@ class RequisitionTripLogController extends Controller
      */
     public function store(Request $request)
     {
-        $expense = new VmsExpense();
+        //$expense = new VmsExpense();
+        $expense = VmsExpense::find($request->vms_expense_id);
 
         $tripLog = RequisitionTripLog::find($request->requisition_trip_log_id);
+        //dd($tripLog);
         if (!$tripLog) {
             return redirect()->back()->with('error', 'Trip log not found');
         }
@@ -165,6 +167,7 @@ class RequisitionTripLogController extends Controller
         $expense->vendor_id               = $request['vendor_id'];
         $expense->trip_type_id            = $request['trip_type_id'];
         $expense->remarks                 = $request['remarks'];
+        $expense->date                    = $request['date'];
         $expense->status                  = 'Awaiting For Approval';
         $expense->save();
 
@@ -190,7 +193,7 @@ class RequisitionTripLogController extends Controller
     public function show($id)
     {
         $page = 'Show Trip Details';
-        $trip = RequisitionTripLog::with('vehicleRequisition.employee', 'vehicleRequisition.vehicle','vehicleRequisition.driver')->find($id);
+        $trip = RequisitionTripLog::with('vehicleRequisition.employee', 'vehicleRequisition.vehicle','vehicleRequisition.driver')->findOrFail($id);
 
         return view('vms.trip-logs.show',compact('trip','page'));
 

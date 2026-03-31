@@ -46,23 +46,24 @@ class VmsExpenseController extends Controller
             $end        = $request['end_date'] . ' 23:59:59';
             $is_post_query = true;
         }
-        // $expenses = VmsExpense::with(['employee','driver','vehicle','vendor','tripLog.vehicleRequisition.driver' // optional relation
-        // ])->latest()->get();
+        $expenses = VmsExpense::whereNotNull('requisition_trip_log_id')->with(['employee','tripLog.vehicleRequisition.driver','vehicle','vendor','tripLog.vehicleRequisition.driver' // optional relation
+        ])->latest()->get();
+        $expenses1 = VmsExpense::whereNull('requisition_trip_log_id')->get();
 
-        $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
-            ->whereBetween('date', [$start, $end])
-            ->join('vehicles',  'vehicles.id',  '=', 'vms_expenses.vehicle_id')
-            ->join('employees', 'employees.id', '=', 'vms_expenses.employee_id')
-            ->join('users',     'users.id',     '=', 'vms_expenses.user_id')
-            ->join('trip_types','trip_types.id','=', 'vms_expenses.trip_type_id')
-            ->select('vms_expenses.id as id','trip_no','exp_group','date','plate_no','vehicle_name','vms_expenses.status as status',
-                'fname','lname','trip_type','vms_expenses.updated_at as updated_at' 
-            )
-            ->orderBy('vms_expenses.created_at', 'desc')->get();
+        // $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
+        //     ->whereBetween('date', [$start, $end])
+        //     ->join('vehicles',  'vehicles.id',  '=', 'vms_expenses.vehicle_id')
+        //     ->join('employees', 'employees.id', '=', 'vms_expenses.employee_id')
+        //     ->join('users',     'users.id',     '=', 'vms_expenses.user_id')
+        //     ->join('trip_types','trip_types.id','=', 'vms_expenses.trip_type_id')
+        //     ->select('vms_expenses.id as id','trip_no','exp_group','date','plate_no','vehicle_name','vms_expenses.status as status',
+        //         'fname','lname','trip_type','vms_expenses.updated_at as updated_at' 
+        //     )
+        // ->orderBy('vms_expenses.created_at', 'desc')->get();
         $expenseTypes = ExpenseType::latest()->get();
         $tripTypes = TripType::latest()->get();
 
-        return view('vms.expenses.index', compact(
+        return view('vms.expenses.index', compact('expenses1',
             'page', 'is_post_query', 'start_date', 'end_date', 'expenses','expenseTypes','tripTypes'
         ));
     }
@@ -145,21 +146,14 @@ public function store(Request $request)
 {//dd($request->all());
     $request->validate([
         'exp_group'        => 'required|string|max:255',
-        'odometer_mileage' => 'required|numeric|min:1',
-        'vehicle_rent'     => 'required|numeric|min:1',
     ]);
 
     $expense = VmsExpense::find($request['vms_expense_id']);
 
     if (!is_null($expense)) {
-        $expense->vehicle_id       = $request['vehicle_id'];
-        $expense->employee_id      = $request['employee_id'];
         $expense->vendor_id        = $request['vendor_id'];
-        $expense->trip_type_id     = $request['trip_type_id'];
         $expense->exp_group        = $request['exp_group'];
         $expense->date             = $request['date'];
-        $expense->odometer_mileage = $request['odometer_mileage'];
-        $expense->vehicle_rent     = $request['vehicle_rent'];
         $expense->remarks          = $request['remarks'];
         $expense->status           = 'Awaiting For Approval';
         $expense->save();

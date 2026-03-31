@@ -70,17 +70,22 @@
                                     </div>
 
                                     <div class="col-sm-4">
-                                        <label for="remarks" class="form-label">Attach Document <span style="color:red">*</span></label>
+                                        <label for="doc_attachment" class="form-label">Attach Document <span style="color:red">*</span></label>
                                         <input type="file" name="doc_attachment[]" multiple class="form-control form-control-sm mb-3" placeholder="Attach your documment">
                                         
                                     </div>
                                 </div>
 
                                 <div class="row mb-1">
+                                    <div class="col-sm-4">
+                                        <label for="date" class="form-label">Expense Date <span style="color: red;">*</span></label>
+                                        <input type="date" name="date" id="date" required class="form-control form-control-sm mb-3" placeholder="Select expense date" ">
+                                    </div>
+
                                     <div class="col-sm-6">
                                         <label for="remarks" class="form-label">Remark</label>
                                         <textarea rows="1" class="form-control form-control-sm mb-3"
-                                                name="remarks" id="remarks">{{ old('remarks', $expense->remarks) }}</textarea>
+                                         name="remarks" id="remarks">{{ old('remarks', $expense->remarks) }}</textarea>
                                     </div>
 
                                     
@@ -258,19 +263,4 @@
         }
     </script>
 
-    <link rel="stylesheet" href="{{ asset('css/DatePickerX.css') }}">
-    <script src="{{ asset('js/DatePickerX.min.js') }}"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', function () {
-            var $dateInput = document.querySelector('[name="date"]');
-            var mind = "<?php echo $settings->sp_mindays ?? 30; ?>";
-            var d = new Date();
-            d.setDate(d.getDate() - mind);
-            $dateInput.DatePickerX.init({
-                mondayFirst: true,
-                minDate: d,
-                format: 'yyyy-mm-dd',
-                maxDate: new Date()
-            });
-        });
-    </script>
+   

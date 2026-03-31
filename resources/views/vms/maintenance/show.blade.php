@@ -66,13 +66,13 @@
                             <div class="fw-semibold">{{ number_format((float) ($maintenance->charge ?? 0), 2) }}</div>
                         </div>
 
-                        <div class="col-md-12">
+                        <div class="col-md-3">
                             <div class="text-muted small mb-1">Service Title</div>
                             <div class="fw-semibold">{{ $maintenance->service_title }}</div>
                         </div>
 
                         @if(!empty($maintenance->remarks))
-                            <div class="col-md-12">
+                            <div class="col-md-3">
                                 <div class="text-muted small mb-1">Remarks</div>
                                 <div>{{ $maintenance->remarks }}</div>
                             </div>
@@ -82,7 +82,7 @@
                     <hr class="my-3" />
 
                     <div class="row g-2">
-                        <div class="col-md-12">
+                        <div class="col-md-8">
                             <h6 class="mb-1"><i class="fa fa-cubes me-1 text-primary"></i> Parts / Items</h6>
                         </div>
                         <div class="col-md-12">
@@ -119,24 +119,6 @@
 
                     <hr class="my-3" />
 
-                    <div class="row g-2">
-                        <div class="col-md-12">
-                            <h6 class="mb-1"><i class="fa fa-camera me-1 text-primary"></i> Photos</h6>
-                        </div>
-                        <div class="col-md-12">
-                            @if($maintenance->photos->isEmpty())
-                                <div class="alert alert-light py-2 mb-0">No photos uploaded.</div>
-                            @else
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach($maintenance->photos as $photo)
-                                        <div class="border rounded p-1" style="width: 120px;">
-                                            <img src="{{ asset('storage/' . $photo->photo_url) }}" alt="photo" style="width:100%; height:80px; object-fit:cover; border-radius:4px;">
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

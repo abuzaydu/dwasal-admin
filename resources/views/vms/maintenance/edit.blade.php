@@ -60,11 +60,6 @@
 
                             <div class="col-md-3">
                                 <label class="form-label small mb-1">Maintenance Type <span class="text-danger">*</span></label>
-                                @if($maintenanceTypes->isEmpty())
-                                    <div class="alert alert-warning py-1 mb-2" style="line-height:1.1; width: max-content; max-width: 280px;">
-                                        No maintenance types found. Please add one from <b>Maintenance Types</b>.
-                                    </div>
-                                @endif
                                 <select name="maintenance_type_id" class="form-select form-select-sm py-1" style="max-width: 260px;" required>
                                     @foreach($maintenanceTypes as $type)
                                         <option value="{{ $type->id }}" {{ $maintenance->maintenance_type_id == $type->id ? 'selected' : '' }}>
@@ -80,18 +75,13 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">Maintenance Code <span class="text-danger">*</span></label>
-                                <input type="text" name="maintenance_code" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ $maintenance->maintenance_code }}" required>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label small mb-1">Req Type <span class="text-danger">*</span></label>
-                                <input type="text" name="req_type" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ $maintenance->req_type }}" required>
+                                <label class="form-label small mb-1">Req Type </label>
+                                <input type="text" name="req_type" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ $maintenance->req_type }}">
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label small mb-1">Priority <span class="text-danger">*</span></label>
-                                <select name="priority" class="form-select form-select-sm py-1" style="max-width: 220px;" required>
+                                <select name="priority" class="form-select form-select-sm py-1" style="max-width: 220px;" >
                                     @foreach(['Low','Normal','High','Urgent'] as $p)
                                         <option value="{{ $p }}" {{ $maintenance->priority === $p ? 'selected' : '' }}>{{ $p }}</option>
                                     @endforeach
@@ -99,17 +89,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">Status <span class="text-danger">*</span></label>
-                                <select name="status" class="form-select form-select-sm py-1" style="max-width: 220px;" required>
-                                    @foreach(['Pending','In Progress','Completed'] as $st)
-                                        <option value="{{ $st }}" {{ $maintenance->status === $st ? 'selected' : '' }}>{{ $st }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
                                 <label class="form-label small mb-1">Service Title <span class="text-danger">*</span></label>
-                                <input type="text" name="service_title" class="form-control form-control-sm py-1" value="{{ $maintenance->service_title }}" required>
+                                <input type="text" name="service_title" class="form-control form-control-sm py-1" value="{{ $maintenance->service_title }}" >
                             </div>
 
                             <div class="col-md-3">
@@ -117,15 +98,12 @@
                                 <input type="text" name="charge_bear_by" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ $maintenance->charge_bear_by }}">
                             </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label small mb-1">Charge</label>
-                                <input type="number" name="charge" step="0.01" min="0" class="form-control form-control-sm py-1" style="max-width: 220px;" value="{{ $maintenance->charge ?? 0 }}">
-                            </div>
-
-                            <div class="col-md-12">
+                            <div class="col-md-8">
                                 <label class="form-label small mb-1">Remarks</label>
                                 <textarea name="remarks" rows="2" class="form-control form-control-sm py-1" style="max-width: 780px;">{{ $maintenance->remarks }}</textarea>
                             </div>
+
+                            
                         </div>
 
                         <hr class="my-2" />
@@ -190,37 +168,7 @@
                             </div>
                         </div>
 
-                        <hr class="my-2" />
-
-                        <div class="row g-2">
-                            <div class="col-md-12">
-                                <h6 class="mb-1"><i class="fa fa-camera me-1 text-primary"></i> Photos</h6>
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label small mb-1">Existing photos</label>
-                                @if($maintenance->photos->isEmpty())
-                                    <div class="alert alert-light py-2 mb-2">No photos uploaded.</div>
-                                @else
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @foreach($maintenance->photos as $photo)
-                                            <div class="border rounded p-1" style="width: 110px;">
-                                                <img src="{{ asset('storage/' . $photo->photo_url) }}" alt="photo" style="width:100%; height:70px; object-fit:cover; border-radius:4px;">
-                                                <div class="form-check mt-1">
-                                                    <input class="form-check-input" type="checkbox" name="delete_photo_ids[]" value="{{ $photo->id }}" id="del-photo-{{ $photo->id }}">
-                                                    <label class="form-check-label small" for="del-photo-{{ $photo->id }}">Delete</label>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="col-md-12">
-                                <label class="form-label small mb-1">Add more photos</label>
-                                <input type="file" name="photos[]" class="form-control form-control-sm" accept="image/*" multiple>
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <div class="card-footer text-end border-top pt-2">

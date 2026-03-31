@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
-use Log;
 use \Carbon\Carbon;
-use App\Models\Shop;
+use App\Http\Controllers\Controller;
+use App\Models\AnSale;
+use App\Models\Customer;
+use App\Models\CustomerCategory;
+use App\Models\CustomerTransaction;
+use App\Models\Device;
+use App\Models\SalePayment;
+use App\Models\Service;
+use App\Models\ServiceSaleItem;
 use App\Models\Setting;
+use App\Models\Shop;
 use App\Models\ShopCurrency;
 use App\Models\TripLog;
-use App\Models\Device;
-use App\Models\Customer;
-use App\Models\Service;
-use App\Models\AnSale;
-use App\Models\ServiceSaleItem;
-use App\Models\CustomerTransaction;
-use App\Models\SalePayment;
-use App\Models\CustomerCategory;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Log;
 
 class TripLogsController extends Controller
 {
