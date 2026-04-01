@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleController extends Controller
 {
@@ -87,6 +88,7 @@ class VehicleController extends Controller
             'department_id' => 'nullable|exists:departments,id',
             'vehicle_name' => 'nullable|string|max:255',
             'chassis_no' => 'nullable|string|max:255',
+            'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
         $companyId = Session::get('company_id');
@@ -115,6 +117,9 @@ class VehicleController extends Controller
         $vehicle->capacity = $request->capacity;
         $vehicle->uom = $request->uom;
         $vehicle->reg_date = $request->reg_date ?: null;
+        if ($request->hasFile('vehicle_picture')) {
+            $vehicle->vehicle_picture = $request->file('vehicle_picture')->store('vehicle_pictures', 'local');
+        }
         $vehicle->save();
 
         // Ownership types != 1: documents are optional (admin can add later).
@@ -143,6 +148,7 @@ class VehicleController extends Controller
             'department_id' => 'nullable|exists:departments,id',
             'vehicle_name' => 'nullable|string|max:255',
             'chassis_no' => 'nullable|string|max:255',
+            'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
         $companyId = Session::get('company_id');
@@ -164,6 +170,11 @@ class VehicleController extends Controller
                 ->with('error', 'A vehicle with this plate number already exists.');
         }
 
+        $vehiclePicturePath = null;
+        if ($request->hasFile('vehicle_picture')) {
+            $vehiclePicturePath = $request->file('vehicle_picture')->store('vehicle_pictures', 'local');
+        }
+
         Session::put('pending_vehicle_registration', [
             'company_id' => $companyId,
             'vehicle_type_id' => (int) $request->vehicle_type_id,
@@ -175,6 +186,7 @@ class VehicleController extends Controller
             'capacity' => $request->capacity,
             'uom' => $request->uom,
             'reg_date' => $request->reg_date,
+            'vehicle_picture' => $vehiclePicturePath,
         ]);
 
         return redirect()->route('vehicles.documents.create');
@@ -250,6 +262,7 @@ class VehicleController extends Controller
             $vehicle->capacity = $pendingVehicle['capacity'];
             $vehicle->uom = $pendingVehicle['uom'];
             $vehicle->reg_date = $pendingVehicle['reg_date'];
+            $vehicle->vehicle_picture = $pendingVehicle['vehicle_picture'] ?? null;
             $vehicle->save();
 
             foreach ($docConfigs as $config) {
@@ -314,6 +327,10 @@ class VehicleController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $request->validate([
+            'vehicle_picture' => 'nullable|image|max:5120',
+        ]);
+
         $vehicle = Vehicle::find(decrypt($id));
         if (!is_null($vehicle)) {
             $vehicle->vehicle_type_id = $request['vehicle_type_id'];
@@ -325,6 +342,12 @@ class VehicleController extends Controller
             $vehicle->capacity = $request['capacity'];
             $vehicle->uom = $request['uom'];
             $vehicle->reg_date = $request['reg_date'];
+            if ($request->hasFile('vehicle_picture')) {
+                if ($vehicle->vehicle_picture && Storage::disk('local')->exists($vehicle->vehicle_picture)) {
+                    Storage::disk('local')->delete($vehicle->vehicle_picture);
+                }
+                $vehicle->vehicle_picture = $request->file('vehicle_picture')->store('vehicle_pictures', 'local');
+            }
             $vehicle->save();
 
             return redirect('vehicles')->with('success', 'Vehicle Details updated successfully');

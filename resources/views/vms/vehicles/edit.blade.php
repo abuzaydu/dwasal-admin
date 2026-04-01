@@ -100,6 +100,13 @@
                                     <input id="reg-date" type="text" name="reg_date" value="{{$vehicle->reg_date}}" placeholder="Enter Registration Date" class="form-control form-control-sm mb-1">
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Vehicle image</label>
+                                @if(!empty($vehicle->vehicle_picture))
+                                <p class="small text-muted mb-1">A picture is already saved. Choose a new file to replace it.</p>
+                                @endif
+                                <input type="file" name="vehicle_picture" class="form-control form-control-sm mb-1" accept="image/*">
+                            </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Save Changes</button>
                                 <a href="{{ url('vehicles')}}" class="btn btn-warning btn-sm px-4 radius-30">Cancel</a>
