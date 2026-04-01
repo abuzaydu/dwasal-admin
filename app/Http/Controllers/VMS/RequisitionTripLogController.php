@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class RequisitionTripLogController extends Controller
@@ -184,7 +185,7 @@ class RequisitionTripLogController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Expense created successfully');
+        return redirect('vms-expenses')->with('success', 'Expense created successfully');
     }
 
     /**
@@ -202,17 +203,109 @@ class RequisitionTripLogController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(RequisitionTripLog $requisitionTripLog)
+    public function edit($id)
     {
-        //
+        $page    = 'Edit VMS Expense';
+        $user    = Auth::user();
+        $company = Company::find(Session::get('company_id'));
+
+        $expense = VmsExpense::where('id', $id)
+                    ->where('company_id', $company->id)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
+
+        $expenseItems = VmsExpenseItem::where('vms_expense_id', $expense->id)
+            ->join('expense_types', 'expense_types.id', '=', 'vms_expense_items.expense_type_id')
+            ->select(
+                'vms_expense_items.id as id',
+                'expense_type_id',
+                'expense_types.type as expense_type',
+                'quantity',
+                'unit_price',
+                'total_price'
+            )->get();
+
+        $expenseAttachments = VmsExpenseAttachment::where('vms_expense_id', $expense->id)->get();
+
+        $vehicles     = Vehicle::where('company_id', $company->id)->select('id', 'plate_no', 'vehicle_name')->get();
+        $employees    = Employee::where('company_id', $company->id)->select('id', 'fname', 'lname')->get();
+        $vendors      = Vendor::where('company_id', $company->id)->select('id', 'vendor_name')->get();
+        $tripTypes    = TripType::where('company_id', $company->id)->select('id', 'trip_type')->get();
+        $expenseTypes = ExpenseType::where('company_id', $company->id)->select('id', 'type')->get();
+        $tripLog      = RequisitionTripLog::where('id', $expense->requisition_trip_log_id)->first();
+
+        return view('vms.trip-logs.edit-expense', compact(
+            'page', 'expense', 'expenseItems', 'expenseAttachments',
+            'vehicles', 'employees', 'vendors', 'tripTypes', 'expenseTypes', 'tripLog'
+        ));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, RequisitionTripLog $requisitionTripLog)
+    public function update(Request $request, $id)
     {
-        //
+        $company = Company::find(Session::get('company_id'));
+
+        $expense = VmsExpense::where('id', $id)
+                    ->where('company_id', $company->id)
+                    ->firstOrFail();
+
+        // Prevent editing already approved/rejected records
+        if (!in_array($expense->status, ['Pending', 'Awaiting For Approval'])) {
+            return redirect()->back()->with('error', 'This expense can no longer be edited.');
+        }
+
+        $tripLog = RequisitionTripLog::find($request->requisition_trip_log_id);
+        if (!$tripLog) {
+            return redirect()->back()->with('error', 'Trip log not found.');
+        }
+
+        $vehicleRequisition = $tripLog->vehicleRequisition;
+        if (!$vehicleRequisition) {
+            return redirect()->back()->with('error', 'Vehicle requisition not found for this trip log.');
+        }
+
+        $expense->requisition_trip_log_id = $tripLog->id;
+        $expense->company_id              = $vehicleRequisition->company_id;
+        $expense->user_id                 = auth()->id();
+        $expense->vehicle_id              = $vehicleRequisition->vehicle_id;
+        $expense->employee_id             = $vehicleRequisition->employee_id;
+        $expense->vendor_id               = $request['vendor_id'];
+        $expense->trip_type_id            = $request['trip_type_id'];
+        $expense->remarks                 = $request['remarks'];
+        $expense->date                    = $request['date'];
+        $expense->status                  = 'Awaiting For Approval';
+        $expense->save();
+
+        // Handle new file attachments
+        if ($request->hasFile('doc_attachment')) {
+            foreach ($request->file('doc_attachment') as $file) {
+                $path     = $file->store('vms-expense-attachments', 'public');
+                $mimeType = $file->getClientMimeType();
+
+                VmsExpenseAttachment::create([
+                    'vms_expense_id' => $expense->id,
+                    'file_path'      => $path,
+                    'file_type'      => $mimeType,
+                ]);
+            }
+        }
+
+        // Handle deleted attachments
+        if ($request->has('deleted_attachments')) {
+            $deletedIds = explode(',', $request->deleted_attachments);
+            $attachments = VmsExpenseAttachment::whereIn('id', $deletedIds)
+                            ->where('vms_expense_id', $expense->id)
+                            ->get();
+
+            foreach ($attachments as $attachment) {
+                Storage::disk('public')->delete($attachment->file_path);
+                $attachment->delete();
+            }
+        }
+
+        return redirect('vms-expenses')->with('success', 'Expense updated successfully.');
     }
 
     /**
