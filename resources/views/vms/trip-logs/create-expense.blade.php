@@ -34,6 +34,7 @@
                                 @csrf
                                 <input type="hidden" name="requisition_trip_log_id" value="{{ $tripLog->id }}">
                                 <input type="hidden" name="vms_expense_id" value="{{$expense->id}}">
+                                <input type="hidden" name="deleted_attachments" id="deleted_attachments" value="">
 
                                 <div class="row mb-1">
                                     <div class="col-sm-12" id="ermsg">

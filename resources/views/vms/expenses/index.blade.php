@@ -76,7 +76,6 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Trip No</th>
                                             <th>Vendor</th>
                                             <th>Exp Group</th>
                                             <th>Date</th>
@@ -89,7 +88,6 @@
                                         @foreach($expenses1 as $expense)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $expense->trip_no }}</td>
                                             <td>{{ $expense->vendor->vendor_name  ?? ''}}</td>
                                             <td>{{ $expense->exp_group ?? '-' }}</td>
                                             <td>{{ $expense->date }}</td>
@@ -189,7 +187,7 @@
                                                 </a>
 
                                                 @if(in_array($expense->status, ['Awaiting For Approval', 'Rejected']))
-                                                    <a href="{{ route('vms-expenses.edit', encrypt($expense->id)) }}" class="text-primary ms-2">
+                                                    <a href="{{ route('requisition-trip-logs.edit', $expense->id) }}" class="text-primary ms-2">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                 @endif
