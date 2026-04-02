@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cors' => \App\Http\Middleware\CORS::class,
             'jwt.auth' => \App\Http\Middleware\VerifyJWTToken::class,
             'isAdmin' => \App\Http\Middleware\AdminMiddleware::class,
+            'attendance.kiosk_or_jwt' => \App\Http\Middleware\AttendanceKioskOrJwt::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

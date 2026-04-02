@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 class Employee extends Model
 {
     protected $guarded = ['id'];
+    protected $casts = [
+        'face_embedding' => 'array',
+        'face_registered_at' => 'datetime',
+    ];
 
     public function  department(){
 
