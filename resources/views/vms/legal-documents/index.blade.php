@@ -9,6 +9,18 @@
                 <li class="breadcrumb-item active">{{ $page }}</li>
             </ul>
         </div>
+        <div class="col-lg-6 d-flex justify-content-end align-items-center">
+            <form class="dashform" action="{{ url('f-legal-documents') }}" method="POST" id="stockform">
+                @csrf
+                <input type="hidden" name="start_date" id="start_input" value="">
+                <input type="hidden" name="end_date" id="end_input" value="">
+                <button type="button" class="btn btn-default btn-sm w-auto" id="reportrange" style="white-space: nowrap;">
+                    <i class="fa fa-calendar"></i>
+                    <span id="reportrange-label" class="mx-1"></span>
+                    <i class="fa fa-caret-down"></i>
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 

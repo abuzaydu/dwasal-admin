@@ -1,24 +1,40 @@
 @extends('layouts.vms')
 
-@section('page-styles')
+{{-- @section('page-styles')
     <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
-@endsection
+@endsection --}}
 
 @section('content')
         <!--breadcrumb-->
         <div class="block-header pt-4">
             <div class="row">
-                <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="col-lg-5 col-md-8 col-sm-12">
                     <ul class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>
                         <li class="breadcrumb-item">Vehicle Management</li>
                         <li class="breadcrumb-item active">{{$page}}</li>
                     </ul>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12 text-right">
-                    <a href="{{ route('vms-expenses.create')  }}" class="btn btn-primary btn-sm" >
-                        <i class="fa fa-plus me-1"></i> Create New Expense
-                        </a> 
+
+                 <div class="col-lg-7 col-md-4 col-sm-12 text-right">
+                    <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                        <form class="dashform row g-1" action="{{ url('f-vms-expenses') }}" method="POST" id="stockform">
+                            @csrf
+                            <input type="hidden" name="start_date" id="start_input" value="">
+                            <input type="hidden" name="end_date" id="end_input" value="">
+                            <!-- Date and time range -->
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-default pull-right" id="reportrange">
+                                    <span><i class="fa fa-calendar"></i></span>
+                                    <i class="fa fa-caret-down"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <a href="{{ route('vms-expenses.create')  }}" class="btn btn-primary btn-sm" >
+                            <i class="fa fa-plus me-1"></i> Create New Expense
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -33,7 +49,7 @@
                                 <a class="nav-link active" data-bs-toggle="tab" href="#expensesTab" role="tab">
                                     <div class="d-flex align-items-center">
                                         <div class="tab-icon"><i class='fa fa-list font-18 me-1'></i></div>
-                                        <div class="tab-title">VMS Expenses With No Trip Logs</div>
+                                        <div class="tab-title">With No Trip Logs</div>
                                         <span class="badge bg-secondary ms-1">{{ $expenses1->count() }}</span>
                                     </div>
                                 </a>
@@ -43,7 +59,7 @@
                                 <a class="nav-link" data-bs-toggle="tab" href="#expensesTab1" role="tab">
                                     <div class="d-flex align-items-center">
                                         <div class="tab-icon"><i class='fa fa-list font-18 me-1'></i></div>
-                                        <div class="tab-title">VMS Expenses With Trip Logs</div>
+                                        <div class="tab-title">With Trip Logs</div>
                                         <span class="badge bg-secondary ms-1">{{ $expenses->count() }}</span>
                                     </div>
                                 </a>
@@ -385,20 +401,17 @@
 @endsection
 
 @section('page-scripts')
-    <script src="{{ asset('assets/vendor/datatable/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
-
+    
     <script>
-        $(function () {
-            var userlang = "<?php echo app()->getLocale(); ?>";
-            var languageUrl = userlang === 'en'
-                ? "{{ asset('assets/vendor/libs/English.json') }}"
-                : "{{ asset('assets/vendor/libs/Swahili.json') }}";
-
-            $('#expensesTable').DataTable({ scrollX: true, language: { url: languageUrl } });
-            $('#expenseTypesTable').DataTable({ scrollX: true, language: { url: languageUrl } });
-            $('#tripTypesTable').DataTable({ scrollX: true, language: { url: languageUrl } });
+        $(document).ready(function () {
+            $('.datatable').DataTable({
+                paging: true,
+                ordering: true,
+                searching: true,
+                responsive: true
+            }); 
         });
+
 
         function confirmDeleteExpense(id) {
             Swal.fire({

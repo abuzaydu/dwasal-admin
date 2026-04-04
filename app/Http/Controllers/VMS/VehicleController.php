@@ -4,16 +4,17 @@ namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\DocumentType;
+use App\Models\LegalDocument;
 use App\Models\Ownership;
 use App\Models\UnitMeasure;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
-use App\Models\DocumentType;
-use App\Models\LegalDocument;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class VehicleController extends Controller
 {
@@ -37,21 +38,36 @@ class VehicleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Vehicles';
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
         $units = UnitMeasure::select('unit_name')->get();
-        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->get();
+        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')
+        ->whereBetween('vehicles.created_at', [$start, $end])
+        ->get();
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
         $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
 
-        return view('vms.vehicles.index', compact('page', 'vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
+        return view('vms.vehicles.index', compact('page','start','end','start_date','end_date','is_post_query','vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
      * Show the form for creating a new resource.
-     * Tanzania: Includes required non-insurance legal document uploads (PDF only).
      */
     public function create()
     {

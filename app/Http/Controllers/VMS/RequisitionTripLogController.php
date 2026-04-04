@@ -25,20 +25,30 @@ class RequisitionTripLogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    //for displaying all expense by a trip
-    public function test1(){
-        $expenses = VmsExpense::with('employee','vehicle')->get();
-        $page = 'new test';
-        return view('vms.trip-logs.display',compact('expenses','page'));
-    }
-    public function index()
+    public function index(Request $request)
     {
-        $page = ' Requisition Trip Logs';
+        $page = 'Requisition Trip Logs';
+        $companyId = Session::get('company_id');
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        
+        //check if user opted for date range
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
         $tripLogs = RequisitionTripLog::with('vehicleRequisition.employee', 'vehicleRequisition.vehicle')
-            ->latest('created_at')
-            ->get();
+           ->whereBetween('created_at', [$start, $end])    
+            ->latest('created_at')->get();
  
-        return view('vms.trip-logs.index',compact('page','tripLogs'));
+        return view('vms.trip-logs.index',compact('page','is_post_query','start_date','end_date','tripLogs'));
     }
 
     private function getAutoTripNo()
@@ -80,7 +90,7 @@ class RequisitionTripLogController extends Controller
     }
 
      public function endTrip(Request $request, $tripId)
-    {  //dd($request->all());
+    {  
        try {
            $tripLog = RequisitionTripLog::findOrFail($tripId);
             $request->validate([
@@ -106,7 +116,7 @@ class RequisitionTripLogController extends Controller
      */
     public function create()
     {
-         $page    = 'New VMS Expense';
+        $page    = 'New VMS Expense';
         $user    = Auth::user();
         $company = Company::find(Session::get('company_id'));
 

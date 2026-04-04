@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers\VMS;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
-use Validator;
 use \Carbon\Carbon;
-use App\Models\Company;
-use App\Models\Shop;
-use App\Models\ShopCurrency;
-use App\Models\Vendor;
-use App\Models\VendorTransaction;
-use App\Models\SmsAccount;
-use App\Models\PartPurchase;
-use App\Models\PartPurchasePayment;
-use App\Models\Setting;
-use App\Models\VmsExpense;
+use App\Http\Controllers\Controller;
+use App\Imports\VendorImport;
 use App\Models\Account;
 use App\Models\AccountStatement;
-use App\Models\PaymentVoucher;
-use App\Imports\VendorImport;
 use App\Models\CashIn;
 use App\Models\CashOut;
+use App\Models\Company;
+use App\Models\PartPurchase;
+use App\Models\PartPurchasePayment;
+use App\Models\PaymentVoucher;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\ShopCurrency;
+use App\Models\SmsAccount;
+use App\Models\Vendor;
+use App\Models\VendorTransaction;
+use App\Models\VmsExpense;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Validator;
 
 class VendorController extends Controller
 {    
@@ -42,14 +42,28 @@ class VendorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $company = Company::find(Session::get('company_id')); 
-        $vendors = Vendor::where('company_id', $company->id)->where('vendor_for', 'Parts')->get();
-        $page = 'vendors';
+        $company = Company::find(Session::get('company_id'));
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        } 
+        $vendors = Vendor::where('company_id', $company->id)->where('vendor_for', 'Parts')->whereBetween('created_at', [$start, $end])->latest()->get();
+        $page = 'Vendors';
         $title = 'My vendors';
         $title_sw = 'Wauzaji Wangu';
-        return view('vms.vendors.index', compact('page', 'title', 'title_sw', 'vendors'));
+        return view('vms.vendors.index', compact('page','start_date','end_date','is_post_query', 'title', 'title_sw', 'vendors'));
     }
 
     /**

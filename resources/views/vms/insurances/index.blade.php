@@ -10,15 +10,30 @@
                 </ul>
             </div>            
         <div class="col-lg-6 col-md-4 col-sm-12 d-flex align-items-center justify-content-end gap-2 flex-nowrap">
-            <a href="{{ route('insurance-companies.index') }}" class="btn btn-secondary btn-sm text-nowrap">
-                <i class="fa fa-building"></i> Insurance Companies
-            </a>
-            <a href="{{ route('ir-periods.index') }}" class="btn btn-secondary btn-sm text-nowrap">
-                <i class="fa fa-clock-o"></i> IR Periods
-            </a>
-            <a href="{{ route('insurance.create') }}" class="btn btn-success btn-sm text-nowrap">
-                <i class="fa fa-plus"></i> Add Insurance
-            </a>
+            <div class="d-flex flex-wrap justify-content-start justify-content-md-end align-items-center gap-2">
+
+                <form class="dashform" action="{{ url('f-insurance') }}" method="POST" id="stockform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="">
+                    <input type="hidden" name="end_date" id="end_input" value="">
+                    <button type="button" class="btn btn-default btn-sm w-auto" id="reportrange"
+                        style="white-space: nowrap;">
+                        <i class="fa fa-calendar"></i>
+                        <span id="reportrange-label" class="mx-1"></span>
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                </form>
+
+                <a href="{{ route('insurance-companies.index') }}" class="btn btn-secondary btn-sm text-nowrap">
+                    <i class="fa fa-building"></i> Insurance Companies
+                </a>
+                <a href="{{ route('ir-periods.index') }}" class="btn btn-secondary btn-sm text-nowrap">
+                    <i class="fa fa-clock-o"></i> IR Periods
+                </a>
+                <a href="{{ route('insurance.create') }}" class="btn btn-success btn-sm text-nowrap">
+                    <i class="fa fa-plus"></i> Add Insurance
+                </a>
+            </div>
         </div>
     </div>
 </div>

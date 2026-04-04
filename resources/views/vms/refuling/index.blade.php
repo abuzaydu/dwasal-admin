@@ -228,15 +228,32 @@
      <!--breadcrumb-->
     <div class="block-header pt-4">
         <div class="row">
-            <div class="col-lg-6 col-md-8 col-sm-12">
+            <div class="col-lg-6 col-md-6 col-sm-12">
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('my-default-page') }}"><i class="fa fa-home"></i></a></li>  
                     <li class="breadcrumb-item">Vehicles Managment</li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
-            <div class="col-lg-6 col-md-4 col-sm-12 text-right">
-                <a class="btn btn-primary btn-sm" href="{{ route('refueling.create') }}">New Refuel</a>
+            <div class="col-lg-6 col-md-6 col-sm-12 text-right">
+                <div class="d-flex justify-content-end align-items-center">
+                    
+                    <form class="dashform row g-1" action="{{ url('f-refueling') }}" method="POST" id="stockform">
+                        @csrf
+                        <input type="hidden" name="start_date" id="start_input" value="">
+                        <input type="hidden" name="end_date" id="end_input" value="">
+
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-default pull-right" id="reportrange">
+                                <span><i class="fa fa-calendar"></i></span>
+                                <i class="fa fa-caret-down"></i>
+                            </button>
+                       </div>
+                    </form>
+                    <a href="{{ route('refueling.create')  }}" class="btn btn-primary btn-sm" >
+                        <i class="fa fa-plus me-1"></i>  New Refuel
+                    </a>
+                </div>
             </div>
         </div>
     </div>

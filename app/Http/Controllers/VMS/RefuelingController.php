@@ -10,6 +10,7 @@ use App\Models\LicenseType;
 use App\Models\Refuel;
 use App\Models\Vehicle;
 use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -30,18 +31,33 @@ class RefuelingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {   
         $companyId = Session::get('company_id');
         $page = 'Vehicle Refueling';
-        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->where('company_id',$companyId)->latest()->get();
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        
+        //check if user opted for date range
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $refuels = Refuel::with('driver','fuelType','fuelStation','vehicle')->where('company_id',$companyId)->whereBetween('date', [$start, $end])->latest()->get();
         $fuel_types = FuelType::where('company_id',$companyId)->latest()->get();
         $vehicles = Vehicle::where('company_id',$companyId)->latest()->get();;
         $drivers = Driver::where('company_id',$companyId)->with('licenseType')->latest()->get();
         $vendors = Vendor::where('company_id',$companyId)->latest()->get();
         $fuel_stations = FuelStation::where('company_id',$companyId)->latest()->get();
         $license_types = LicenseType::where('company_id',$companyId)->with('company')->latest()->get();
-        return view('vms.refuling.index',compact('page','license_types','refuels','vendors','drivers','fuel_stations','vehicles','fuel_types'));
+        return view('vms.refuling.index',compact('page','is_post_query', 'start_date', 'end_date','license_types','refuels','vendors','drivers','fuel_stations','vehicles','fuel_types'));
     }
 
     /**

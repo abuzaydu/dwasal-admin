@@ -12,6 +12,20 @@
                 <li class="breadcrumb-item active">{{ $page }}</li>
             </ul>
         </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <form class="dashform row g-1" action="{{ url('f-requisition-trip-logs') }}" method="POST" id="stockform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="">
+                    <input type="hidden" name="end_date" id="end_input" value="">
+
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-default pull-right " id="reportrange">
+                            <span><i class="fa fa-calendar"></i></span>
+                            <i class="fa fa-caret-down"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
     </div>
 </div>
 

@@ -32,12 +32,12 @@ class VehicleRequisitionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Vehicle Requisitions';
         $now = Carbon::now(); 
-        $start = $now->startOfMonth();
-        $end = \Carbon\Carbon::now();
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
         $start_date = date('Y-m-d', strtotime($start));
         $end_date = date('Y-m-d', strtotime($end));
 
@@ -58,7 +58,7 @@ class VehicleRequisitionController extends Controller
         $requisitions = VehicleRequisition::where('company_id', $company->id)->latest()->get();
 
         $vehicles = Vehicle::where('company_id', $company->id)->where('status','Available')->get();
-        $vrequisitions = VehicleRequisition::where('company_id', $company->id)->latest()->get();
+        $vrequisitions = VehicleRequisition::where('company_id', $company->id)->whereBetween('requisition_date', [$start, $end])->latest()->get();
 
         return view('vms.requisitions.index', compact('page','drivers','vehicleTypes','requisitionPurpose','employees','requisitions', 'is_post_query', 'start_date', 'end_date', 'vehicles', 'vrequisitions'));
     }

@@ -10,11 +10,12 @@ use App\Models\MaintenancePhoto;
 use App\Models\MaintenanceType;
 use App\Models\Part;
 use App\Models\Vehicle;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class MaintenanceController extends Controller
 {
@@ -31,13 +32,28 @@ class MaintenanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $page = 'Vehicle Maintanance';
+        $page = 'Vehicle Maintenance';
         $companyId = Session::get('company_id');
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        
+        //check if user opted for date range
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
 
         $maintenances = Maintenance::with(['vehicle', 'maintenanceType', 'employee'])
-            ->where('company_id', $companyId)
+            ->where('company_id', $companyId)->whereBetween('date', [$start, $end])
             ->where('is_deleted', false)
             ->latest()
             ->get();
@@ -46,7 +62,7 @@ class MaintenanceController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return view('vms.maintenance.index', compact('page', 'maintenances', 'maintenanceTypes'));
+        return view('vms.maintenance.index', compact('page','is_post_query','start_date','end_date','maintenances', 'maintenanceTypes'));
     }
 
     /**
