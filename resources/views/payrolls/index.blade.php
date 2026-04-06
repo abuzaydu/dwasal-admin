@@ -52,46 +52,52 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row clearfix">
         <div class="col-xl-12 mx-auto">
-            <form class="row g-3 report-form" action="{{ url('payroll-list') }}" method="POST">
-                @csrf
-                <div class="col-md-5">
-                    <select class="form-select form-select-sm mb-1" name="employee_id" onchange="this.form.submit()">
-                        <option value="">All</option>
-                        @foreach($employees as $emp)
-                        @if(!is_null($employee) && $emp->id == $employee->id)
-                        <option value="{{$emp->id}}" selected>{{$emp->fname}} {{$emp->lname}}</option>
-                        @else
-                        <option value="{{$emp->id}}">{{$emp->fname}} {{$emp->lname}}</option>
-                        @endif
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select form-select-sm mb-1 col-md-6" name="month" onchange="this.form.submit()">
-                        @foreach($data as $d)
-                        @if($d['month'].' '.$d['year'] == $curmonth)
-                        <option selected value="{{$d['month'].' '.$d['year']}}">{{$d['month'].' '.$d['year']}}</option>
-                        @else
-                        <option value="{{$d['month'].' '.$d['year']}}">{{$d['month'].' '.$d['year']}}</option>
-                        @endif
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <input type="hidden" name="start_date" id="start_input" value="">
-                    <input type="hidden" name="end_date" id="end_input" value="">
-                    <!-- Date and time range -->
-                    <div class="input-group">
-                        <button type="button" class="btn btn-white btn-sm pull-right" id="reportrange">
-                            <span><i class="bx bx-calendar"></i></span>
-                            <i class="bx bx-caret-down"></i>
-                        </button>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row clearfix">
+                        <div class="col-md-12">
+                            <form class="row g-3 report-form" action="{{ url('payroll-list') }}" method="POST">
+                                @csrf
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm mb-1" name="employee_id" onchange="this.form.submit()">
+                                        <option value="">All</option>
+                                        @foreach($employees as $emp)
+                                        @if(!is_null($employee) && $emp->id == $employee->id)
+                                        <option value="{{$emp->id}}" selected>{{$emp->fname}} {{$emp->lname}}</option>
+                                        @else
+                                        <option value="{{$emp->id}}">{{$emp->fname}} {{$emp->lname}}</option>
+                                        @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm mb-1" name="month" onchange="this.form.submit()">
+                                        @foreach($data as $d)
+                                        @if($d['month'].' '.$d['year'] == $curmonth)
+                                        <option selected value="{{$d['month'].' '.$d['year']}}">{{$d['month'].' '.$d['year']}}</option>
+                                        @else
+                                        <option value="{{$d['month'].' '.$d['year']}}">{{$d['month'].' '.$d['year']}}</option>
+                                        @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <input type="hidden" name="start_date" id="start_input" value="">
+                                <input type="hidden" name="end_date" id="end_input" value="">
+                                <div class="col-md-6" style="text-align: right;">
+                                    <button type="button" class="btn btn-default btn-sm pull-right" id="reportrange">
+                                        <span><i class="bx bx-calendar"></i></span>
+                                        <i class="bx bx-caret-down"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-12">
+                            @include('flash-message')
+                        </div>
                     </div>
                 </div>
-            </form>
-            <div class="card">
                 <div class="card-body pt-0">
                     <ul class="nav nav-tabs nav-tabs-new2">
                         <li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" href="#emp-payrolls">Employees Payroll List</a></li>
@@ -104,30 +110,30 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Month</th>
-                                        <th>Basic Salaries</th>
-                                        <th>House Allowance</th>
-                                        <th>Transport Allowance</th>
-                                        <th>Com Allowance</th>
-                                        <th>Bonuses</th>
-                                        <th>PAYE</th>
-                                        <th>SSF</th>
-                                        <th>HIS</th>
+                                        <th>Gross Pay</th>
+                                        <th>NSSF</th>
+                                        <th>Taxable Income</th>
+                                        <th>P.A.Y.E</th>
+                                        <th>Other Deductions</th>
+                                        <th>Net Pay</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($mpayrolls as $key => $payroll)
+                                    <?php
+                                        $gross_pay = $payroll->basic_salaries+$payroll->house_allowance+$payroll->trans_allowance+$payroll->com_allowance+$payroll->bonuses;
+                                        $deductions = $payroll->heslb+$payroll->other_deductions;
+                                    ?>
                                     <tr>
                                         <th scope="row">{{$key+1}}</th>
                                         <td><a href="{{ url('view-payroll/'. encrypt($payroll->id)) }}">{{ $payroll->month }}</a></td>
-                                        <td>{{ number_format($payroll->basic_salaries, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->house_allowance, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->trans_allowance, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->com_allowance, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->bonuses, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->paye, 2, '.', ',') }}</td>
+                                        <td>{{ number_format($gross_pay, 2, '.', ',') }}</td>
                                         <td>{{ number_format($payroll->ssf, 2, '.', ',') }}</td>
-                                        <td>{{ number_format($payroll->mif, 2, '.', ',') }}</td>
+                                        <td>{{ number_format($gross_pay-$payroll->ssf, 2, '.', ',') }}</td>
+                                        <td>{{ number_format($payroll->paye, 2, '.', ',') }}</td>
+                                        <td>{{ number_format($deductions, 2, '.', ',') }}</td>
+                                        <td>{{ number_format($gross_pay-$payroll->ssf-$payroll->paye-$deductions, 2, '.', ',') }}</td>
                                         <td>
                                             <a href="{{ url('view-payroll/'. encrypt($payroll->id)) }}" class="text-secondary"><i class='bx bx-detail mr-1'></i>View</a> | 
                                             <a href="{{ url('payroll-edit/'.encrypt($payroll->id)) }}"><i class='bx bx-pencil mr-1'></i>Edit</a> | 
@@ -143,7 +149,7 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Payroll ID</th>
+                                        <th>Emp. ID/PF No.</th>
                                         <th>Employee Name</th>
                                         <th>Payroll Created.</th>
                                         <th>Payroll Updated</th>
@@ -154,7 +160,7 @@
                                     @foreach($payrolls as $key => $payroll)
                                     <tr>
                                         <th scope="row">{{$key+1}}</th>
-                                        <td><a href="{{ route('payrolls.show', encrypt($payroll->id)) }}">{{ $payroll->payid }}</a></td>
+                                        <td><a href="{{ route('payrolls.show', encrypt($payroll->id)) }}">{{ $payroll->emp_id }}</a></td>
                                         <td>{{ $payroll->fname }} {{ $payroll->lname }}</td>
                                         <td>{{ $payroll->created_at }}</td>
                                         <td>{{ $payroll->updated_at }}</td>

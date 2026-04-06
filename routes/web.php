@@ -242,7 +242,6 @@ use App\Http\Controllers\VMS\VehicleRequisitionController;
 use App\Http\Controllers\VMS\VehicleTypeController;
 use App\Http\Controllers\VMS\VendorController;
 use App\Http\Controllers\VMS\VmsExpenseController;
-use App\Http\Controllers\VMS\VMSExpenseController;
 use App\Http\Controllers\Web\ActionLogsController;
 use App\Http\Controllers\Web\ApprovalRequestController;
 use App\Http\Controllers\Web\CompanyReportsController;

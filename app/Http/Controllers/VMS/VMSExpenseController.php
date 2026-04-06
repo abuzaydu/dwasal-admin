@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
-class VmsExpenseController extends Controller
+class VMSExpenseController extends Controller
 {
     public function __construct()
     {

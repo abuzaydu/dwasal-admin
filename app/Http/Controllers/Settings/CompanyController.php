@@ -46,6 +46,7 @@ class CompanyController extends Controller
         $company->name = $request['name'];
         $company->slogan = $request['slogan'];
         $company->brand_color = $request['brand_color'];
+        $company->save();
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             $request->validate([
@@ -96,6 +97,14 @@ class CompanyController extends Controller
         $company->name = $request['name'];
         $company->slogan = $request['slogan'];
         $company->brand_color = $request['brand_color'];
+        $company->tin = $request['tin'];
+        $company->vrn = $request['vrn'];
+        $company->mobile = $request['mobile'];
+        $company->email = $request['email'];
+        $company->address = $request['address'];
+        $company->postal_code = $request['postal_code'];
+        $company->city = $request['city'];
+        $company->country = $request['country'];
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
                 $request->validate([
@@ -157,6 +166,7 @@ class CompanyController extends Controller
             $company->use_invoice_banner = $request['use_invoice_banner'];
             $company->banner_url = $banner_url;
             $company->stamp = $stamp;
+
             $company->save();
 
             return redirect('user-companies')->with('success', 'Company Updated Created successfully');
