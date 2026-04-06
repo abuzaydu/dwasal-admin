@@ -2,34 +2,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <script type="text/javascript" src="{{asset('js/angular-1-8-3.min.js')}}"></script>
     <script type="text/javascript" src="{{asset('js/expenses.js')}}"></script>
-    <script>
-        function confirmCancel(id) {
-            Swal.fire({
-                title: "{{trans('navmenu.are_you_sure')}}",
-                text: "{{trans('navmenu.no_revert')}}",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: "{{trans('navmenu.cancel_it')}}",
-                cancelButtonText: "{{trans('navmenu.no')}}"
-            }).then((result) => {
-                if (result.value) {
-                    window.location.href = "{{url('cancel-vms-expense')}}/" + id;
-                    Swal.fire(
-                        "{{trans('navmenu.deleted')}}",
-                        "{{trans('navmenu.cancelled')}}",
-                        'success'
-                    );
-                }
-            });
-        }
-
-        function submitPending(index) {
-            document.getElementById('pexp-form-' + index).submit();
-        }
-    </script>
-
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-4">
@@ -78,56 +50,18 @@
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <label for="vehicle_id" class="form-label">Vehicle <span style="color: red;">*</span></label>
-                                        <select name="vehicle_id" id="vehicle_id" required class="form-select form-select-sm mb-3">
-                                            <option value="">-- Select Vehicle --</option>
-                                            @foreach($vehicles as $vehicle)
-                                                <option value="{{$vehicle->id}}" {{ old('vehicle_id') == $vehicle->id ? 'selected' : '' }}>
-                                                    {{$vehicle->plate_no}} - {{$vehicle->vehicle_name}}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-sm-3">
-                                        <label for="employee_id" class="form-label">Employee <span style="color: red;">*</span></label>
-                                        <select name="employee_id" id="employee_id" required class="form-select form-select-sm mb-3">
-                                            <option value="">-- Select Employee --</option>
-                                            @foreach($employees as $emp)
-                                                <option value="{{$emp->id}}" {{ old('employee_id') == $emp->id ? 'selected' : '' }}>
-                                                    {{$emp->fname}} {{$emp->lname}}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-sm-3">
-                                        <label for="vendor_id" class="form-label">Vendor</label>
+                                        <label for="vendor_id" class="form-label">Vendor <span style="color: red">*</span></label>
                                         <select name="vendor_id" id="vendor_id" class="form-select form-select-sm mb-3">
                                             <option value="">-- Select Vendor --</option>
                                             @foreach($vendors as $vendor)
-                                                <option value="{{$vendor->id}}" {{ old('vendor_id') == $vendor->id ? 'selected' : '' }}>
+                                                <option value="{{$vendor->id}}" {{ old('vendor_id') == $vendor->id ? 'selected' : '' }} required>
                                                     {{$vendor->vendor_name}}
                                                 </option>
                                             @endforeach
                                         </select>
                                     </div>
 
-                                    <div class="col-sm-3">
-                                        <label for="trip_type_id" class="form-label">Trip Type <span style="color: red;">*</span></label>
-                                        <select name="trip_type_id" id="trip_type_id" required class="form-select form-select-sm mb-3">
-                                            <option value="">-- Select Trip Type --</option>
-                                            @foreach($tripTypes as $tt)
-                                                <option value="{{$tt->id}}" {{ old('trip_type_id') == $tt->id ? 'selected' : '' }}>
-                                                    {{$tt->trip_type}}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-1">
-                                    <div class="col-sm-3">
+                                     <div class="col-sm-3">
                                         <label for="exp_group" class="form-label">Expense Group <span style="color: red;">*</span></label>
                                         <input type="text" name="exp_group" id="exp_group"
                                             placeholder="e.g. Fuel, Maintenance"
@@ -147,31 +81,17 @@
                                     </div>
 
                                     <div class="col-sm-3">
-                                        <label for="odometer_mileage" class="form-label">Odometer / Mileage</label>
-                                        <input type="number" min="1" step="any" name="odometer_mileage" id="odometer_mileage"
-                                            value="{{ old('odometer_mileage', $expense->odometer_mileage) }}"
-                                            class="form-control form-control-sm mb-3">
+                                        <label for="doc_attachment" class="form-label">Attach Document <span style="color:red">*</span></label>
+                                        <input type="file" name="doc_attachment[]" id="doc_attachment" multiple class="form-control form-control-sm mb-3" placeholder="Attach your documment">                                     
                                     </div>
 
-                                    <div class="col-sm-3">
-                                        <label for="vehicle_rent" class="form-label">Vehicle Rent</label>
-                                        <input type="number" min="1" step="any" name="vehicle_rent" id="vehicle_rent"
-                                            value="{{ old('vehicle_rent', $expense->vehicle_rent) }}"
-                                            class="form-control form-control-sm mb-3">
-                                    </div>
                                 </div>
 
                                 <div class="row mb-1">
                                     <div class="col-sm-6">
                                         <label for="remarks" class="form-label">Remark</label>
                                         <textarea rows="1" class="form-control form-control-sm mb-3"
-                                                name="remarks" id="remarks">{{ old('remarks', $expense->remarks) }}</textarea>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <label for="remarks" class="form-label">Attach Document <span style="color:red">*</span></label>
-                                        <input type="file" name="doc_attachment[]" multiple class="form-control form-control-sm mb-3" placeholder="Attach your documment">
-                                        
+                                          name="remarks" id="remarks">{{ old('remarks', $expense->remarks) }}</textarea>
                                     </div>
                                 </div>
 
@@ -253,13 +173,7 @@
                                     <input type="hidden" id="no_items" value="@{{selectedItems(expItems)}}">
                                     
                                     <div class="col-sm-12 pt-4">
-                                        <button onclick="confirmCancel('<?php echo encrypt($expense->id); ?>')"
-                                                type="button"
-                                                class="btn btn-warning btn-sm float-end"
-                                                style="margin-left:5px;">
-                                            {{trans('navmenu.btn_cancel')}}
-                                        </button>
-                                        <button type="submit" name="myButton" id="btn-submit"
+                                        <button type="button" name="myButton" id="btn-submit"
                                                 class="btn btn-success btn-sm float-end">
                                             {{trans('navmenu.btn_submit')}}
                                         </button>
@@ -351,7 +265,6 @@
         });
 
         $(document).ready(function () {
-
             $('#search_expense_key').on('keyup', function () {
                 var query = $(this).val();
                 $.ajax({
@@ -385,28 +298,21 @@
 
             $('#btn-submit').on('click', function (e) {
                 e.preventDefault();
-                var vehicle  = document.getElementById('vehicle_id').value;
-                var employee = document.getElementById('employee_id').value;
-                var tripType = document.getElementById('trip_type_id').value;
+                var vendor = document.getElementById('vendor_id').value;
                 var expGroup = document.getElementById('exp_group').value;
-                var odometer = document.getElementById('odometer_mileage').value;
-                var rent     = document.getElementById('vehicle_rent').value;
+                var expDate  = document.getElementById('exp_date').value;
+                var docAttachment = document.getElementById('doc_attachment').files.length;
                 var items    = document.getElementById('no_items').value;
                 
-                if (vehicle === '') {
-                    showError('Please select a vehicle');
-                } else if (employee === '') {
-                    showError('Please select an employee');
-                } else if (tripType === '') {
-                    showError('Please select a trip type');
-                }else if (expGroup === '') {
-                    showError('Please enter expense group');
-                } else if (odometer === '' || odometer <= 0) {
-                    showError('Please enter valid odometer mileage');
-                } else if (rent === '' || rent <= 0) {
-                    showError('Please enter valid vehicle rent');
-                }
-                else if (items == 0) {
+                if (vendor === '') {
+                    showError('Please select a vendor');
+                }else if(expGroup === '') {
+                    showError('Please enter expense group'); 
+                }else if (expDate === '') {
+                    showError('Please select an expense date');
+                } else if (docAttachment === 0) {
+                    showError('Please attach at least one document');
+                } else if (items == 0) {
                     showError('Please add at least one expense item');
                 } else {
                     document.getElementById('expenseform').submit();

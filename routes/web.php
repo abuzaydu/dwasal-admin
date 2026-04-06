@@ -196,7 +196,6 @@ use App\Http\Controllers\Service\GradeController;
 use App\Http\Controllers\Service\ServCategoryController;
 use App\Http\Controllers\Service\ServiceController;
 use App\Http\Controllers\Service\ShopServiceApiController;
-use App\Http\Controllers\Service\TripLogsController;
 use App\Http\Controllers\Settings\CompanyController;
 use App\Http\Controllers\Settings\CompanyRoleController;
 use App\Http\Controllers\Settings\DeliveryRateController;
@@ -222,10 +221,13 @@ use App\Http\Controllers\VMS\ExpenseTypeController;
 use App\Http\Controllers\VMS\FuelStation;
 use App\Http\Controllers\VMS\FuelStationController;
 use App\Http\Controllers\VMS\FuelTypeController;
+use App\Http\Controllers\VMS\InsuranceCompanyController;
 use App\Http\Controllers\VMS\InsuranceController;
+use App\Http\Controllers\VMS\IrPeriodController;
 use App\Http\Controllers\VMS\LegalDocumentController;
 use App\Http\Controllers\VMS\LicenseTypeController;
 use App\Http\Controllers\VMS\MaintenanceController;
+use App\Http\Controllers\VMS\MaintenanceTypeController;
 use App\Http\Controllers\VMS\OwnershipController;
 use App\Http\Controllers\VMS\PartCategoryController;
 use App\Http\Controllers\VMS\PartItemTempApiController;
@@ -236,6 +238,8 @@ use App\Http\Controllers\VMS\PartsController;
 use App\Http\Controllers\VMS\PartsUsageController;
 use App\Http\Controllers\VMS\PartUsageItemController;
 use App\Http\Controllers\VMS\RefuelingController;
+use App\Http\Controllers\VMS\RequisitionPurposeController;
+use App\Http\Controllers\VMS\RequisitionTripLogController;
 use App\Http\Controllers\VMS\TripTypeController;
 use App\Http\Controllers\VMS\VehicleController;
 use App\Http\Controllers\VMS\VehicleRequisitionController;
@@ -251,9 +255,11 @@ use App\Http\Controllers\Web\RecycleBinController;
 use App\Http\Controllers\Web\ReportsController;
 use App\Http\Controllers\Web\SmsTemplateController;
 use App\Http\Controllers\Web\StockReportController;
+use App\Http\Controllers\Web\TripLogsController;
 use App\Http\Controllers\Web\VerifyPaymentController;
 use App\Http\Controllers\WelcomeController;
 use App\Models\Driver;
+use App\Models\RequisitionTripLog;
 use App\Models\User;
 use App\Notifications\FcmNotification;
 use Illuminate\Support\Facades\Route;
@@ -385,12 +391,12 @@ Route::group(['middleware' => 'auth'], function () {
 );
 //SmartMauzo customers routes
 Route::group(['middleware' => 'auth'], function () {
-    
+
     Route::get('home', [HomeController::class, 'index']);
 
     Route::resource('delivery-rates', DeliveryRateController::class);
     Route::resource('unit-equivalents', UnitEquivalentController::class);
- 
+
     Route::get('signup-complete', [HomeController::class, 'completeSignupForm']);
     Route::post('complete-signup', [HomeController::class, 'completeSignup']);
     Route::get('close-shop', [HomeController::class, 'closeShop']);
@@ -452,7 +458,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('set-currency', [SettingsController::class, 'setCurrency']);
     Route::get('rem-currency/{id}', [SettingsController::class, 'removeCurrency']);
     Route::get('make-default-currency/{id}', [SettingsController::class, 'makeDefaultCurrency']);
-    
+
     Route::resource('prod-settings', ProdSettingController::class);
 
 
@@ -565,7 +571,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('invoice-payments/{id}', [InvoicePaymentController::class, 'index']);
     Route::resource('inv-payments', InvoicePaymentController::class);
     Route::get('inv-payments/destroy/{id}', [InvoicePaymentController::class, 'destroy']);
-    //ProInvoice Items temp Routes 
+    //ProInvoice Items temp Routes
     Route::resource('api/invoiceitem', ShopProductsApiController::class);
     Route::get('add-invoiceitem-by-barcode', [InvoiceItemTempController::class, 'ajaxPost']);
     Route::resource('api/invoicetemp', InvoiceItemTempController::class);
@@ -772,7 +778,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Stocks Routes End
     // Damage Reoutes
     Route::resource('damages', ProdDamageController::class);
-    // Damages routes End  
+    // Damages routes End
 
 
     Route::get('accounting-dash', [AccountingDashController::class, 'index']);
@@ -915,7 +921,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('discount-by-sales', [ReportsController::class, 'discountBySales']);
     Route::get('discount-by-product', [ReportsController::class, 'discountByProduct']);
     Route::post('discount-by-product', [ReportsController::class, 'discountByProduct']);
-    
+
     Route::get('total-report', [ReportsController::class, 'totalAmounts']);
     Route::post('total-report', [ReportsController::class, 'totalAmounts']);
     Route::get('print-report', [ReportsController::class, 'printReport']);
@@ -941,7 +947,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-general-ledger', [CompanyReportsController::class, 'generalLedger']);
     Route::get('trial-balance', [CompanyReportsController::class, 'trialBalance']);
     Route::post('f-trial-balance', [CompanyReportsController::class, 'trialBalance']);
-    
+
     Route::resource('balance-sheets', BalanceSheetsController::class);
     Route::post('f-balance-sheets', [BalanceSheetsController::class, 'index']);
     Route::get('basic-balance-sheets', [BalanceSheetsController::class, 'basic']);
@@ -1212,7 +1218,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('product-pricings/api/local-packaging-costs', LocalPackagingCostController::class);
     Route::resource('product-pricings/api/export-handling-costs', ExportHandlingCostController::class);
     Route::get('set-product-price/{id}', [ProductPricingController::class, 'setProductPrice']);
-    
+
     Route::post('f-prod-costs' , [ProductionCostController::class, 'index']);
     Route::resource('prod-costs', ProductionCostController::class);
     Route::post('prod-costs/api/prod-items/create', [ProductionApiController::class, 'create']);
@@ -1289,7 +1295,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-my-pay-slips', [ProfileController::class, 'index']);
     Route::get('hr-dash', [HRDashController::class, 'index']);
     Route::post('hr-dash', [HRDashController::class, 'index']);
-    //HR 
+    //HR
     Route::resource('positions', PositionController::class);
     Route::resource('employees', EmployeeController::class);
     Route::get('employee-sample', [EmployeeController::class, 'downloadSample']);
@@ -1342,7 +1348,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('payroll-settings', PayrollSettingsController::class);
 
     Route::get('add-to-expenses/{id}', [PayrollToExpenseController::class, 'create']);
-    
+
     //MHC
     Route::get('mhc-dashboard', [DashController::class, 'index']);
     Route::post('mhc-dashboard', [DashController::class, 'index']);
@@ -1399,14 +1405,43 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('vehicles-dash', [VehicleController::class, 'dashboard']);
     Route::post('vehicles-dash', [VehicleController::class, 'dashboard']);
+    Route::post('vehicles/prepare-documents', [VehicleController::class, 'prepareDocuments'])->name('vehicles.prepare-documents');
+    Route::get('vehicles/documents-step', [VehicleController::class, 'createDocumentsStep'])->name('vehicles.documents.create');
+    Route::post('vehicles/documents-step', [VehicleController::class, 'storeWithDocuments'])->name('vehicles.documents.store');
     Route::resource('vehicles', VehicleController::class);
     Route::resource('vehicle-types', VehicleTypeController::class);
     Route::resource('ownerships', OwnershipController::class);
 
-    Route::resource('legal-documents', LegalDocumentController::class);
+    // IMPORTANT: place literal routes before resource routes.
+    // Otherwise `/legal-documents/status` may be matched by `legal-documents/{id}`.
+    Route::get('legal-documents/status', [LegalDocumentController::class, 'vehicleStatus'])
+        ->name('legal-documents.status');
+
+    Route::resource('legal-documents', LegalDocumentController::class)
+        ->whereNumber('legal_document');
+    Route::get('legal-documents/{id}/download', [LegalDocumentController::class, 'download'])->name('legal-documents.download');
+    Route::Put('vehicle-requisitions/{id}',[VehicleRequisitionController::class,'resubmit'])->name('vehicle-requisitions.resubmit');
     Route::resource('insurance', InsuranceController::class);
+    Route::get('insurance/{id}/download', [InsuranceController::class, 'download'])->name('insurance.download');
+    Route::resource('insurance-companies', InsuranceCompanyController::class)->except(['show', 'create']);
+    Route::resource('ir-periods', IrPeriodController::class)->except(['show', 'create']);
     Route::resource('vehicle-requisitions', VehicleRequisitionController::class);
+    Route::put('/vehicle-requisitions/{vehicle_requisition}/assign-driver',[VehicleRequisitionController::class, 'assignDriver'])
+    ->name('vehicle-requisitions.assign-driver');
+    Route::put('/vehicle-requisitions/{id}/reject', [VehicleRequisitionController::class, 'rejectRequisition'])
+    ->name('vehicle-requisitions.reject');
+    Route::resource('requisitions-purpose', RequisitionPurposeController::class);
+    Route::get('rtllist', [RequisitionTripLogController::class,'test1']);
+    Route::resource('requisition-trip-logs', RequisitionTripLogController::class);
+    Route::post('trip-start/{id}',[RequisitionTripLogController::class, 'tripStart'])->name('trip.start');
+    Route::post('trip-end/{id}',[RequisitionTripLogController::class, 'endTrip'])->name('trip.end');
+
+    Route::post('maintenace-approve/{id}', [MaintenanceController::class,'approve'])->name('maintenance.approve');
+    Route::post('maintenance-reject/{id}', [MaintenanceController::class,'reject'])->name('maintenance.reject');
+    Route::post('maintenance-complete/{id}', [MaintenanceController::class,'complete'])->name('maintenance.complete');
+    Route::post('maintenance-start/{id}', [MaintenanceController::class,'start'])->name('maintenance.start');
     Route::resource('maintenance', MaintenanceController::class);
+    Route::resource('maintenance-types',MaintenanceTypeController::class);
     Route::resource('refueling', RefuelingController::class);
     Route::resource('fuel-types', FuelTypeController::class);
     Route::resource('fuel-stations',FuelStationController::class);
@@ -1450,7 +1485,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('reject-vms-expense',      [VmsExpenseController::class, 'rejectExpense'])->name('reject-vms-expense');
     Route::get('close-vms-expense/{id}',   [VmsExpenseController::class, 'closeExpense']);
     Route::post('resume-vms-expense',      [VmsExpenseController::class, 'resumePending']);
-    
+
     // AJAX endpoints (add to an AjaxController or inline)
     Route::get('search-expense-type',   [ExpenseAjaxController::class, 'searchExpenseType']);
     Route::get('fetch-expense-type',    [ExpenseAjaxController::class, 'fetchExpenseType']);

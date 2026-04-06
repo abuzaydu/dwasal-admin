@@ -33,7 +33,17 @@
                                 <a class="nav-link active" data-bs-toggle="tab" href="#expensesTab" role="tab">
                                     <div class="d-flex align-items-center">
                                         <div class="tab-icon"><i class='fa fa-list font-18 me-1'></i></div>
-                                        <div class="tab-title">VMS Expenses List</div>
+                                        <div class="tab-title">VMS Expenses With No Trip Logs</div>
+                                        <span class="badge bg-secondary ms-1">{{ $expenses1->count() }}</span>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" data-bs-toggle="tab" href="#expensesTab1" role="tab">
+                                    <div class="d-flex align-items-center">
+                                        <div class="tab-icon"><i class='fa fa-list font-18 me-1'></i></div>
+                                        <div class="tab-title">VMS Expenses With Trip Logs</div>
                                         <span class="badge bg-secondary ms-1">{{ $expenses->count() }}</span>
                                     </div>
                                 </a>
@@ -66,10 +76,7 @@
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Trip No</th>
-                                            <th>Driver</th>
-                                            <th>Vehicle</th>
-                                            <th>Trip Type</th>
+                                            <th>Vendor</th>
                                             <th>Exp Group</th>
                                             <th>Date</th>
                                             <th>Total Amount</th>
@@ -78,13 +85,10 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($expenses as $expense)
+                                        @foreach($expenses1 as $expense)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $expense->trip_no }}</td>
-                                            <td>{{ trim(($expense->fname ?? '') . ' ' . ($expense->lname ?? '')) ?: 'N/A' }}</td>
-                                            <td>{{ $expense->plate_no ?? 'N/A' }} {{ $expense->vehicle_name ? '- ' . $expense->vehicle_name : '' }}</td>
-                                            <td>{{ $expense->trip_type ?? 'N/A' }}</td>
+                                            <td>{{ $expense->vendor->vendor_name  ?? ''}}</td>
                                             <td>{{ $expense->exp_group ?? '-' }}</td>
                                             <td>{{ $expense->date }}</td>
                                             <td>{{ number_format($expense->items->sum('total_price'), 2) }}</td>
@@ -112,6 +116,78 @@
 
                                                 @if(in_array($expense->status, ['Awaiting For Approval', 'Rejected']))
                                                     <a href="{{ route('vms-expenses.edit', encrypt($expense->id)) }}" class="text-primary ms-2">
+                                                        <i class="fa fa-edit"></i>
+                                                    </a>
+                                                @endif
+
+                                                @if($expense->status == 'Awaiting For Approval')
+                                                    <a href="javascript:;" onclick="confirmDeleteExpense('{{ $expense->id }}')" class="ms-2">
+                                                        <i class="fa fa-trash text-danger"></i>
+                                                    </a>
+
+                                                    <form id="deleteExpenseForm_{{ $expense->id }}" method="POST"
+                                                        action="{{ route('vms-expenses.destroy', encrypt($expense->id)) }}"
+                                                        style="display:none;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                    </form>
+                                                @endif
+                                        </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="tab-pane fade table-responsive" id="expensesTab1" role="tabpanel">
+                                <table class="table table-striped table-bordered datatable" id="expensesTable1">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Vendor</th>
+                                            <th>Driver</th>
+                                            <th>Vehicle</th>
+                                            <th>Trip Type</th>
+                                            <th>Date</th>
+                                            <th>Total Amount</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($expenses as $expense)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $expense->vendor->vendor_name  ?? ''}}</td>
+                                            <td>{{ $expense->tripLog->vehicleRequisition->driver->full_name ?? ''}}</td>
+                                            <td>{{ $expense->vehicle->plate_no ?? 'N/A' }} {{ $expense->vehicle_name ? '- ' . $expense->vehicle_name : '' }}</td>
+                                            <td>{{ $expense->tripType->trip_type ?? 'N/A' }}</td>
+                                            <td>{{ $expense->date }}</td>
+                                            <td>{{ number_format($expense->items->sum('total_price'), 2) }}</td>
+                                            <td>
+                                                @if($expense->status === 'Pending')
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                @elseif($expense->status === 'Awaiting For Approval')
+                                                    <span class="badge bg-info">Awaiting Approval</span>
+                                                @elseif($expense->status === 'In Progress')
+                                                    <span class="badge bg-primary">In Progress</span>
+                                                @elseif($expense->status === 'Approved')
+                                                    <span class="badge bg-success">Approved</span>
+                                                @elseif($expense->status === 'Rejected')
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                @elseif($expense->status === 'Closed')
+                                                    <span class="badge bg-secondary">Closed</span>
+                                                @else
+                                                    <span class="badge bg-light text-dark">{{ $expense->status }}</span>
+                                                @endif
+                                            </td>
+                                        <td>
+                                                <a href="{{ route('vms-expenses.show', encrypt($expense->id)) }}" class="text-info">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+
+                                                @if(in_array($expense->status, ['Awaiting For Approval', 'Rejected']))
+                                                    <a href="{{ route('requisition-trip-logs.edit', $expense->id) }}" class="text-primary ms-2">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                 @endif

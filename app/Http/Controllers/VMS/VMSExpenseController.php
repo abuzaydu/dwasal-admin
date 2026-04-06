@@ -46,21 +46,24 @@ class VMSExpenseController extends Controller
             $end        = $request['end_date'] . ' 23:59:59';
             $is_post_query = true;
         }
+        $expenses = VmsExpense::whereNotNull('requisition_trip_log_id')->with(['employee','tripLog.vehicleRequisition.driver','vehicle','vendor','tripLog.vehicleRequisition.driver' // optional relation
+        ])->latest()->get();
+        $expenses1 = VmsExpense::whereNull('requisition_trip_log_id')->latest()->get();
 
-        $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
-            ->whereBetween('date', [$start, $end])
-            ->join('vehicles',  'vehicles.id',  '=', 'vms_expenses.vehicle_id')
-            ->join('employees', 'employees.id', '=', 'vms_expenses.employee_id')
-            ->join('users',     'users.id',     '=', 'vms_expenses.user_id')
-            ->join('trip_types','trip_types.id','=', 'vms_expenses.trip_type_id')
-            ->select('vms_expenses.id as id','trip_no','exp_group','date','plate_no','vehicle_name','vms_expenses.status as status',
-                'fname','lname','trip_type','vms_expenses.updated_at as updated_at' 
-            )
-            ->orderBy('vms_expenses.created_at', 'desc')->get();
+        // $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
+        //     ->whereBetween('date', [$start, $end])
+        //     ->join('vehicles',  'vehicles.id',  '=', 'vms_expenses.vehicle_id')
+        //     ->join('employees', 'employees.id', '=', 'vms_expenses.employee_id')
+        //     ->join('users',     'users.id',     '=', 'vms_expenses.user_id')
+        //     ->join('trip_types','trip_types.id','=', 'vms_expenses.trip_type_id')
+        //     ->select('vms_expenses.id as id','trip_no','exp_group','date','plate_no','vehicle_name','vms_expenses.status as status',
+        //         'fname','lname','trip_type','vms_expenses.updated_at as updated_at' 
+        //     )
+        // ->orderBy('vms_expenses.created_at', 'desc')->get();
         $expenseTypes = ExpenseType::latest()->get();
         $tripTypes = TripType::latest()->get();
 
-        return view('vms.expenses.index', compact(
+        return view('vms.expenses.index', compact('expenses1',
             'page', 'is_post_query', 'start_date', 'end_date', 'expenses','expenseTypes','tripTypes'
         ));
     }
@@ -78,19 +81,17 @@ class VMSExpenseController extends Controller
                 ->where('status', 'Pending')->first();
 
         if (is_null($expense)) {
-            $tripNo  = $this->getAutoTripNo();
             $expense = new VmsExpense();
             $expense->company_id   = $company->id;
             $expense->user_id      = $user->id;
             $expense->date         = Carbon::now()->toDateString();
-            $expense->trip_no      = $tripNo;
             $expense->exp_group    = '';
             $expense->odometer_mileage = 0;
             $expense->vehicle_rent = 0;
-            $expense->employee_id  = $user->id;
-            $expense->vendor_id    = $user->id;
-            $expense->vehicle_id   = $user->id;
-            $expense->trip_type_id = $user->id;
+            $expense->employee_id  = null;
+            $expense->vendor_id    = null;
+            $expense->vehicle_id   = null;
+            $expense->trip_type_id = null;
             $expense->save();
         }
 
@@ -139,47 +140,40 @@ class VMSExpenseController extends Controller
      * Store a newly created resource in storage.
      */
     
-public function store(Request $request)
-{
-    $request->validate([
-        'exp_group'        => 'required|string|max:255',
-        'odometer_mileage' => 'required|numeric|min:1',
-        'vehicle_rent'     => 'required|numeric|min:1',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'exp_group'        => 'required|string|max:255',
+        ]);
 
-    $expense = VmsExpense::find($request['vms_expense_id']);
+        $expense = VmsExpense::find($request['vms_expense_id']);
 
-    if (!is_null($expense)) {
-        $expense->vehicle_id       = $request['vehicle_id'];
-        $expense->employee_id      = $request['employee_id'];
-        $expense->vendor_id        = $request['vendor_id'];
-        $expense->trip_type_id     = $request['trip_type_id'];
-        $expense->exp_group        = $request['exp_group'];
-        $expense->date             = $request['date'];
-        $expense->odometer_mileage = $request['odometer_mileage'];
-        $expense->vehicle_rent     = $request['vehicle_rent'];
-        $expense->remarks          = $request['remarks'];
-        $expense->status           = 'Awaiting For Approval';
-        $expense->save();
+        if (!is_null($expense)) {
+            $expense->vendor_id        = $request['vendor_id'];
+            $expense->exp_group        = $request['exp_group'];
+            $expense->date             = $request['date'];
+            $expense->remarks          = $request['remarks'];
+            $expense->status           = 'Awaiting For Approval';
+            $expense->save();
 
-        if ($request->hasFile('doc_attachment')) {
-            foreach ($request->file('doc_attachment') as $file) {
-                $path     = $file->store('vms-expense-attachments', 'public');
-                $mimeType = $file->getClientMimeType();
+            if ($request->hasFile('doc_attachment')) {
+                foreach ($request->file('doc_attachment') as $file) {
+                    $path     = $file->store('vms-expense-attachments', 'public');
+                    $mimeType = $file->getClientMimeType();
 
-                VmsExpenseAttachment::create([
-                    'vms_expense_id' => $expense->id,
-                    'file_path'      => $path,
-                    'file_type'      => $mimeType,
-                ]);
+                    VmsExpenseAttachment::create([
+                        'vms_expense_id' => $expense->id,
+                        'file_path'      => $path,
+                        'file_type'      => $mimeType,
+                    ]);
+                }
             }
+
+            return redirect('vms-expenses')->with('success', 'Expense created successfully');
         }
 
-        return redirect('vms-expenses')->with('success', 'Expense created successfully');
+        return redirect()->back()->with('error', 'Expense record not found');
     }
-
-    return redirect()->back()->with('error', 'Expense record not found');
-}
 
     /**
      * Display the specified resource.
@@ -250,48 +244,43 @@ public function store(Request $request)
      */
     
     public function update(Request $request, string $id)
-{
-    $request->validate([
-        'exp_group'        => 'required|string|max:255',
-        'odometer_mileage' => 'required|numeric|min:1',
-        'vehicle_rent'     => 'required|numeric|min:1',
-    
-    ]);
+    {
+        $request->validate([
+            'exp_group'        => 'required|string|max:255',
+        ]);
 
-    $expense = VmsExpense::find(decrypt($id));
+        $expense = VmsExpense::find(decrypt($id));
+        if (!is_null($expense)) {
+            $expense->vehicle_id       = $request['vehicle_id'];
+            $expense->employee_id      = $request['employee_id'];
+            $expense->vendor_id        = $request['vendor_id'];
+            $expense->trip_type_id     = $request['trip_type_id'];
+            $expense->exp_group        = $request['exp_group'];
+            $expense->date             = $request['date'];
+            $expense->odometer_mileage = $request['odometer_mileage'];
+            $expense->vehicle_rent     = $request['vehicle_rent'];
+            $expense->remarks          = $request['remarks'];
+            $expense->save();
 
-    if (!is_null($expense)) {
-        $expense->vehicle_id       = $request['vehicle_id'];
-        $expense->employee_id      = $request['employee_id'];
-        $expense->vendor_id        = $request['vendor_id'];
-        $expense->trip_type_id     = $request['trip_type_id'];
-        $expense->exp_group        = $request['exp_group'];
-        $expense->date             = $request['date'];
-        $expense->odometer_mileage = $request['odometer_mileage'];
-        $expense->vehicle_rent     = $request['vehicle_rent'];
-        $expense->remarks          = $request['remarks'];
-        $expense->save();
+            if ($request->hasFile('doc_attachment')) {
+                foreach ($request->file('doc_attachment') as $file) {
+                    $path     = $file->store('vms-expense-attachments', 'public');
+                    $mimeType = $file->getClientMimeType();
 
-        if ($request->hasFile('doc_attachment')) {
-            foreach ($request->file('doc_attachment') as $file) {
-                $path     = $file->store('vms-expense-attachments', 'public');
-                $mimeType = $file->getClientMimeType();
-
-                VmsExpenseAttachment::create([
-                    'vms_expense_id' => $expense->id,
-                    'file_path'      => $path,
-                    'file_type'      => $mimeType,
-                ]);
+                    VmsExpenseAttachment::create([
+                        'vms_expense_id' => $expense->id,
+                        'file_path'      => $path,
+                        'file_type'      => $mimeType,
+                    ]);
+                }
             }
+
+            return redirect()->route('vms-expenses.show', encrypt($expense->id))
+              ->with('success', 'Expense updated successfully');
         }
 
-        return redirect()
-            ->route('vms-expenses.show', encrypt($expense->id))
-            ->with('success', 'Expense updated successfully');
+        return redirect()->back()->with('error', 'Expense not found');
     }
-
-    return redirect()->back()->with('error', 'Expense not found');
-}
 
     /**
      * Approve an expense.

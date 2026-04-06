@@ -66,7 +66,6 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                
             </div>
         </div>
     </div>
@@ -110,6 +109,41 @@
                                                 <i class="fa fa-qrcode"></i> PRINT</a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Legal Documents (Tanzania)</h6>
+                    <a href="{{ route('legal-documents.create') }}?vehicle_id={{ $vehicle->id }}" style="color: #007bff; text-decoration: none;"><i class="fa fa-file-pdf-o"></i> Add Document</a>
+                </div>
+                <div class="card-body">
+                    @php $vehicleDocs = \App\Models\LegalDocument::with('documentType')->where('vehicle_id', $vehicle->id)->orderBy('expire_date')->get(); @endphp
+                    @if($vehicleDocs->isEmpty())
+                    <p class="text-muted mb-0">No documents. <a href="{{ route('legal-documents.create') }}?vehicle_id={{ $vehicle->id }}">Add documents</a></p>
+                    @else
+                    <table class="table table-sm">
+                        <thead><tr><th>Document</th><th>Expiry</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach($vehicleDocs as $d)
+                            <tr>
+                                <td>{{ $d->documentType?->dt_name ?? '—' }}</td>
+                                <td>{{ optional($d->expire_date)->format('d/m/Y') }}</td>
+                                <td>
+                                    @if($d->status === 'EXPIRED')<span class="badge bg-danger">Expired</span>
+                                    @elseif($d->status === 'EXPIRING_SOON')<span class="badge bg-warning">Soon</span>
+                                    @else<span class="badge bg-success">Valid</span>
+                                    @endif
+                                </td>
+                                <td><a href="{{ route('legal-documents.download', encrypt($d->id)) }}" class="btn btn-xs btn-outline-primary"><i class="fa fa-download"></i></a></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @endif
                 </div>
             </div>
         </div>

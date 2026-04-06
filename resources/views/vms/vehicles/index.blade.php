@@ -91,7 +91,7 @@
                 </ul>
             </div>            
             <div class="col-lg-7 col-md-7 col-sm-12">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#vehicleModal"><i class="fa fa-plus-square"></i> New Vehicle</button>
+                <a href="{{ route('vehicles.create') }}" class="btn btn-primary btn-sm"><i class="fa fa-plus-square"></i> New Vehicle</a>
                 <button type="button" class="btn btn-success btn-sm px-1" data-bs-toggle="modal" data-bs-target="#newTypeModal">
                     <i class="fa fa-plus mr-1"></i>
                     Add Vehicle Type
@@ -260,89 +260,6 @@
         </div>
     </div>
     <!--end row-->
-
-
-    <!-- Modal -->
-    <div class="modal animated zoomIn" id="vehicleModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-m">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">New Vehicle</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form class="form row g-3" method="POST" action="{{route('vehicles.store')}}" enctype="multipart/form-data">
-                        @csrf
-                        <div class="col-md-6">
-                            <label class="form-label">Plate Number<span style="color: red; font-weight: bold;">*</span></label>
-                            <input id="name" type="text" name="plate_no" required placeholder="Enter Vehicle Plate Number" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Name Name</label>
-                            <input id="location" type="text" name="vehicle_name" placeholder="Enter Vehicle Name" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Chassis Number </label>
-                            <input id="location" type="text" name="chassis_no" placeholder="Enter Chassis No. (optional)" class="form-control form-control-sm mb-1">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Vehicles Type <span style="color: red; font-weight: bold;">*</span></label>
-                            <select id="unit" name="vehicle_type_id" class="form-select form-select-sm mb-1" required>
-                                <option value="">-- Select Type --</option>
-                                @foreach($vehtypes as $type)
-                                <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Ownership <span style="color: red; font-weight: bold;">*</span></label>
-                            <select id="unit" name="ownership_id" class="form-select form-select-sm mb-1" required>
-                                <option value="">--Select--</option>
-                                @foreach($ownerships as $key => $owner)
-                                <option value="{{ $owner->id }}">{{$owner->type}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Capacity </label>
-                            <input id="capacity" type="text" name="capacity" placeholder="Enter Truck capacity" class="form-control form-control-sm mb-1" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Capacity Unit </label>
-                            <select id="unit" name="uom" class="form-select form-select-sm mb-1" required>
-                                <option value="">Select Unit</option>
-                                @foreach ($units as $key => $unit)
-                                @if($key < 3 || $unit->unit_name == 'seats')
-                                <option>{{ $unit->unit_name }}</option>
-                                @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Department</label>
-                            <select id="unit" name="department_id" class="form-select form-select-sm mb-1">
-                                <option value="">--Select--</option>
-                                @foreach($departments as $key => $dept)
-                                <option value="{{ $dept->id }}">{{$dept->name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Registration Date </label>
-                            <div class="inner-addon left-addon"> 
-                                <i class="myaddon fa fa-calendar"></i>
-                                <input id="reg-date" type="text" name="reg_date" placeholder="Enter Registration Date" class="form-control form-control-sm mb-1">
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Add</button>
-                            <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">{{ trans('navmenu.btn_cancel') }}</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     <!-- Modal -->

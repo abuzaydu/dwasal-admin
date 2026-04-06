@@ -5,13 +5,13 @@
         <div class="row">
             <div class="col-lg-5 col-md-5 col-sm-12">
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>   
-                    <li class="breadcrumb-item">Vehicles Managment</li>                         
+                    <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="fa fa-home"></i></a></li>
+                    <li class="breadcrumb-item">Vehicles Managment</li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
-            </div>            
+            </div>
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                
+
             </div>
         </div>
     </div>
@@ -86,19 +86,26 @@
                                     <option value="">--Select--</option>
                                     @foreach($departments as $key => $dept)
                                     @if($vehicle->department_id == $dept->id)
-                                    <option value="{{ $dept-->id }}" selected>{{$dept->name}}</option>
+                                    <option value="{{ $dept->id }}" selected>{{$dept->name}}</option>
                                     @else
-                                    <option value="{{ $dept-->id }}">{{$dept->name}}</option>
+                                    <option value="{{ $dept->id }}">{{$dept->name}}</option>
                                     @endif
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Registration Date </label>
-                                <div class="inner-addon left-addon"> 
+                                <div class="inner-addon left-addon">
                                     <i class="myaddon fa fa-calendar"></i>
                                     <input id="reg-date" type="text" name="reg_date" value="{{$vehicle->reg_date}}" placeholder="Enter Registration Date" class="form-control form-control-sm mb-1">
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Vehicle image</label>
+                                @if(!empty($vehicle->vehicle_picture))
+                                <p class="small text-muted mb-1">A picture is already saved. Choose a new file to replace it.</p>
+                                @endif
+                                <input type="file" name="vehicle_picture" class="form-control form-control-sm mb-1" accept="image/*">
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Save Changes</button>
