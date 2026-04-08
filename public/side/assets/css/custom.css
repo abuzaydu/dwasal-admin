@@ -371,7 +371,7 @@ i{
 
 .blank_row
 {
-    height: 100px !important; /* overwrites any other rules */
+    height: 30px !important; /* overwrites any other rules */
     background-color: #FFFFFF;
 }
 

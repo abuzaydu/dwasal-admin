@@ -48,7 +48,7 @@
             $http({
                 method: 'PUT',
                 url : 'api/payrolltemp/' + newpayrolltemp.id,
-                data : {days_work: newpayrolltemp.days_work, overtime_hrs: newpayrolltemp.overtime_hrs, bonuses: newpayrolltemp.bonuses, penalty: newpayrolltemp.penalty, absences: newpayrolltemp.absences, late: newpayrolltemp.late}
+                data : {days_work: newpayrolltemp.days_work, overtime_hrs: newpayrolltemp.overtime_hrs, bonuses: newpayrolltemp.bonuses, recovery: newpayrolltemp.recovery, note: newpayrolltemp.note, absences: newpayrolltemp.absences, late: newpayrolltemp.late}
             }).then(function(response) {
                 console.log(response);
                 $scope.getData();
@@ -77,6 +77,5 @@
         }
 
     }]);
-
     
 })();

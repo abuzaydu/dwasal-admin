@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
-class VmsExpenseController extends Controller
+class VMSExpenseController extends Controller
 {
     public function __construct()
     {
@@ -33,38 +33,29 @@ class VmsExpenseController extends Controller
         $page = 'VMS Expenses';
         $company = Company::find(Session::get('company_id'));
         $now = Carbon::now();
-        $start = $now->copy()->startOfMonth();
-        $end = Carbon::now();
-        $start_date = $start->format('Y-m-d');
-        $end_date = $end->format('Y-m-d');
-
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        
+        //check if user opted for date range
         $is_post_query = false;
         if (!empty($request['start_date'])) {
             $start_date = $request['start_date'];
-            $end_date   = $request['end_date'];
-            $start      = $request['start_date'] . ' 00:00:00';
-            $end        = $request['end_date'] . ' 23:59:59';
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
             $is_post_query = true;
         }
-        $expenses = VmsExpense::whereNotNull('requisition_trip_log_id')->with(['employee','tripLog.vehicleRequisition.driver','vehicle','vendor','tripLog.vehicleRequisition.driver' // optional relation
+        $expenses = VmsExpense::whereNotNull('requisition_trip_log_id')->whereBetween('date', [$start, $end])->with(['employee','tripLog.vehicleRequisition.driver','vehicle','vendor','tripLog.vehicleRequisition.driver' 
         ])->latest()->get();
-        $expenses1 = VmsExpense::whereNull('requisition_trip_log_id')->latest()->get();
+        $expenses1 = VmsExpense::whereNull('requisition_trip_log_id')->whereBetween('date', [$start, $end])->whereIn('status',['Awaiting For Approval','Approved','In Progress','Rejected','Closed'])->latest()->get();
 
-        // $expenses = VmsExpense::where('vms_expenses.company_id', $company->id)
-        //     ->whereBetween('date', [$start, $end])
-        //     ->join('vehicles',  'vehicles.id',  '=', 'vms_expenses.vehicle_id')
-        //     ->join('employees', 'employees.id', '=', 'vms_expenses.employee_id')
-        //     ->join('users',     'users.id',     '=', 'vms_expenses.user_id')
-        //     ->join('trip_types','trip_types.id','=', 'vms_expenses.trip_type_id')
-        //     ->select('vms_expenses.id as id','trip_no','exp_group','date','plate_no','vehicle_name','vms_expenses.status as status',
-        //         'fname','lname','trip_type','vms_expenses.updated_at as updated_at' 
-        //     )
-        // ->orderBy('vms_expenses.created_at', 'desc')->get();
         $expenseTypes = ExpenseType::latest()->get();
         $tripTypes = TripType::latest()->get();
 
         return view('vms.expenses.index', compact('expenses1',
-            'page', 'is_post_query', 'start_date', 'end_date', 'expenses','expenseTypes','tripTypes'
+            'page','is_post_query', 'start_date', 'end_date', 'expenses','expenseTypes','tripTypes'
         ));
     }
 

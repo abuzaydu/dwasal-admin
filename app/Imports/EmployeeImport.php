@@ -8,6 +8,8 @@ use Session;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Position;
+use App\Models\Shop;
+use Log;
 
 class EmployeeImport implements ToModel, WithStartRow
 {
@@ -40,9 +42,17 @@ class EmployeeImport implements ToModel, WithStartRow
                 $position_id = $position->id;
             }
         }
+
+
+        $shop = Shop::where('company_id', $company->id)->where('is_hq', true)->first();
+        $shop_id = Session::get('shop_id');
+        if (!is_null($shop)) {
+            $shop_id = $shop->id;
+        }
         
         $employee = new Employee();
         $employee->company_id = $company->id;
+        $employee->shop_id = $shop_id;
         $employee->emp_id = $this->empID();
         $employee->fname = $row[1];
         $employee->mname = $row[2];
@@ -63,6 +73,9 @@ class EmployeeImport implements ToModel, WithStartRow
         $employee->account_number = $row[17];
         $employee->account_name = $row[18];
         $employee->bank_name = $row[19];
+        $employee->is_reg_ssf = false;
+        $employee->is_reg_mif = false;
+        $employee->is_reg_wcf = true;
         $employee->save();
 
         return $employee;
@@ -78,19 +91,25 @@ class EmployeeImport implements ToModel, WithStartRow
 
     public function empID(){
         $company = Company::find(Session::get('company_id'));
-        $words = preg_split("/[\s,_-]+/", $company->name);
-        $acronym = "";
-        foreach ($words as $w) {
-          $acronym .= mb_substr($w, 0, 1);
+        $v = '';
+        if(preg_match_all('/\b(\w)/',strtoupper($company->name),$m)) {
+            // Log::info($m);
+            $v = implode('',$m[1]); // $v is now SOQTU
         }
-
-        $emp = Employee::latest()->first();
-        if (!is_null($emp)) {
-            $last =$emp->id  ;
-            $id = $acronym.'-'.sprintf('%03d', $last+1);
-            return $id;   
+        $employee = Employee::where('company_id', $company->id)->select('emp_id')->orderBy('id', 'desc')->first();
+        if (!is_null($employee)) {
+            if (!empty($employee->emp_id)) {
+                $last = str_replace($v.'-', '', $employee->emp_id);
+                $lastEmpID = (int)$last;
+                // Log::info($last);
+                $id = $v.'-'.sprintf('%03d', $lastEmpID+1);
+                return $id;
+            }else{
+                $id = $v.'-'.sprintf('%03d', 1);
+                return $id; 
+            }   
         }else{
-            $id = $acronym.'-'.sprintf('%03d', 1);
+            $id = $v.'-'.sprintf('%03d', 1);
             return $id; 
         }
     }

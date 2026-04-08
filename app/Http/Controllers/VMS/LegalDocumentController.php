@@ -7,12 +7,13 @@ use App\Models\DocumentAccessLog;
 use App\Models\DocumentType;
 use App\Models\LegalDocument;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Tanzania VMS - Legal Documents (Static): Vehicle, Driver, Business, Safety.
@@ -156,11 +157,23 @@ class LegalDocumentController extends Controller
     public function index(Request $request)
     {
         $companyId = Session::get('company_id');
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
 
         $this->ensureVehicleDocumentTypes($companyId);
 
-        // Tab name is the document type name (dt_name).
-        // Note: Tabs will not reload the page; doc_name is only used to set the active tab on load.
         $docName = $request->get('doc_name');
 
         $q = trim((string) $request->get('q', ''));
@@ -168,6 +181,7 @@ class LegalDocumentController extends Controller
         $perPage = max(5, min(100, $perPage));
 
         $tabNames = LegalDocument::REQUIRED_VEHICLE_DOCS;
+        //dd($tabNames);
 
         $baseQuery = LegalDocument::with(['vehicle', 'documentType'])
             ->where('company_id', $companyId);
@@ -186,7 +200,6 @@ class LegalDocumentController extends Controller
             ->orderBy('expire_date', 'asc')
             ->orderBy('created_at', 'desc');
 
-        // Preload for all tabs (so switching tabs doesn't reload the page).
         $allDocuments = $order(clone $baseQuery)->get();
 
         $documentsByTab = collect();
@@ -199,15 +212,7 @@ class LegalDocumentController extends Controller
         }
         $page = 'Legal Documents (Tanzania)';
 
-        return view('vms.legal-documents.index', compact(
-            'page',
-            'tabNames',
-            'docName',
-            'q',
-            'perPage',
-            'allDocuments',
-            'documentsByTab'
-        ));
+        return view('vms.legal-documents.index', compact('page','start_date','end_date','is_post_query','tabNames','docName','q','perPage', 'allDocuments', 'documentsByTab' ));
     }
 
     public function create()

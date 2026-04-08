@@ -156,7 +156,7 @@
             }
 
             .idc-wave-front .co-logo {
-                width: 24%; aspect-ratio: 1;
+                width: 30%; aspect-ratio: 1;
                 object-fit: contain; border-radius: 6px;
             }
             .idc-wave-front .co-logo-placeholder {
@@ -173,11 +173,11 @@
             }
 
             .idc-wave-front .wf-photo-wrap {
-                margin-top: 2%; flex-shrink: 0;
+                margin-top: 0.5%; flex-shrink: 0;
                 width: 100%; display: flex; justify-content: center;
             }
             .idc-wave-front .wf-photo-ring {
-                width: 30%; aspect-ratio: 1 / 1;
+                width: 25%; aspect-ratio: 1 / 1;
                 border-radius: 50%;
                 border: 3px solid var(--id-secondary);
                 background: #e8eef6;
@@ -197,7 +197,7 @@
             }
 
             .idc-wave-front .wf-name {
-                margin-top: 3%; font-size: 3.4cqw; font-weight: 900; color: var(--id-primary);
+                margin-top: 4%; font-size: 3.4cqw; font-weight: 900; color: var(--id-primary);
                 text-transform: uppercase; letter-spacing: 0.04em;
                 text-align: center; padding: 0 6%; line-height: 1.15;
             }
@@ -207,7 +207,7 @@
             }
 
             .idc-wave-front .wf-info {
-                margin-top: 3%; width: 100%;
+                margin-top: 1.5%; width: 100%;
                 padding: 0 7%; font-size: 2cqw;
                 flex-shrink: 0; box-sizing: border-box;
             }
@@ -261,7 +261,7 @@
             }
             .idc-wave-back .back-logo {
                 width: 30%; aspect-ratio: 1; object-fit: contain;
-                border-radius: 8px; background: rgba(255,255,255,0.12);
+                border-radius: 8px; background: rgb(255,255,255);
                 padding: 4%; margin-bottom: 5%;
             }
             .idc-wave-back .back-logo-placeholder {
@@ -406,6 +406,19 @@
                 .color-picker     { display: none; }
                 .card-grid        { padding: 0; gap: 8mm; }
                 .idc-shell        { box-shadow: none; }
+
+                .
+                .idc-wave-front .wf-photo-ring {
+                    width: 100% !important; aspect-ratio: 1 / 1;
+                    border-radius: 50% !important;
+                }
+                .idc-wave-front .wf-photo-ring img {
+                    width: 100% !important; height: 100% !important;
+                }
+
+                .idc-wave-front .wf-name {
+                    margin-top: 10% !important;
+                }
             }
 
         </style>
@@ -482,7 +495,7 @@
                                     @else
                                         <div class="co-logo-placeholder"><i class="fa fa-building"></i></div>
                                     @endif
-                                    <div class="co-name">{{ $employee->company->name ?? 'Company Name' }}</div>
+                                    <!-- <div class="co-name">{{ $employee->company->name ?? 'Company Name' }}</div> -->
                                 </div>
 
                                 <div class="wf-photo-wrap">
@@ -548,7 +561,7 @@
                                         <div class="back-logo-placeholder"><i class="fa fa-building"></i></div>
                                     @endif
                                     <div class="back-company-name">{{ $employee->company->name ?? 'Company Name' }}</div>
-                                    <div class="back-industry">{{ $employee->company->industry ?? 'Industry' }}</div>
+                                    <div class="back-industry">{{ $employee->company->industry ?? 'Business' }}</div>
                                     <div class="back-divider"></div>
                                     <div class="back-contact">
                                         @if(!empty($employee->company->address))

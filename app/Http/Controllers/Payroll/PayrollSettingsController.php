@@ -44,13 +44,6 @@ class PayrollSettingsController extends Controller
                 $prsetting->min_income = $value['min_income'];
                 $prsetting->max_income = $value['max_income'];
                 $prsetting->save();
-            }else{
-                $prsetting->description = $value['description'];
-                $prsetting->percent_rate = $value['percent_rate'];
-                $prsetting->fixed_paye_value = $value['fixed_paye_value'];
-                $prsetting->min_income = $value['min_income'];
-                $prsetting->max_income = $value['max_income'];
-                $prsetting->save();
             }
         }
         $psettings = PayrollSetting::where('company_id', $company->id)->get();
@@ -76,14 +69,18 @@ class PayrollSettingsController extends Controller
      */
     public function store(Request $request)
     {
-        $psetting = PayrollSetting::create([
-            'company_id' => Session::get('company_id'),
-            'name' => $request['name'],
-            'percent_rate' => $request['percent_rate'],
-            'description' => $request['description'],
-            'min_income' => $request['min_income'],
-            'max_income' => $request['max_income'],
-        ]);
+        $psetting = PayrollSetting::where('company_id', Session::get('company_id'))->where('name', $request['name'])->first();
+        if (is_null($psetting)) {
+            $psetting = new PayrollSetting();
+            $psetting->name = $request['name'];
+            $psetting->company_id = Session::get('company_id');
+            $psetting->percent_rate = $request['percent_rate'];
+            $prsetting->fixed_paye_value = $value['fixed_paye_value'];
+            $psetting->description = $request['description'];
+            $psetting->min_income = $request['min_income'];
+            $psetting->max_income = $request['max_income'];
+            $psetting->save();
+        }
 
         return redirect('payroll-settings')->with('Settings option added successfully');
     }
@@ -123,6 +120,7 @@ class PayrollSettingsController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // return $request;
         $psetting = PayrollSetting::find(decrypt($id));
         $psetting->name = $request['name'];
         $psetting->percent_rate = $request['percent_rate'];

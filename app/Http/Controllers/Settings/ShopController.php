@@ -305,6 +305,7 @@ class ShopController extends Controller
     {
         Session::forget('shop_name');
         $shop = Shop::find(decrypt($id));
+        $shop->company_id = $request['company_id'];
         $shop->name = $request['shop_name'];
         $shop->tin = $request['tin'];
         $shop->vrn = $request['vrn'];

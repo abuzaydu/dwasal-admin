@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers\HR;
 
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use File;
+use Response;
+use Session;
 use App\Exports\EmployeeExport;
 use App\Http\Controllers\Controller;
 use App\Imports\EmployeeImport;
 use App\Models\AcademicInfo;
 use App\Models\Company;
+use App\Models\Shop;
 use App\Models\Employee;
 use App\Models\EmployeeDoc;
 use App\Models\EmployeeMedicalInfo;
@@ -15,13 +23,6 @@ use App\Models\NextOfKin;
 use App\Models\PayrollSetting;
 use App\Models\Position;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use File;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Response;
-use Session;
 
 class EmployeeController extends Controller
 {
@@ -35,8 +36,21 @@ class EmployeeController extends Controller
         $page = 'Employees';
         $title = 'Employees';
         $company = Company::find(Session::get('company_id'));
-        if (!is_null($company)) {    
-            $employees = Employee::where('company_id', $company->id)->select('id', 'emp_id', 'fname', 'mname', 'lname', 'type', 'is_paid_monthly', 'basic_pay_hourly', 'basic_pay_monthly')->orderBy('emp_id', 'asc')->get();
+        if (!is_null($company)) {
+            // $checkemployees = Employee::where('company_id', $company->id)->get();
+            // foreach ($checkemployees as $key => $employee) {
+            //     if (!is_null($employee->shop_id) || $employee->shop_id = 0) {
+            //         $shop = Shop::where('company_id', $company->id)->where('is_hq', true)->first();
+            //         if (!is_null($shop)) {
+            //             $employee->emp_id = '0';
+            //             $employee->shop_id = $shop->id;
+            //             $employee->save();
+            //         }
+            //     }
+            //     $employee->emp_id = $this->empID();
+            //     $employee->save();
+            // }
+            $employees = Employee::where('employees.company_id', $company->id)->join('positions', 'positions.id', '=', 'employees.position_id')->select('employees.id as id', 'emp_id', 'fname', 'mname', 'lname', 'name', 'is_paid_monthly', 'employees.basic_pay_hourly as basic_pay_hourly', 'employees.basic_pay_monthly as basic_pay_monthly')->orderBy('emp_id', 'asc')->get();
             $positions = Position::all();
             $payroll_settings = PayrollSetting::all();
             return view('hr.employees.index', compact('page', 'title', 'employees', 'positions', 'payroll_settings'));
@@ -242,19 +256,25 @@ class EmployeeController extends Controller
 
     public function empID(){
         $company = Company::find(Session::get('company_id'));
-        $words = preg_split("/[\s,_-]+/", $company->name);
-        $acronym = "";
-        foreach ($words as $w) {
-          $acronym .= mb_substr($w, 0, 1);
+        $v = '';
+        if(preg_match_all('/\b(\w)/',strtoupper($company->name),$m)) {
+            // Log::info($m);
+            $v = implode('',$m[1]); // $v is now SOQTU
         }
-
-        $emp = Employee::latest()->first();
-        if (!is_null($emp)) {
-            $last =$emp->id  ;
-            $id = $acronym.'-'.sprintf('%03d', $last+1);
-            return $id;   
+        $employee = Employee::where('company_id', $company->id)->select('emp_id')->orderBy('id', 'desc')->first();
+        if (!is_null($employee)) {
+            if (!empty($employee->emp_id)) {
+                $last = str_replace($v.'-', '', $employee->emp_id);
+                $lastEmpID = (int)$last;
+                // Log::info($last);
+                $id = $v.'-'.sprintf('%03d', $lastEmpID+1);
+                return $id;
+            }else{
+                $id = $v.'-'.sprintf('%03d', 1);
+                return $id; 
+            }   
         }else{
-            $id = $acronym.'-'.sprintf('%03d', 1);
+            $id = $v.'-'.sprintf('%03d', 1);
             return $id; 
         }
     }

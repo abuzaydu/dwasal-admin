@@ -392,7 +392,7 @@
         }
     }
 
-    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage') {
+    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage' || $page == 'Vehicle Maintenance' || $page == 'Vehicle Refueling' || $page == 'VMS Expenses' || $page == 'Requisition Trip Logs' || $page == 'Vehicle Requisitions' || $page == 'Vendors' || $page == 'Legal Documents (Tanzania)' || $page == 'Vehicles' || $page == 'Insurance' || $page == 'Equipment Records' || $page == 'Vehicle Insurance') {
         $is_post = $is_post_query;
         $startdate = $start_date;
         $enddate = $end_date;

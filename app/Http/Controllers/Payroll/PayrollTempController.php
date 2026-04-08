@@ -19,7 +19,26 @@ class PayrollTempController extends Controller
      */
     public function index()
     {
-        return Response::json(PayrollTemp::where('payroll_temps.company_id', Session::get('company_id'))->where('user_id', Auth::user()->id)->join('employees', 'employees.id', '=', 'payroll_temps.employee_id')->select('payroll_temps.id as id', 'employee_id', 'fname', 'lname', 'basic_pay_hourly','basic_pay_monthly', 'days_work', 'overtime_hrs', 'bonuses', 'penalty', 'absences', 'late')->get());
+        $payrolltemps = PayrollTemp::where('payroll_temps.company_id', Session::get('company_id'))->where('user_id', Auth::user()->id)->join('employees', 'employees.id', '=', 'payroll_temps.employee_id')->select('payroll_temps.id as id', 'employee_id', 'fname', 'lname', 'basic_pay_hourly','basic_pay_monthly', 'trans_allowance', 'com_allowance', 'house_allowance', 'days_work', 'overtime_hrs', 'bonuses', 'recovery', 'absences', 'late', 'note')->orderBy('fname', 'asc')->get();
+        $temps = [];
+        foreach ($payrolltemps as $key => $temp) {
+            array_push($temps, [
+                'id' => $temp->id,
+                'employee_id' => $temp->employee_id, 
+                'fname' => $temp->fname,
+                'lname' => $temp->lname,
+                'basic_pay_hourly' => $temp->basic_pay_hourly,
+                'basic_pay_monthly' => round($temp->basic_pay_monthly+$temp->trans_allowance+$temp->com_allowance+$temp->house_allowance),
+                'days_work' => $temp->days_work,
+                'overtime_hrs' => $temp->overtime_hrs,
+                'bonuses' => $temp->bonuses,
+                'recovery' => $temp->recovery,
+                'absences' => $temp->absences,
+                'late' => $temp->late,
+                'note' => $temp->note
+            ]);
+        }
+        return Response::json($temps);
     }
 
     /**
@@ -89,16 +108,11 @@ class PayrollTempController extends Controller
     {
         // Log::info($request);
         $payrollTemp =  PayrollTemp::find($id);
-        // if (!is_null($payrollTemp)) {
-            $payrollTemp->days_work = $request['days_work'];
-            // $payrollTemp->overtime_hrs = $request['overtime_hrs'];
-            // $payrollTemp->late = $request['late'];
-            // $payrollTemp->absences = $request['absences'];
-            $payrollTemp->bonuses = $request['bonuses'];
-            $payrollTemp->penalty = $request['penalty'];
-            $payrollTemp->save();
-            return $payrollTemp;
-        // }
+        $payrollTemp->bonuses = $request['bonuses'];
+        $payrollTemp->recovery = $request['recovery'];
+        $payrollTemp->note = $request['note'];
+        $payrollTemp->save();
+        return $payrollTemp;
     }
 
     /**

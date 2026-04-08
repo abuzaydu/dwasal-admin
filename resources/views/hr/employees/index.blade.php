@@ -63,7 +63,7 @@
                             <h6 class="mb-0 text-uppercase" id="list-title">Employee List</h6>
                         </div>
                         <div class="ms-auto">
-                            <a href="{{ route('employees.create') }}" class="btn btn-primary"><i class="fa fa-plus-square"></i>Add Employee</a>
+                            <a href="{{ route('employees.create') }}" class="btn btn-primary"><i class="fa fa-plus-square"></i> Add Employee</a>
                         </div>
                     </div>
 
@@ -84,8 +84,8 @@
                                     <th style="text-align: center;">Emp ID</th>
                                     <th style="text-align: center;">Photo</th>
                                     <th style="text-align: center;">Full Name</th>
-                                    <th style="text-align: center;">Type</th>
-                                    <th style="text-align: center;">Salary</th>
+                                    <th style="text-align: center;">Position</th>
+                                    <th style="text-align: center;">Basic Salary</th>
                                     <th style="text-align: center;">Actions</th>
                                 </tr>
                             </thead>
@@ -106,7 +106,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $employee->fname }} {{$employee->mname}} {{ $employee->lname }}</td>
-                                    <td>{{$employee->type}}</td>
+                                    <td>{{$employee->name}}</td>
                                     <td>@if(!$employee->is_paid_monthly){{ number_format($employee->basic_pay_hourly, 2, '.', ',') }} (Per Hour)@else {{ number_format($employee->basic_pay_monthly, 2, '.', ',') }} (Per Month)@endif</td>
                                     <td>
                                         <a href="{{ route('employees.show', encrypt($employee->id)) }}" class="text-secondary"><i class='fa fa-file-text-o mr-1'></i> View</a> | 
