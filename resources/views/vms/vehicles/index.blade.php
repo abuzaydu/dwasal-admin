@@ -61,12 +61,12 @@
                     <ul class="nav nav-tabs nav-tabs-new2">
                         <li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" href="#tab_0">Vehicles List</a></li>
                         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_1">Vehicle Types</a></li>
-                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_2">Ownershi Types</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_2">Ownership Types</a></li>
                     </ul>
                     <div class="tab-content pt-2">
                         <div class="tab-pane fade show active" id="tab_0" role="tabpanel">
                             <div class="table-responsive" id="vehicle-list">
-                                <table id="vehicles" class="table table-striped display nowrap" style="width: 100%;">
+                                <table id="vehicles" class="table table-striped display nowrap data-table" style="width: 100%;">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -111,7 +111,7 @@
                         </div>
                         <div class="tab-pane fade" id="tab_1">
                             <div class="table-responsive">
-                                <table id="vehicle-types" class="table table-striped display nowrap" style="width: 100%;">
+                                <table id="vehicle-types" class="table table-striped display nowrap data-table" style="width: 100%;">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -158,7 +158,7 @@
                         </div>
                         <div class="tab-pane fade" id="tab_2">
                             <div class="table-responsive">
-                                <table id="ownerships" class="table table-striped display nowrap" style="width: 100%;">
+                                <table id="ownerships" class="table table-striped display nowrap data-table" style="width: 100%;">
                                     <thead>
                                         <tr>
                                             <th>#</th>

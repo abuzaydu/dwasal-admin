@@ -157,7 +157,7 @@ class LegalDocumentController extends Controller
     public function index(Request $request)
     {
         $companyId = Session::get('company_id');
-        $now = Carbon::now(); 
+        $now = Carbon::now();
         $start = $now->copy()->startOfMonth()->format('Y-m-d');
         $end = \Carbon\Carbon::now()->format('Y-m-d');
         $start_date = date('Y-m-d', strtotime($start));
@@ -200,7 +200,7 @@ class LegalDocumentController extends Controller
             ->orderBy('expire_date', 'asc')
             ->orderBy('created_at', 'desc');
 
-        $allDocuments = $order(clone $baseQuery)->get();
+        $allDocuments = $order(clone $baseQuery)->whereBetween('created_at', [$start, $end])->get();
 
         $documentsByTab = collect();
         foreach ($tabNames as $name) {
