@@ -1415,6 +1415,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('vehicles', VehicleController::class);
     Route::post('f-vehicles', [VehicleController::class, 'index'])->name('vehicles.filter');
     Route::resource('vehicle-types', VehicleTypeController::class);
+    Route::post('ownerships/{id}/toggle-active', [OwnershipController::class, 'toggleActive'])->name('ownerships.toggle-active');
     Route::resource('ownerships', OwnershipController::class);
 
     // IMPORTANT: place literal routes before resource routes.
