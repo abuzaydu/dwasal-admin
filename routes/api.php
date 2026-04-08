@@ -62,10 +62,12 @@ Route::group(['middleware' => 'cors'], function () {
     // QR Code API
         Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
-        // Attendance API
-        Route::middleware('auth:api')->group(function(){
+        // Attendance API — JWT (logged-in user) OR X-Attendance-Kiosk-Key (see ATTENDANCE_KIOSK_KEY in .env)
+        Route::middleware('attendance.kiosk_or_jwt')->group(function(){
             Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
             Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
+            Route::post('attendance-register-face' , [AttendanceController::class , 'registerFaceTemplate'])->name('api.attendance-register-face');
+            Route::post('attendance-verify-qr' , [AttendanceController::class , 'verifyEmployeeQr'])->name('api.attendance-verify-qr');
 
             });
             
