@@ -45,7 +45,7 @@
                             @csrf
                             <div class="col-md-6">
                                 <label for="validationCustom09" class="form-label">Month of Payment</label>
-                                <select class="form-select form-select-sm" name="month" required onchange="this.form.submit()">
+                                <select class="form-select form-select-sm mb-1" name="month" required onchange="this.form.submit()">
                                     @foreach($data as $d)
                                     @if($d['month'].' '.$d['year'] == $curmonth)
                                     <option selected value="{{$d['month'].' '.$d['year']}}">{{$d['month'].' '.$d['year']}}</option>
@@ -56,35 +56,35 @@
                                 </select>
                             </div>
                         </form>
-                            <div class="col-md-12">
-                                <table class="table table-striped" style="width: 100%; white-space: nowrap;">
-                                    <tr>
-                                        <th style="text-align: center;">#</th>
-                                        <th style="text-align: left;">Employee Name</th>
-                                        <th style="text-align: center;">Basic Salary</th>
-                                        <th style="text-align: center;">Bonuses</th>
-                                        <th style="text-align: center;">Penalty</th>
-                                        <th style="text-align: center;">&nbsp;</th>
-                                    </tr>
-                                    <tr ng-repeat="newpayrolltemp in payrolltemp" id="temps">
-                                        <td style="padding: 5; text-align: center;">@{{$index + 1}}</td>
-                                        <td style="padding: 5">@{{newpayrolltemp.fname}} @{{newpayrolltemp.lname}}</td>
-                                        <td style="text-align: center; padding: 5;">@{{newpayrolltemp.basic_pay_monthly | number:2}}</td>
-                                        <td style="text-align: center;"><input type="number" name="bonuses" min="0" step="any" string-to-number ng-model="newpayrolltemp.bonuses" ng-blur="updatePayrollTemp(newpayrolltemp)" style="text-align:center;" autocomplete="off"></td>
-                                        <td style="text-align: center;"><input type="number" name="bonuses" min="0" step="any" string-to-number ng-model="newpayrolltemp.penalty" ng-blur="updatePayrollTemp(newpayrolltemp)" style="text-align:center;" autocomplete="off"></td>
-                                        <td style="text-align: center;"><a href="#" ng-click="removePayrollTemp(newpayrolltemp.id)"><span class="fa fa-trash" aria-hidden="true" style="color: red"></span></a></td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <form class="row g-3 needs-validation" novalidate method="POST" action="{{ route('payrolls.store') }}">
+                        <div class="col-md-12">
+                            <table class="table table-striped" style="width: 100%; white-space: nowrap;">
+                                <tr>
+                                    <th style="text-align: center;">#</th>
+                                    <th style="text-align: left;">Employee Name</th>
+                                    <th style="text-align: center;">Basic Salary</th>
+                                    <th style="text-align: center;">Bonuses</th>
+                                    <th style="text-align: center;">Recovery</th>
+                                    <th style="text-align: center;">Notes</th>
+                                    <th style="text-align: center;">&nbsp;</th>
+                                </tr>
+                                <tr ng-repeat="newpayrolltemp in payrolltemp" id="temps">
+                                    <td style="padding: 5; text-align: center;">@{{$index + 1}}</td>
+                                    <td style="padding: 5">@{{newpayrolltemp.fname}} @{{newpayrolltemp.lname}}</td>
+                                    <td style="text-align: center; padding: 5;">@{{newpayrolltemp.basic_pay_monthly | number:2}}</td>
+                                    <td style="text-align: center;"><input type="number" name="bonuses" min="0" step="any" string-to-number ng-model="newpayrolltemp.bonuses" ng-blur="updatePayrollTemp(newpayrolltemp)" style="text-align:center;" autocomplete="off"></td>
+                                    <td style="text-align: center;"><input type="number" name="bonuses" min="0" step="any" string-to-number ng-model="newpayrolltemp.recovery" ng-blur="updatePayrollTemp(newpayrolltemp)" style="text-align:center;" autocomplete="off"></td>
+                                    <td style="text-align: left;"><input type="text" name="note" ng-model="newpayrolltemp.note" ng-blur="updatePayrollTemp(newpayrolltemp)" autocomplete="off"></td>
+                                    <td style="text-align: center;"><a href="#" ng-click="removePayrollTemp(newpayrolltemp.id)"><span class="fa fa-trash" aria-hidden="true" style="color: red"></span></a></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <form class="row g-3 needs-validation" novalidate method="POST" action="{{ route('payrolls.store') }}">
                             @csrf
-                                <input type="hidden" name="month" value="{{$curmonth}}">
-                                <div class="col-sm-6">
-                                    <button type="submit" name="myButton" class="btn btn-primary btn-sm">Create</button>
-                                    <button onclick="confirmCancel()" type="button" class="btn btn-outline-danger btn-sm">Cancel</button>
-                                </div>
-                            </form>
+                            <input type="hidden" name="month" value="{{$curmonth}}">
+                            <div class="col-sm-6">
+                                <button type="submit" name="myButton" class="btn btn-primary btn-sm">Create</button>
+                                <button onclick="confirmCancel()" type="button" class="btn btn-warning btn-sm">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>

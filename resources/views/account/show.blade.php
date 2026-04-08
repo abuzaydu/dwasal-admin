@@ -29,8 +29,20 @@
                         <div class="row g-1">
                             <h6 class="card-title">Shop/Business Details</h6>
                             <hr>
-                            <div class="col-sm-6">
-                                <label for="name" class="form-label">Name</label>
+                            <div class="col-sm-3">
+                                <label class="form-label">Company Name <span style="color:red">*</span></label>
+                                <select name="company_id" class="form-select form-select-sm mb-1" required>
+                                    @foreach(Auth::user()->companies()->get() as $key => $company)
+                                    @if($company->id == $shop->company_id)
+                                    <option value="{{$company->id}}" selected>{{$company->name}}</option>
+                                    @else
+                                    <option value="{{$company->id}}">{{$company->name}}</option>
+                                    @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <label for="name" class="form-label">Name <span style="color:red">*</span></label>
                                 <input type="text" class="form-control form-control-sm mb-1" id="name" name="shop_name" value="{{$shop->name}}" placeholder="Business name" required>
                             </div>
                             <div class="col-sm-6">
