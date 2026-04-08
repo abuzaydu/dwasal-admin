@@ -42,8 +42,8 @@
                             onmouseout="this.style.background=''">
                             <td style="padding: 10px;">{{ $vehicles->firstItem() + $i }}</td>
                             <td style="padding: 10px; font-weight: 500;">{{ $vehicle->vehicle_name }}</td>
-                            <td style="padding: 10px;">{{ $vehicle->plate_number ?? '-' }}</td>
-                            <td style="padding: 10px;">{{ $vehicle->type ?? '-' }}</td>
+                            <td style="padding: 10px;">{{ $vehicle->plate_no ?? '-' }}</td>
+                            <td style="padding: 10px;">{{ $vehicle->vehicleType->name ?? '-' }}</td>
                             <td style="padding: 10px;">
                                 <span style="padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600;
                                     background: {{ $vehicle->status === 'Active' ? '#d1fae5' : '#e9ecef' }};

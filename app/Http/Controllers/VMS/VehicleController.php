@@ -93,7 +93,7 @@ class VehicleController extends Controller
     public function totalVehicles()
     {
         $page     = 'Total Vehicles';
-        $vehicles = Vehicle::latest()->paginate(20);
+        $vehicles = Vehicle::with('vehicleType')->latest()->paginate(20);
 
         return view('vms.total-vehicles', compact('page', 'vehicles'));
     }
@@ -121,9 +121,7 @@ class VehicleController extends Controller
                         ->whereBetween('created_at', [
                             $start_date . ' 00:00:00',
                             $end_date   . ' 23:59:59',
-                        ])
-                        ->latest()
-                        ->paginate(20);
+                        ])->latest()->paginate(20);
 
         $totalAmount = $expenses->sum('total_price');   
 
@@ -171,7 +169,6 @@ class VehicleController extends Controller
         ->get();
         
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        // Show only the core ownership types in the Vehicles page.
         $ownerships = Ownership::where('company_id', $companyId)
             ->where('is_system', true)
             ->orderBy('sort_order')
