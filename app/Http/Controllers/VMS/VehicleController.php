@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\DocumentType;
 use App\Models\LegalDocument;
+use App\Models\Maintenance;
 use App\Models\Ownership;
+use App\Models\RequisitionTripLog;
 use App\Models\UnitMeasure;
 use App\Models\Vehicle;
+use App\Models\VehicleRequisition;
 use App\Models\VehicleType;
+use App\Models\VmsExpense;
+use App\Models\VmsExpenseItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +37,108 @@ class VehicleController extends Controller
     public function dashboard(Request $request)
     {
         $page = 'VMS Dashboard';
-        return view('vms.index', compact('page'));
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $totalVehicles = Vehicle::count();
+
+        $tripStats = RequisitionTripLog::select(
+                DB::raw("CASE WHEN end_time IS NULL THEN 'Ongoing' ELSE 'Completed' END as status"),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $completedTrips = $tripStats['Completed'] ?? 0;
+        $activeTrips = $tripStats['Ongoing'] ?? 0;
+
+        $expenses = VmsExpenseItem::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total_price) as total')
+            )
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $months = [];
+        $expensesData = [];
+
+        foreach ($expenses as $exp) {
+            $months[] = date('M', mktime(0, 0, 0, $exp->month, 1));
+            $expensesData[] = $exp->total;
+        }
+
+        $monthlyExpenses = VmsExpenseItem::whereBetween('created_at', [$start, $end])->sum('total_price');
+        $pendingRequests = VehicleRequisition::where('status', 'Awaiting for Approval')->count();
+
+        $recentTrips = RequisitionTripLog::with('vehicleRequisition')->latest()->take(5)->get();
+        $recentExpenses = VmsExpenseItem::with('expenseType')->latest()->take(5)->get();
+        $maintenanceAlerts = Maintenance::where('status', 'pending')->take(5)->get();
+
+        return view('vms.index', compact('page','is_post_query','start_date','end_date','totalVehicles','completedTrips','activeTrips','months','expensesData','monthlyExpenses','pendingRequests','recentTrips','recentExpenses','maintenanceAlerts'));
+    }
+
+    public function totalVehicles()
+    {
+        $page     = 'Total Vehicles';
+        $vehicles = Vehicle::latest()->paginate(20);
+
+        return view('vms.total-vehicles', compact('page', 'vehicles'));
+    }
+
+    public function activeTrips()
+    {
+        $page  = 'Active Trips';
+        $trips = RequisitionTripLog::with('vehicleRequisition.vehicle', 'vehicleRequisition.driver')
+                    ->whereNull('end_time')          
+                    ->latest()
+                    ->paginate(20);
+
+        return view('vms.active-trips', compact('page', 'trips'));
+    }
+
+    public function totalExpenses(Request $request)
+    {
+        $page = 'Total Expenses';
+
+        $now        = Carbon::now();
+        $start_date = $request->get('start_date', $now->copy()->startOfMonth()->format('Y-m-d'));
+        $end_date   = $request->get('end_date',   $now->format('Y-m-d'));
+
+        $expenses = VmsExpenseItem::with('expenseType')
+                        ->whereBetween('created_at', [
+                            $start_date . ' 00:00:00',
+                            $end_date   . ' 23:59:59',
+                        ])
+                        ->latest()
+                        ->paginate(20);
+
+        $totalAmount = $expenses->sum('total_price');   
+
+        return view('vms.total-expenses', compact('page', 'expenses', 'totalAmount', 'start_date', 'end_date'));
+    }
+
+    public function pendingRequests()
+    {
+        $page     = 'Pending Requests';
+        $requests = VehicleRequisition::with('vehicle', 'driver')
+                        ->where('status', 'Awaiting for Approval')
+                        ->latest()
+                        ->paginate(20);
+
+        return view('vms.pending-requests', compact('page', 'requests'));
     }
 
 
@@ -60,6 +166,7 @@ class VehicleController extends Controller
         $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')
         ->whereBetween('vehicles.created_at', [$start, $end])
         ->get();
+        
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
         $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
@@ -82,13 +189,9 @@ class VehicleController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * For ownership_id != 1: save vehicle directly.
-     * For ownership_id == 1: vehicle must be saved only via the document step.
-     */
+       */
     public function store(Request $request)
     {
-        // Normalize empty strings coming from HTML selects to `null`
-        // so validation rules like `nullable|exists:...` work as expected.
         $request->merge([
             'department_id' => $request->input('department_id') ?: null,
             'reg_date' => $request->input('reg_date') ?: null,
@@ -138,15 +241,9 @@ class VehicleController extends Controller
         }
         $vehicle->save();
 
-        // Ownership types != 1: documents are optional (admin can add later).
         return redirect('vehicles')->with('success', 'Vehicle registered successfully. Documents can be added later if needed.');
     }
 
-    /**
-     * Ownership_id == 1 flow:
-     * Validate vehicle details and keep them in session,
-     * then redirect to required legal document upload step.
-     */
     public function prepareDocuments(Request $request)
     {
         $request->merge([
