@@ -69,7 +69,7 @@
               cancelButtonText: "{{trans('navmenu.no')}}"
             }).then((result) => {
               if (result.value) {
-                document.getElementById('delete-ot-form-'+id).submit();
+                document.getElementById('delete-own-form-'+id).submit();
                 Swal.fire(
                   "{{trans('navmenu.deleted')}}",
                   "{{trans('navmenu.cancelled')}}",
@@ -96,10 +96,10 @@
                     <i class="fa fa-plus mr-1"></i>
                     Add Vehicle Type
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm px-1" data-bs-toggle="modal" data-bs-target="#newOwnModal">
-                    <i class="fa fa-plus mr-1"></i>
-                    Add Ownership Type
-                </button>
+                <a href="#tab_2" class="btn btn-secondary btn-sm px-1" data-bs-toggle="tab" role="tab" aria-controls="tab_2">
+                    <i class="fa fa-list mr-1"></i>
+                    Ownership Types
+                </a>
             </div>
         </div>
     </div>
@@ -112,7 +112,7 @@
                     <ul class="nav nav-tabs nav-tabs-new2">
                         <li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" href="#tab_0">Vehicles List</a></li>
                         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_1">Vehicle Types</a></li>
-                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_2">Ownershi Types</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab_2">Ownership Types</a></li>
                     </ul>
                     <div class="tab-content pt-2">
                         <div class="tab-pane fade show active" id="tab_0" role="tabpanel">
@@ -216,8 +216,7 @@
                                             <th>Type</th>
                                             <th>Description</th>
                                             <th>Status</th>
-                                            <th>Created</th>
-                                            <th>Updated</th>
+                                            <th style="text-align: center;">Toggle</th>
                                             <th style="text-align: center;">Actions</th>
                                         </tr>
                                     </thead>
@@ -225,28 +224,42 @@
                                         @foreach($ownerships as $key => $owner)
                                         <tr>
                                             <td>{{$key+1}}</td>
-                                            <td><a href="{{ route('ownerships.show', encrypt($owner->id))}}">{{$owner->type}}</a></td>
-                                            <td>{{$owner->description}}</td>
+                                            <td>
+                                                <a href="{{ route('ownerships.edit', encrypt($owner->id))}}">{{$owner->type}}</a>
+                                                @if($owner->is_system)
+                                                <span class="badge bg-secondary ms-1">Core</span>
+                                                @endif
+                                            </td>
+                                            <td style="max-width: 320px;"><small class="text-muted">{{$owner->description}}</small></td>
                                             <td>
                                                 @if($owner->active)
                                                 <span class="badge rounded-pill bg-success">Active</span>
                                                 @else
-                                                <span class="badge rounded-pill bg-danger">In Active</span>
+                                                <span class="badge rounded-pill bg-danger">Inactive</span>
                                                 @endif
                                             </td>
-                                            <th>{{$owner->created_at}}</th>
-                                            <th>{{$owner->updated_at}}</th>
                                             <td style="text-align: center;">
-                                                <a href="{{route('ownerships.edit', encrypt($owner->id))}}">
+                                                <form method="POST" action="{{ route('ownerships.toggle-active', encrypt($owner->id)) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm {{ $owner->active ? 'btn-outline-warning' : 'btn-outline-success' }}" title="Activate or deactivate for new vehicle registration">
+                                                        {{ $owner->active ? 'Deactivate' : 'Activate' }}
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <a href="{{route('ownerships.edit', encrypt($owner->id))}}" title="Edit description / status">
                                                     <i class="fa fa-edit" style="color: blue;"></i>
-                                                </a> | 
-                                                <form method="POST" action="{{route('ownerships.destroy' , encrypt($owner->id))}}" id="delete-form-{{$key}}" style="display: inline;"> 
+                                                </a>
+                                                @if(!$owner->is_system)
+                                                 | 
+                                                <form method="POST" action="{{route('ownerships.destroy' , encrypt($owner->id))}}" id="delete-own-form-{{$key}}" style="display: inline;"> 
                                                     @csrf
                                                     @method('DELETE')
                                                     <a href="javascript:;" onclick="return confirmDeleteOwnership({{$key}})">
                                                         <i class="fa fa-trash" style="color: red;"></i>
                                                     </a>                        
-                                                </form>    
+                                                </form>
+                                                @endif
                                             </td>
                                         </tr>
                                         @endforeach
@@ -277,38 +290,6 @@
                             <div class="col-md-12 pt-2">
                                 <label class="form-label">Vehicle Type <span style="color: red;">*</span></label>
                                 <input id="register-username" type="text" name="name" required placeholder="Enter Vehicle type name" class="form-control form-control-sm mb-1">
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label">Description?</label>
-                                <input type="text" name="description" class="form-control form-control-sm mb-1" placeholder="Enter Description">
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-success btn-sm" id="btn-submit-new">{{ trans('navmenu.btn_save') }}</button>
-                                <button type="button" class="btn btn-warning btn-sm"
-                                    data-bs-dismiss="modal">{{ trans('navmenu.btn_cancel') }}</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="newOwnModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title" id="myModalLabel">New Ownership</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" action="{{ route('ownerships.store') }}">
-                    <div class="modal-body">
-                        @csrf
-                        <div class="row g-1 align-items-center">
-                            <div class="col-md-12 pt-2">
-                                <label class="form-label">Ownership Type <span style="color: red;">*</span></label>
-                                <input id="register-username" type="text" name="type" required placeholder="Enter Ownership type" class="form-control form-control-sm mb-1">
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label">Description?</label>

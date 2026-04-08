@@ -78,7 +78,7 @@
                             <select name="ownership_id" class="form-select form-select-sm" required>
                                 <option value="">-- Select Ownership --</option>
                                 @foreach($ownerships as $o)
-                                <option value="{{ $o->id }}" {{ old('ownership_id') == $o->id ? 'selected' : '' }}>{{ $o->type }}</option>
+                                <option value="{{ $o->id }}" data-requires-docs="{{ $o->requiresLegalDocuments() ? '1' : '0' }}" {{ old('ownership_id') == $o->id ? 'selected' : '' }}>{{ $o->type }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -152,8 +152,8 @@
         const saveBtn = document.getElementById('saveBtn');
 
         function toggleButtons() {
-            const ownershipId = ownershipSelect ? ownershipSelect.value : '';
-            const needsDocsNow = String(ownershipId) === '1';
+            const opt = ownershipSelect?.options[ownershipSelect.selectedIndex];
+            const needsDocsNow = opt && opt.getAttribute('data-requires-docs') === '1';
 
             if (needsDocsNow) {
                 nextBtn?.classList.remove('d-none');

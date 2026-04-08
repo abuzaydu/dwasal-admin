@@ -41,10 +41,18 @@ class VehicleController extends Controller
     public function index()
     {
         $page = 'Vehicles';
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
         $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->get();
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
+        // Show only the core ownership types in the Vehicles page.
+        $ownerships = Ownership::where('company_id', $companyId)
+            ->where('is_system', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
 
         return view('vms.vehicles.index', compact('page', 'vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
@@ -57,17 +65,30 @@ class VehicleController extends Controller
     public function create()
     {
         $page = 'Register New Vehicle';
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
-        $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
-        $departments = Department::where('company_id', Session::get('company_id'))->get();
+        $vehtypes = VehicleType::where('company_id', $companyId)->get();
+        $ownerships = Ownership::where('company_id', $companyId)->where('active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $departments = Department::where('company_id', $companyId)->get();
         return view('vms.vehicles.create', compact('page', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
+     * Company-owned fleet requires legal documents on registration (TR Tanzania flow).
+     */
+    private function ownershipRequiresLegalDocuments(int $ownershipId): bool
+    {
+        $ownership = Ownership::find($ownershipId);
+
+        return $ownership && $ownership->requiresLegalDocuments();
+    }
+
+    /**
      * Store a newly created resource in storage.
-     * For ownership_id != 1: save vehicle directly.
-     * For ownership_id == 1: vehicle must be saved only via the document step.
+     * Company-owned: save only via the document upload step (prepareDocuments).
+     * Other ownership types: save directly; documents optional later.
      */
     public function store(Request $request)
     {
@@ -77,6 +98,8 @@ class VehicleController extends Controller
             'department_id' => $request->input('department_id') ?: null,
             'reg_date' => $request->input('reg_date') ?: null,
         ]);
+
+        $companyId = Session::get('company_id');
 
         $request->validate([
             'plate_no' => 'required|string|max:50',
@@ -91,14 +114,20 @@ class VehicleController extends Controller
             'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
-        $companyId = Session::get('company_id');
         $ownershipId = (int) $request->ownership_id;
-
-        if ($ownershipId === 1) {
+        $ownershipRow = Ownership::where('company_id', $companyId)->where('id', $ownershipId)->where('active', true)->first();
+        if (!$ownershipRow) {
             return redirect()
                 ->route('vehicles.create')
                 ->withInput()
-                ->with('error', 'Ownership ID 1 requires document upload step. Click "Next: Upload Documents".');
+                ->with('error', 'Please select an active ownership type.');
+        }
+
+        if ($this->ownershipRequiresLegalDocuments($ownershipId)) {
+            return redirect()
+                ->route('vehicles.create')
+                ->withInput()
+                ->with('error', 'Company-owned vehicles require legal documents on registration. Click "Next: Upload Documents".');
         }
 
         $vehicle = Vehicle::where('company_id', $companyId)->where('plate_no', $request->plate_no)->first();
@@ -122,13 +151,12 @@ class VehicleController extends Controller
         }
         $vehicle->save();
 
-        // Ownership types != 1: documents are optional (admin can add later).
+        // Non–company-owned: documents are optional (admin can add later).
         return redirect('vehicles')->with('success', 'Vehicle registered successfully. Documents can be added later if needed.');
     }
 
     /**
-     * Ownership_id == 1 flow:
-     * Validate vehicle details and keep them in session,
+     * Company-owned flow: validate vehicle details, keep in session,
      * then redirect to required legal document upload step.
      */
     public function prepareDocuments(Request $request)
@@ -137,6 +165,8 @@ class VehicleController extends Controller
             'department_id' => $request->input('department_id') ?: null,
             'reg_date' => $request->input('reg_date') ?: null,
         ]);
+
+        $companyId = Session::get('company_id');
 
         $request->validate([
             'plate_no' => 'required|string|max:50',
@@ -151,13 +181,18 @@ class VehicleController extends Controller
             'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
-        $companyId = Session::get('company_id');
         $ownershipId = (int) $request->ownership_id;
-
-        if ($ownershipId !== 1) {
+        $ownershipRow = Ownership::where('company_id', $companyId)->where('id', $ownershipId)->where('active', true)->first();
+        if (!$ownershipRow) {
             return redirect()->route('vehicles.create')
                 ->withInput()
-                ->with('error', 'Use "Save Vehicle" for this ownership type.');
+                ->with('error', 'Please select an active ownership type.');
+        }
+
+        if (!$this->ownershipRequiresLegalDocuments($ownershipId)) {
+            return redirect()->route('vehicles.create')
+                ->withInput()
+                ->with('error', 'Use "Save Vehicle" for this ownership type. The document upload step applies only to company-owned vehicles.');
         }
 
         $exists = Vehicle::where('company_id', $companyId)
@@ -210,6 +245,14 @@ class VehicleController extends Controller
         if (!$pendingVehicle) {
             return redirect()->route('vehicles.create')
                 ->with('error', 'Session expired. Please fill vehicle details again.');
+        }
+
+        $pendingOwnership = Ownership::find($pendingVehicle['ownership_id'] ?? null);
+        if (!$pendingOwnership || !$pendingOwnership->requiresLegalDocuments()) {
+            Session::forget('pending_vehicle_registration');
+
+            return redirect()->route('vehicles.create')
+                ->with('error', 'This registration step applies only to company-owned vehicles. Please start again.');
         }
 
         $request->validate([
@@ -314,11 +357,20 @@ class VehicleController extends Controller
     public function edit(string $id)
     {
         $page = 'Edi Vehicle Details';
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
         $vehicle = Vehicle::find(decrypt($id));
-        $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
-        $departments = Department::where('company_id', Session::get('company_id'))->get();
+        $vehtypes = VehicleType::where('company_id', $companyId)->get();
+        $ownerships = Ownership::where('company_id', $companyId)
+            ->where(function ($q) use ($vehicle) {
+                $q->where('active', true)->orWhere('id', $vehicle->ownership_id);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+        $departments = Department::where('company_id', $companyId)->get();
         return view('vms.vehicles.edit', compact('page', 'vehicle', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
