@@ -4,16 +4,22 @@ namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
-use App\Models\Ownership;
-use App\Models\UnitMeasure;
-use App\Models\Vehicle;
-use App\Models\VehicleType;
 use App\Models\DocumentType;
 use App\Models\LegalDocument;
+use App\Models\Maintenance;
+use App\Models\Ownership;
+use App\Models\RequisitionTripLog;
+use App\Models\UnitMeasure;
+use App\Models\Vehicle;
+use App\Models\VehicleRequisition;
+use App\Models\VehicleType;
+use App\Models\VmsExpense;
+use App\Models\VmsExpenseItem;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class VehicleController extends Controller
@@ -31,52 +37,185 @@ class VehicleController extends Controller
     public function dashboard(Request $request)
     {
         $page = 'VMS Dashboard';
-        return view('vms.index', compact('page'));
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $totalVehicles = Vehicle::count();
+
+        $tripStats = RequisitionTripLog::select(
+                DB::raw("CASE WHEN end_time IS NULL THEN 'Ongoing' ELSE 'Completed' END as status"),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $completedTrips = $tripStats['Completed'] ?? 0;
+        $activeTrips = $tripStats['Ongoing'] ?? 0;
+
+        $expenses = VmsExpenseItem::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total_price) as total')
+            )
+            ->whereYear('created_at', now()->year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $months = [];
+        $expensesData = [];
+
+        foreach ($expenses as $exp) {
+            $months[] = date('M', mktime(0, 0, 0, $exp->month, 1));
+            $expensesData[] = $exp->total;
+        }
+
+        $monthlyExpenses = VmsExpenseItem::whereBetween('created_at', [$start, $end])->sum('total_price');
+        $pendingRequests = VehicleRequisition::where('status', 'Awaiting for Approval')->count();
+
+        $recentTrips = RequisitionTripLog::with('vehicleRequisition')->latest()->take(5)->get();
+        $recentExpenses = VmsExpenseItem::with('expenseType')->latest()->take(5)->get();
+        $maintenanceAlerts = Maintenance::where('status', 'pending')->take(5)->get();
+
+        return view('vms.index', compact('page','is_post_query','start_date','end_date','totalVehicles','completedTrips','activeTrips','months','expensesData','monthlyExpenses','pendingRequests','recentTrips','recentExpenses','maintenanceAlerts'));
+    }
+
+    public function totalVehicles()
+    {
+        $page     = 'Total Vehicles';
+        $vehicles = Vehicle::with('vehicleType')->latest()->paginate(20);
+
+        return view('vms.total-vehicles', compact('page', 'vehicles'));
+    }
+
+    public function activeTrips()
+    {
+        $page  = 'Active Trips';
+        $trips = RequisitionTripLog::with('vehicleRequisition.vehicle', 'vehicleRequisition.driver')
+                    ->whereNull('end_time')          
+                    ->latest()
+                    ->paginate(20);
+
+        return view('vms.active-trips', compact('page', 'trips'));
+    }
+
+    public function totalExpenses(Request $request)
+    {
+        $page = 'Total Expenses';
+
+        $now        = Carbon::now();
+        $start_date = $request->get('start_date', $now->copy()->startOfMonth()->format('Y-m-d'));
+        $end_date   = $request->get('end_date',   $now->format('Y-m-d'));
+
+        $expenses = VmsExpenseItem::with('expenseType')
+                        ->whereBetween('created_at', [
+                            $start_date . ' 00:00:00',
+                            $end_date   . ' 23:59:59',
+                        ])->latest()->paginate(20);
+
+        $totalAmount = $expenses->sum('total_price');   
+
+        return view('vms.total-expenses', compact('page', 'expenses', 'totalAmount', 'start_date', 'end_date'));
+    }
+
+    public function pendingRequests()
+    {
+        $page     = 'Pending Requests';
+        $requests = VehicleRequisition::with('vehicle', 'driver')
+                        ->where('status', 'Awaiting for Approval')
+                        ->latest()
+                        ->paginate(20);
+
+        return view('vms.pending-requests', compact('page', 'requests'));
     }
 
 
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Vehicles';
+        $now = Carbon::now();
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
-        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')->get();
+        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')
+        ->whereBetween('vehicles.created_at', [$start, $end])
+        ->get();
+        
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
+        $ownerships = Ownership::where('company_id', $companyId)
+            ->where('is_system', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
 
-        return view('vms.vehicles.index', compact('page', 'vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
+        return view('vms.vehicles.index', compact('page','start','end','start_date','end_date','is_post_query','vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
      * Show the form for creating a new resource.
-     * Tanzania: Includes required non-insurance legal document uploads (PDF only).
      */
     public function create()
     {
         $page = 'Register New Vehicle';
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
-        $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
-        $departments = Department::where('company_id', Session::get('company_id'))->get();
+        $vehtypes = VehicleType::where('company_id', $companyId)->get();
+        $ownerships = Ownership::where('company_id', $companyId)->where('active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $departments = Department::where('company_id', $companyId)->get();
         return view('vms.vehicles.create', compact('page', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
-     * Store a newly created resource in storage.
-     * For ownership_id != 1: save vehicle directly.
-     * For ownership_id == 1: vehicle must be saved only via the document step.
+     * Company-owned fleet requires legal documents on registration (TR Tanzania flow).
      */
+    private function ownershipRequiresLegalDocuments(int $ownershipId): bool
+    {
+        $ownership = Ownership::find($ownershipId);
+
+        return $ownership && $ownership->requiresLegalDocuments();
+    }
+
+    /**
+     * Store a newly created resource in storage.
+       */
     public function store(Request $request)
     {
-        // Normalize empty strings coming from HTML selects to `null`
-        // so validation rules like `nullable|exists:...` work as expected.
         $request->merge([
             'department_id' => $request->input('department_id') ?: null,
             'reg_date' => $request->input('reg_date') ?: null,
         ]);
+
+        $companyId = Session::get('company_id');
 
         $request->validate([
             'plate_no' => 'required|string|max:50',
@@ -91,14 +230,20 @@ class VehicleController extends Controller
             'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
-        $companyId = Session::get('company_id');
         $ownershipId = (int) $request->ownership_id;
-
-        if ($ownershipId === 1) {
+        $ownershipRow = Ownership::where('company_id', $companyId)->where('id', $ownershipId)->where('active', true)->first();
+        if (!$ownershipRow) {
             return redirect()
                 ->route('vehicles.create')
                 ->withInput()
-                ->with('error', 'Ownership ID 1 requires document upload step. Click "Next: Upload Documents".');
+                ->with('error', 'Please select an active ownership type.');
+        }
+
+        if ($this->ownershipRequiresLegalDocuments($ownershipId)) {
+            return redirect()
+                ->route('vehicles.create')
+                ->withInput()
+                ->with('error', 'Company-owned vehicles require legal documents on registration. Click "Next: Upload Documents".');
         }
 
         $vehicle = Vehicle::where('company_id', $companyId)->where('plate_no', $request->plate_no)->first();
@@ -122,21 +267,17 @@ class VehicleController extends Controller
         }
         $vehicle->save();
 
-        // Ownership types != 1: documents are optional (admin can add later).
         return redirect('vehicles')->with('success', 'Vehicle registered successfully. Documents can be added later if needed.');
     }
 
-    /**
-     * Ownership_id == 1 flow:
-     * Validate vehicle details and keep them in session,
-     * then redirect to required legal document upload step.
-     */
     public function prepareDocuments(Request $request)
     {
         $request->merge([
             'department_id' => $request->input('department_id') ?: null,
             'reg_date' => $request->input('reg_date') ?: null,
         ]);
+
+        $companyId = Session::get('company_id');
 
         $request->validate([
             'plate_no' => 'required|string|max:50',
@@ -151,13 +292,18 @@ class VehicleController extends Controller
             'vehicle_picture' => 'nullable|image|max:5120',
         ]);
 
-        $companyId = Session::get('company_id');
         $ownershipId = (int) $request->ownership_id;
-
-        if ($ownershipId !== 1) {
+        $ownershipRow = Ownership::where('company_id', $companyId)->where('id', $ownershipId)->where('active', true)->first();
+        if (!$ownershipRow) {
             return redirect()->route('vehicles.create')
                 ->withInput()
-                ->with('error', 'Use "Save Vehicle" for this ownership type.');
+                ->with('error', 'Please select an active ownership type.');
+        }
+
+        if (!$this->ownershipRequiresLegalDocuments($ownershipId)) {
+            return redirect()->route('vehicles.create')
+                ->withInput()
+                ->with('error', 'Use "Save Vehicle" for this ownership type. The document upload step applies only to company-owned vehicles.');
         }
 
         $exists = Vehicle::where('company_id', $companyId)
@@ -210,6 +356,14 @@ class VehicleController extends Controller
         if (!$pendingVehicle) {
             return redirect()->route('vehicles.create')
                 ->with('error', 'Session expired. Please fill vehicle details again.');
+        }
+
+        $pendingOwnership = Ownership::find($pendingVehicle['ownership_id'] ?? null);
+        if (!$pendingOwnership || !$pendingOwnership->requiresLegalDocuments()) {
+            Session::forget('pending_vehicle_registration');
+
+            return redirect()->route('vehicles.create')
+                ->with('error', 'This registration step applies only to company-owned vehicles. Please start again.');
         }
 
         $request->validate([
@@ -314,11 +468,20 @@ class VehicleController extends Controller
     public function edit(string $id)
     {
         $page = 'Edi Vehicle Details';
+        $companyId = (int) Session::get('company_id');
+        Ownership::ensureDefaultsForCompany($companyId);
+
         $units = UnitMeasure::select('unit_name')->get();
         $vehicle = Vehicle::find(decrypt($id));
-        $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
-        $ownerships = Ownership::where('company_id', Session::get('company_id'))->get();
-        $departments = Department::where('company_id', Session::get('company_id'))->get();
+        $vehtypes = VehicleType::where('company_id', $companyId)->get();
+        $ownerships = Ownership::where('company_id', $companyId)
+            ->where(function ($q) use ($vehicle) {
+                $q->where('active', true)->orWhere('id', $vehicle->ownership_id);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+        $departments = Department::where('company_id', $companyId)->get();
         return view('vms.vehicles.edit', compact('page', 'vehicle', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 

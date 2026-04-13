@@ -1402,37 +1402,45 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('order-payments', OrderPaymentController::class);
     Route::post('card-payments', [OrderPaymentController::class, 'initiateOrder']);
     Route::post('check-payment-order-status', [OrderPaymentController::class, 'checkOrderStatus']);
+    Route::get('vms/total-vehicles', [VehicleController::class, 'totalVehicles']);
+    Route::get('vms/active-trips', [VehicleController::class, 'activeTrips']);
+    Route::get('vms/total-expenses', [VehicleController::class, 'totalExpenses']);
+    Route::get('vms/pending-requests', [VehicleController::class, 'pendingRequests']);
 
     Route::get('vehicles-dash', [VehicleController::class, 'dashboard']);
-    Route::post('vehicles-dash', [VehicleController::class, 'dashboard']);
+    Route::post('f-vehicles-dash', [VehicleController::class, 'dashboard']);
     Route::post('vehicles/prepare-documents', [VehicleController::class, 'prepareDocuments'])->name('vehicles.prepare-documents');
     Route::get('vehicles/documents-step', [VehicleController::class, 'createDocumentsStep'])->name('vehicles.documents.create');
     Route::post('vehicles/documents-step', [VehicleController::class, 'storeWithDocuments'])->name('vehicles.documents.store');
     Route::resource('vehicles', VehicleController::class);
+    Route::post('f-vehicles', [VehicleController::class, 'index'])->name('vehicles.filter');
     Route::resource('vehicle-types', VehicleTypeController::class);
+    Route::post('ownerships/{id}/toggle-active', [OwnershipController::class, 'toggleActive'])->name('ownerships.toggle-active');
     Route::resource('ownerships', OwnershipController::class);
 
     // IMPORTANT: place literal routes before resource routes.
     // Otherwise `/legal-documents/status` may be matched by `legal-documents/{id}`.
     Route::get('legal-documents/status', [LegalDocumentController::class, 'vehicleStatus'])
         ->name('legal-documents.status');
-
     Route::resource('legal-documents', LegalDocumentController::class)
         ->whereNumber('legal_document');
+    Route::post('f-legal-documents', [LegalDocumentController::class, 'index'])->name('legal-documents.filter');
     Route::get('legal-documents/{id}/download', [LegalDocumentController::class, 'download'])->name('legal-documents.download');
     Route::Put('vehicle-requisitions/{id}',[VehicleRequisitionController::class,'resubmit'])->name('vehicle-requisitions.resubmit');
     Route::resource('insurance', InsuranceController::class);
+    Route::post('f-insurance', [InsuranceController::class, 'index'])->name('insurance.filter');
     Route::get('insurance/{id}/download', [InsuranceController::class, 'download'])->name('insurance.download');
     Route::resource('insurance-companies', InsuranceCompanyController::class)->except(['show', 'create']);
     Route::resource('ir-periods', IrPeriodController::class)->except(['show', 'create']);
     Route::resource('vehicle-requisitions', VehicleRequisitionController::class);
+    Route::post('f-vehicle-requisitions', [VehicleRequisitionController::class, 'index'])->name('vehicle-requisitions.filter');
     Route::put('/vehicle-requisitions/{vehicle_requisition}/assign-driver',[VehicleRequisitionController::class, 'assignDriver'])
     ->name('vehicle-requisitions.assign-driver');
     Route::put('/vehicle-requisitions/{id}/reject', [VehicleRequisitionController::class, 'rejectRequisition'])
     ->name('vehicle-requisitions.reject');
     Route::resource('requisitions-purpose', RequisitionPurposeController::class);
-    Route::get('rtllist', [RequisitionTripLogController::class,'test1']);
     Route::resource('requisition-trip-logs', RequisitionTripLogController::class);
+    Route::post('f-requisition-trip-logs', [RequisitionTripLogController::class, 'index'])->name('requisition-trip-logs.filter');
     Route::post('trip-start/{id}',[RequisitionTripLogController::class, 'tripStart'])->name('trip.start');
     Route::post('trip-end/{id}',[RequisitionTripLogController::class, 'endTrip'])->name('trip.end');
 
@@ -1441,13 +1449,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('maintenance-complete/{id}', [MaintenanceController::class,'complete'])->name('maintenance.complete');
     Route::post('maintenance-start/{id}', [MaintenanceController::class,'start'])->name('maintenance.start');
     Route::resource('maintenance', MaintenanceController::class);
+    Route::post('f-maintenance', [MaintenanceController::class, 'index'])->name('maintenance.filter');
     Route::resource('maintenance-types',MaintenanceTypeController::class);
     Route::resource('refueling', RefuelingController::class);
+    Route::post('f-refueling', [RefuelingController::class, 'index'])->name('refueling.filter');
     Route::resource('fuel-types', FuelTypeController::class);
     Route::resource('fuel-stations',FuelStationController::class);
     Route::resource('drivers', DriverController::class);
     Route::resource('license-types', LicenseTypeController::class);
     Route::resource('vendors', VendorController::class);
+    Route::post('f-vendors', [VendorController::class, 'index'])->name('vendors.filter');
     Route::post('vendor-account-stmt/{id}', [VendorController::class, 'show']);
     Route::post('vendor-acc-payments', [VendorController::class, 'accPayments']);
     Route::get('del-vendor-acc-pv/{id}', [VendorController::class, 'deletePayment']);
@@ -1477,8 +1488,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('parts-usage/approve-part-usage/{id}', [PartsUsageController::class, 'approvePURequest']);
     Route::get('parts-usage/close-part-usage/{id}', [PartsUsageController::class, 'closePURequest']);
     Route::resource('expense-type',ExpenseTypeController::class);
-    Route::resource('vms-expenses', VMSExpenseController::class);
-    Route::delete('vms-expense-attachment/{id}', [VMSExpenseController::class, 'destroyAttachment'])
+    Route::resource('vms-expenses', VmsExpenseController::class);
+    Route::post('f-vms-expenses', [   VmsExpenseController::class, 'index']);
+    Route::delete('vms-expense-attachment/{id}', [VmsExpenseController::class, 'destroyAttachment'])
      ->name('vms-expense-attachment.destroy');
     Route::get('cancel-vms-expense/{id}',  [VmsExpenseController::class, 'destroy']);
     Route::post('approve-vms-expense/{id}', [VmsExpenseController::class, 'approveExpense'])->name('approve-vms-expense');

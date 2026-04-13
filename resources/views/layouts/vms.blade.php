@@ -392,7 +392,8 @@
         }
     }
 
-    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage') {
+    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage' || $page == 'Vehicle Maintenance' || $page == 'Vehicle Refueling' || $page == 'VMS Expenses' || $page == 'Requisition Trip Logs' || $page == 'Vehicle Requisitions' || $page == 'Vendors' || $page == 'Legal Documents (Tanzania)' || $page == 'Vehicles' || $page == 'Insurance' || $page == 'Equipment Records' || $page == 'Vehicle Insurance'
+    || $page == 'VMS Dashboard') {
         $is_post = $is_post_query;
         $startdate = $start_date;
         $enddate = $end_date;
@@ -537,14 +538,6 @@
           });
         });
 
-
-        // Extra snippet here to also prevent form submissions the first submit
-        // as a viewer of this demo would otherwise be guided to outside of CodePen …
-        // document.querySelectorAll('form').forEach(form => {
-        //   form.addEventListener('submit', e => {
-        //     e.preventDefault();
-        //   });
-        // });
     </script>
     @yield('page-scripts')
 </body>

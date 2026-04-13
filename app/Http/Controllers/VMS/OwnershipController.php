@@ -3,97 +3,112 @@
 namespace App\Http\Controllers\VMS;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
 use App\Models\Ownership;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class OwnershipController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware(['auth']);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Custom ownership types are no longer created here — core types are seeded per company.
      */
     public function store(Request $request)
     {
-        $ownership = Ownership::where('company_id', Session::get('company_id'))->where('type', $request['type'])->first();
-        if (is_null($ownership)) {
-            $ownership = new Ownership();
-            $ownership->company_id = Session::get('company_id');
-            $ownership->type = $request['type'];
-            $ownership->description = $request['description'];
-            $ownership->save();
-        }
-
-        return redirect('vehicles')->with('success', 'Ownership Type added successfully');
+        return redirect('vehicles')->with('error', 'Ownership types are predefined. Use the Ownership tab to activate or deactivate them.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        return redirect()->route('ownerships.edit', $id);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $page = 'Edit Ownership';
-        $ownership = Ownership::find(decrypt($id));
+        $ownership = Ownership::findOrFail(decrypt($id));
+
+        if ((int) $ownership->company_id !== (int) Session::get('company_id')) {
+            abort(403);
+        }
 
         return view('vms.ownerships.edit', compact('page', 'ownership'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        $ownership = Ownership::find(decrypt($id));
-        $ownership->type = $request['type'];
-        $ownership->description = $request['description'];
-        $ownership->save();
+        $ownership = Ownership::findOrFail(decrypt($id));
+        if ((int) $ownership->company_id !== (int) Session::get('company_id')) {
+            abort(403);
+        }
 
-        return redirect('vehicles')->with('success', 'Ownership Type updated successfully');
+        if ($ownership->is_system) {
+            $request->validate([
+                'description' => 'nullable|string|max:500',
+                'active' => 'required|in:0,1',
+            ]);
+            $ownership->description = $request->input('description');
+            $ownership->active = $request->input('active') === '1' || $request->input('active') === 1;
+            $ownership->save();
+        } else {
+            $request->validate([
+                'type' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500',
+                'active' => 'required|in:0,1',
+            ]);
+            $ownership->type = $request->input('type');
+            $ownership->description = $request->input('description');
+            $ownership->active = $request->input('active') === '1' || $request->input('active') === 1;
+            $ownership->save();
+        }
+
+        return redirect('vehicles')->with('success', 'Ownership type updated successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function toggleActive(string $id)
+    {
+        $ownership = Ownership::findOrFail(decrypt($id));
+        if ((int) $ownership->company_id !== (int) Session::get('company_id')) {
+            abort(403);
+        }
+
+        $ownership->active = !$ownership->active;
+        $ownership->save();
+
+        return redirect('vehicles')->with('success', 'Ownership status updated.');
+    }
+
     public function destroy(string $id)
     {
         $ownership = Ownership::find(decrypt($id));
-        if (!is_null($ownership)) {
-            $ownership->delete();
-        
-            return redirect('vehicles')->with('success', 'Ownership Type deleted successfully');
+        if ($ownership === null) {
+            return redirect('vehicles')->with('error', 'Ownership type not found');
         }
+
+        if ((int) $ownership->company_id !== (int) Session::get('company_id')) {
+            abort(403);
+        }
+
+        if ($ownership->is_system) {
+            return redirect('vehicles')->with('error', 'Core ownership types cannot be deleted. You can deactivate them instead.');
+        }
+
+        $ownership->delete();
+
+        return redirect('vehicles')->with('success', 'Ownership Type deleted successfully');
     }
 }

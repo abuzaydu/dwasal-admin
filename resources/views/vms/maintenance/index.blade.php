@@ -11,12 +11,27 @@
                 </ul>
             </div>
             <div class="col-lg-6 col-md-4 col-sm-12 text-right">
-                <a href="{{ route('maintenance.create') }}" class="btn btn-primary btn-sm">
-                    <i class="fa fa-plus me-1"></i> New Maintenance
-                </a>
-                <button type="button" class="btn btn-info btn-sm ms-1" id="btn-open-type-modal">
-                    <i class="fa fa-list-alt me-1"></i> Maintenance Types
-                </button>
+                <div class="d-flex justify-content-end align-items-center">
+                    
+                    <form class="dashform row g-1" action="{{ url('f-maintenance') }}" method="POST" id="stockform">
+                        @csrf
+                        <input type="hidden" name="start_date" id="start_input" value="">
+                        <input type="hidden" name="end_date" id="end_input" value="">
+
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-default pull-right " id="reportrange">
+                                <span><i class="fa fa-calendar"></i></span>
+                                <i class="fa fa-caret-down"></i>
+                            </button>
+                       </div>
+                    </form>
+                    <a href="{{ route('maintenance.create') }}" class="btn btn-primary btn-sm">
+                        <i class="fa fa-plus me-1"></i> New Maintenance
+                    </a>
+                    <button type="button" class="btn btn-info btn-sm ms-1" id="btn-open-type-modal">
+                        <i class="fa fa-list-alt me-1"></i> Maintenance Types
+                    </button>
+                </div>
             </div>
         </div>
     </div>

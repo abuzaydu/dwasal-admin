@@ -7,10 +7,11 @@ use App\Models\Insurance;
 use App\Models\InsuranceCompany;
 use App\Models\IrPeriod;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 
 class InsuranceController extends Controller
 {
@@ -27,14 +28,28 @@ class InsuranceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Vehicle Insurance';
         $companyId = Session::get('company_id');
-        $status = request('status'); // used only for setting active tab (no reload)
+        $now = Carbon::now(); 
+        $start = $now->copy()->startOfMonth()->format('Y-m-d');
+        $end = \Carbon\Carbon::now()->format('Y-m-d');
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $status = request('status');
 
         $insurancesAll = Insurance::with(['vehicle', 'insuranceCompany', 'irPeriod'])
-            ->where('company_id', $companyId)
+            ->where('company_id', $companyId)->whereBetween('insurances.created_at', [$start, $end])
             ->where('is_active', true)
             ->orderBy('end_date')
             ->get();
@@ -43,7 +58,6 @@ class InsuranceController extends Controller
         $expiringSoonInsurances = $insurancesAll->filter(fn ($i) => $i->status === 'EXPIRING_SOON')->values();
         $expiredInsurances = $insurancesAll->filter(fn ($i) => $i->status === 'EXPIRED')->values();
 
-        // Missing = vehicles without any insurance records in this company.
         $missingVehicles = Vehicle::where('company_id', $companyId)
             ->whereDoesntHave('insurances', function ($q) use ($companyId) {
                 $q->where('company_id', $companyId);
@@ -51,15 +65,8 @@ class InsuranceController extends Controller
             ->orderBy('plate_no')
             ->get();
 
-        return view('vms.insurances.index', compact(
-            'page',
-            'insurancesAll',
-            'validInsurances',
-            'expiringSoonInsurances',
-            'expiredInsurances',
-            'missingVehicles',
-            'status'
-        ));
+        return view('vms.insurances.index', compact('page','insurancesAll','validInsurances','expiringSoonInsurances',
+            'expiredInsurances','missingVehicles','status','is_post_query', 'start_date', 'end_date'));
     }
 
     /**

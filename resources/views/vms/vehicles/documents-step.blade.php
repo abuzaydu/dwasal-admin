@@ -37,7 +37,7 @@
                     <div class="alert alert-info py-1 mb-3" style="line-height:1.2;">
                         <strong>Vehicle:</strong> {{ $pendingVehicle['plate_no'] }}
                         <span class="mx-2">|</span>
-                        <strong>Ownership:</strong> COMPANY ASSET
+                        <strong>Ownership:</strong> Company-Owned (legal documents required)
                     </div>
 
                     {{-- Small Cards Row --}}

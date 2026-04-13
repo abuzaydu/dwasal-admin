@@ -14,6 +14,11 @@ class Vehicle extends Model
         return $this->hasMany(Refuel::class);
     }
 
+    public function ownership()
+    {
+        return $this->belongsTo(Ownership::class, 'ownership_id');
+    }
+
     public function legalDocuments()
     {
         return $this->hasMany(LegalDocument::class, 'vehicle_id');
@@ -29,9 +34,8 @@ class Vehicle extends Model
      */
     public function isVehicleLegal(): bool
     {
-        // Ownership_id controls whether required legal documents are mandatory.
-        // Ownership_id == 1 => required docs must be present and not expired.
-        if ((int) $this->ownership_id === 1) {
+        // Company-owned fleet: required legal docs must be present and not expired.
+        if ($this->ownership?->requiresLegalDocuments()) {
             $required = LegalDocument::REQUIRED_VEHICLE_DOCS;
             $docs = $this->legalDocuments()->with('documentType')->get();
 
@@ -56,5 +60,9 @@ class Vehicle extends Model
         }
 
         return true;
+    }
+    public function vehicleType()
+    {
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
     }
 }
