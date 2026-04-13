@@ -335,7 +335,7 @@ class SaleController extends Controller
                             $account = Account::where('shop_id', $shop->id)->where('type', 'Bank')->first();
                         }
                         if (!is_null($account)) {
-                            $sale->bank_detail_id = $account->id;
+                            $sale->account_id = $account->id;
                         }
                     }
                     $sale->lpo_no = $request['lpo_no'];

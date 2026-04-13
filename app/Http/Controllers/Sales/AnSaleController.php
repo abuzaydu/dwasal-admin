@@ -249,7 +249,7 @@ class AnSaleController extends Controller
         $company = Company::find($shop->company_id);
         $accounts = Account::where('shop_id', $shop->id)->get();
         $settings = Setting::where('shop_id', $shop->id)->first();
-        $sale = AnSale::where('an_sales.id', decrypt($id))->join('customers', 'customers.id', '=', 'an_sales.customer_id')->join('users', 'users.id', '=', 'an_sales.user_id')->select('first_name', 'last_name', 'customer_id', 'customers.name as name', 'customers.cust_no as cust_no', 'customers.postal_address as po_address', 'customers.physical_address as ph_address', 'customers.street as street', 'customers.email as email', 'customers.phone as phone', 'customers.tin as tin', 'customers.vrn as vrn', 'an_sales.id as id', 'invoice_no', 'lpo_no', 'sale_type', 'pay_type', 'is_paid', 'status', 'is_stock_requested', 'an_sales.time_created as time_created', 'due_date', 'an_sales.sale_amount as sale_amount', 'an_sales.sale_discount as sale_discount', 'an_sales.sale_amount_paid as sale_amount_paid', 'an_sales.tax_amount as tax_amount', 'an_sales.currency as currency', 'an_sales.defcurr as defcurr', 'an_sales.ex_rate as ex_rate', 'note', 'bank_detail_id')->first();
+        $sale = AnSale::where('an_sales.id', decrypt($id))->join('customers', 'customers.id', '=', 'an_sales.customer_id')->join('users', 'users.id', '=', 'an_sales.user_id')->select('first_name', 'last_name', 'customer_id', 'customers.name as name', 'customers.cust_no as cust_no', 'customers.postal_address as po_address', 'customers.physical_address as ph_address', 'customers.street as street', 'customers.email as email', 'customers.phone as phone', 'customers.tin as tin', 'customers.vrn as vrn', 'an_sales.id as id', 'invoice_no', 'lpo_no', 'sale_type', 'pay_type', 'is_paid', 'status', 'is_stock_requested', 'an_sales.time_created as time_created', 'due_date', 'an_sales.sale_amount as sale_amount', 'an_sales.sale_discount as sale_discount', 'an_sales.sale_amount_paid as sale_amount_paid', 'an_sales.tax_amount as tax_amount', 'an_sales.currency as currency', 'an_sales.defcurr as defcurr', 'an_sales.ex_rate as ex_rate', 'note', 'account_id')->first();
         if (!is_null($sale)) {
             $items = AnSaleItem::where('an_sale_id', $sale->id)->join('products', 'products.id', '=', 'an_sale_items.product_id')->groupBy('slug')->orderBy('an_sale_items.time_created', 'desc')->get([
                 DB::raw('product_code as product_code'),
@@ -360,7 +360,7 @@ class AnSaleController extends Controller
         $sale->time_created = $now;
         $sale->vehicle_no = $request['vehicle_no'];
         $sale->due_date = $request['due_date'];
-        $sale->bank_detail_id = $request['bank_detail_id'];
+        $sale->account_id = $request['account_id'];
         $sale->sale_type = $request['sale_type'];
         $sale->comments = $request['comments'];
         $sale->rent_end_date = $request['rent_end_date'];
