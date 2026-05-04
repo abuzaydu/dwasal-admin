@@ -23,7 +23,7 @@ Route::get('my-dashboard/{id}', [WelcomeController::class, 'clientDashboard']);
 Route::get('delivery-rate', [WelcomeController::class, 'deliveryRate']);
 
 Route::group(['middleware' => 'cors'], function () {
-    
+
     Route::post('login', [AuthenticateController::class, 'login']);
     // Reset password
     Route::post('forgot-pass', [UserController::class, 'forgotPass']);
@@ -31,13 +31,12 @@ Route::group(['middleware' => 'cors'], function () {
     Route::post('reset-pass', [UserController::class, 'resetPass']);
 
     Route::group(['middleware' => 'jwt.auth'], function(){
-        // SMART MAUZO API SOKONI 
+        // SMART MAUZO API SOKONI
         Route::post('check-token', function(){
             return response()->json(['error' => false]);
         });
 
         Route::post('store-token', [AuthenticateController::class, 'storeFCMToken']);
-
         Route::post('truck-order-details', [TruckScanController::class, 'orderDeliveryDetails']);
         Route::post('confirm-delivery-check', [TruckScanController::class, 'guradCheckConfirm']);
         Route::post('my-delivery-notes', [TruckScanController::class, 'dailyDeliveryCheckList']);
@@ -62,14 +61,17 @@ Route::group(['middleware' => 'cors'], function () {
     // QR Code API
         Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
-        // Attendance API — JWT (logged-in user) OR X-Attendance-Kiosk-Key (see ATTENDANCE_KIOSK_KEY in .env)
-        Route::middleware('attendance.kiosk_or_jwt')->group(function(){
+        // Attendance API — JWT (logged-in Entrance Admin)
+        Route::middleware('auth:api')->group(function(){
             Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
+            Route::post('attendance-punchin-by-face' , [AttendanceController::class , 'punchInByFace'])->name('api.attendance-punchin-by-face');
+            Route::post('attendance-punchin-pending' , [AttendanceController::class , 'punchInWithPendingToken'])->name('api.attendance-punchin-pending');
             Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
             Route::post('attendance-register-face' , [AttendanceController::class , 'registerFaceTemplate'])->name('api.attendance-register-face');
             Route::post('attendance-verify-qr' , [AttendanceController::class , 'verifyEmployeeQr'])->name('api.attendance-verify-qr');
+            Route::get('attendance-pending-next' , [AttendanceController::class , 'getNextPendingVerification'])->name('api.attendance-pending-next');
 
             });
-            
+
         });
 
