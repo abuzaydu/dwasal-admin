@@ -1402,9 +1402,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('order-payments', OrderPaymentController::class);
     Route::post('card-payments', [OrderPaymentController::class, 'initiateOrder']);
     Route::post('check-payment-order-status', [OrderPaymentController::class, 'checkOrderStatus']);
+    Route::get('vms/total-vehicles', [VehicleController::class, 'totalVehicles']);
+    Route::get('vms/active-trips', [VehicleController::class, 'activeTrips']);
+    Route::get('vms/total-expenses', [VehicleController::class, 'totalExpenses']);
+    Route::get('vms/pending-requests', [VehicleController::class, 'pendingRequests']);
 
     Route::get('vehicles-dash', [VehicleController::class, 'dashboard']);
-    Route::post('vehicles-dash', [VehicleController::class, 'dashboard']);
+    Route::post('f-vehicles-dash', [VehicleController::class, 'dashboard']);
     Route::post('vehicles/prepare-documents', [VehicleController::class, 'prepareDocuments'])->name('vehicles.prepare-documents');
     Route::get('vehicles/documents-step', [VehicleController::class, 'createDocumentsStep'])->name('vehicles.documents.create');
     Route::post('vehicles/documents-step', [VehicleController::class, 'storeWithDocuments'])->name('vehicles.documents.store');
