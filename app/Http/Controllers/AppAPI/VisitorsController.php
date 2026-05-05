@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Notifications\ChekInNotification;
+use App\Notifications\NewVisitorRegisteredNotification;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -133,6 +134,12 @@ class VisitorsController extends Controller
 
             $visitor->visitor_photo = $location;
             $visitor->save();
+
+            // Notify the host in Laravel (web notification) after photo upload succeeds.
+            $host = User::find($visitor->host_id);
+            if ($host) {
+                $host->notify(new NewVisitorRegisteredNotification($visitor));
+            }
 
             return response()->json([
                 'statusCode' => 200,
