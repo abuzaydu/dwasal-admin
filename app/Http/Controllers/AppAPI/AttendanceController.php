@@ -10,7 +10,10 @@ use App\Models\AttendanceSetting;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
+use App\Models\AttendancePendingVerification;
+use App\Models\User;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Log;
 
 
@@ -225,12 +228,32 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
+            /** @var User|null $user */
+            $user = auth('api')->user();
+            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            if ($companyId && (int)$employee->company_id !== (int)$companyId) {
+                return response()->json([
+                    'message' => 'Employee does not belong to your company'
+                ], 403);
+            }
+
+            $pendingToken = Str::uuid()->toString();
+            AttendancePendingVerification::create([
+                'token' => $pendingToken,
+                'company_id' => $employee->company_id,
+                'employee_id' => $employee->id,
+                'verified_by_user_id' => $user?->id,
+                'qr_data' => $request->input('qr_data'),
+                'expires_at' => now()->addMinutes(2),
+            ]);
+
             return response()->json([
                 'message' => 'Employee verified',
                 'employee_id' => $employee->id,
                 'employee_name' => trim(($employee->fname ?? '').' '.($employee->lname ?? '')),
                 'company_id' => $employee->company_id,
                 'face_registered' => !empty($employee->face_embedding),
+                'pending_token' => $pendingToken,
             ]);
         } catch (DecryptException $e) {
             return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]);
@@ -241,6 +264,209 @@ class AttendanceController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
+    }
+
+    public function getNextPendingVerification(Request $request)
+    {
+        /** @var User|null $user */
+        $user = auth('api')->user();
+        $companyId = $this->resolveCompanyIdFromAuthUser($user);
+        if (!$companyId) {
+            return response()->json([
+                'message' => 'No default company configured for this account'
+            ], 403);
+        }
+
+        $pending = AttendancePendingVerification::where('company_id', $companyId)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$pending) {
+            return response()->json([
+                'message' => 'No pending verification'
+            ], 404);
+        }
+
+        $employee = Employee::find($pending->employee_id);
+        if (!$employee) {
+            return response()->json([
+                'message' => 'Pending verification employee not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'token' => $pending->token,
+            'employee_id' => $employee->id,
+            'employee_name' => trim(($employee->fname ?? '').' '.($employee->lname ?? '')),
+            'expires_at' => $pending->expires_at,
+        ]);
+    }
+
+    public function punchInWithPendingToken(Request $request)
+    {
+        try {
+            $request->validate([
+                'pending_token' => 'required|string|max:120',
+                'face_embedding' => 'required|array|min:64',
+                'face_embedding.*' => 'numeric',
+            ]);
+
+            /** @var User|null $user */
+            $user = auth('api')->user();
+            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            if (!$companyId) {
+                return response()->json([
+                    'message' => 'No default company configured for this account'
+                ], 403);
+            }
+
+            $pending = AttendancePendingVerification::where('token', $request->input('pending_token'))
+                ->where('company_id', $companyId)
+                ->whereNull('used_at')
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if (!$pending) {
+                return response()->json([
+                    'message' => 'Pending verification expired or invalid'
+                ], 410);
+            }
+
+            $employee = Employee::find($pending->employee_id);
+            if (!$employee) {
+                return response()->json([
+                    'message' => 'Employee not found'
+                ], 404);
+            }
+
+            if (empty($employee->face_embedding) || !is_array($employee->face_embedding)) {
+                return response()->json([
+                    'message' => 'Employee has no face enrolled'
+                ], 422);
+            }
+
+            $matchResult = $this->verifyFaceMatch(
+                $employee->face_embedding,
+                $request->input('face_embedding', [])
+            );
+            if (!$matchResult['matched']) {
+                return response()->json([
+                    'message' => 'Face verification failed',
+                    'score' => $matchResult['similarity'],
+                ], 401);
+            }
+
+            $punchResponse = $this->punchIn(new Request([
+                'qr_data' => $pending->qr_data,
+                'face_embedding' => $request->input('face_embedding', []),
+            ]));
+
+            if ($punchResponse->status() === 200) {
+                $pending->used_at = now();
+                $pending->save();
+            }
+
+            return $punchResponse;
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => 0,
+                'message' => 'Invalid face payload',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Face-only punch-in for already enrolled employees (no QR required).
+     */
+    public function punchInByFace(Request $request)
+    {
+        try {
+            $request->validate([
+                'face_embedding' => 'required|array|min:64',
+                'face_embedding.*' => 'numeric',
+            ]);
+
+            /** @var User|null $user */
+            $user = auth('api')->user();
+            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            if (!$companyId) {
+                return response()->json([
+                    'message' => 'No default company configured for this account'
+                ], 403);
+            }
+
+            $employees = Employee::where('company_id', $companyId)
+                ->whereNotNull('face_embedding')
+                ->get();
+
+            if ($employees->isEmpty()) {
+                return response()->json([
+                    'message' => 'No enrolled employees found'
+                ], 404);
+            }
+
+            $bestEmployee = null;
+            $bestSimilarity = -1.0;
+            $secondSimilarity = -1.0;
+            foreach ($employees as $employee) {
+                if (empty($employee->face_embedding) || !is_array($employee->face_embedding)) {
+                    continue;
+                }
+                $result = $this->verifyFaceMatch(
+                    $employee->face_embedding,
+                    $request->input('face_embedding', [])
+                );
+                $sim = (float) ($result['similarity'] ?? 0.0);
+                if ($sim > $bestSimilarity) {
+                    $secondSimilarity = $bestSimilarity;
+                    $bestSimilarity = $sim;
+                    $bestEmployee = $employee;
+                } elseif ($sim > $secondSimilarity) {
+                    $secondSimilarity = $sim;
+                }
+            }
+
+            if (!$bestEmployee || $bestSimilarity < 0.75) {
+                return response()->json([
+                    'message' => 'Face not recognized',
+                ], 401);
+            }
+
+            // Safety: avoid selecting between two very close candidates.
+            if ($secondSimilarity >= 0.73 && ($bestSimilarity - $secondSimilarity) < 0.03) {
+                return response()->json([
+                    'message' => 'Face match ambiguous. Please retry.',
+                ], 409);
+            }
+
+            $qrData = encrypt($bestEmployee->id . '&' . $bestEmployee->company_id);
+            return $this->punchIn(new Request([
+                'qr_data' => $qrData,
+                'face_embedding' => $request->input('face_embedding', []),
+            ]));
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => 0,
+                'message' => 'Invalid face payload',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    private function resolveCompanyIdFromAuthUser(?User $user): ?int
+    {
+        if (!$user) {
+            return null;
+        }
+        $company = $user->companies()->orderByPivot('is_default', 'desc')->first();
+        if (!$company) {
+            return null;
+        }
+
+        return (int) $company->id;
     }
 
      public function punchOut(Request $request)

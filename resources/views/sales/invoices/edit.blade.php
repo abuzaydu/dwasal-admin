@@ -64,10 +64,10 @@
                         </div>
                         <div class="col-md-4" id="bank-name">
                             <label class="form-label">Payment Account </label>
-                            <select name="bank_detail_id" class="form-select form-select-sm mb-1">
+                            <select name="account_id" class="form-select form-select-sm mb-1">
                                 <option value="">Any</option>
                                 @foreach($accounts->where('type', '!=', 'Cash') as $acc)
-                                @if($sale->bank_detail_id == $acc->id)
+                                @if($sale->account_id == $acc->id)
                                 <option value="{{$acc->id}}" selected>{{$acc->account_name}} @if(!is_null($acc->account_number)) - {{$acc->account_number}} @endif @if(!is_null($acc->currency)) - {{$acc->currency}}@endif @if(!is_null($acc->bank_name)) -{{$acc->bank_name}}@endif</option>
                                 @else
                                 <option value="{{$acc->id}}">{{$acc->account_name}} @if(!is_null($acc->account_number)) - {{$acc->account_number}} @endif @if(!is_null($acc->currency)) - {{$acc->currency}}@endif @if(!is_null($acc->bank_name)) -{{$acc->bank_name}}@endif</option>
