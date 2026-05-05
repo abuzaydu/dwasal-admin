@@ -4,7 +4,6 @@ namespace App\Notifications\Channels;
 
 use App\Services\Firebase\FcmClient;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\DB;
 
 class FcmChannel
 {
@@ -29,15 +28,6 @@ class FcmChannel
         $payload = method_exists($notification, 'toArray')
             ? $notification->toArray($notifiable)
             : [];
-
-        \Log::info('Sending FCM notification', [
-            'user_id' => $freshNotifiable->id ?? $notifiable->id ?? null,
-            'token_length' => strlen($token),
-            'token_sha1' => sha1($token),
-            'db' => DB::connection()->getDatabaseName(),
-            'env' => app()->environment(),
-            'base_path' => base_path(),
-        ]);
 
         $response = $this->fcmClient->sendMessage($token, $payload);
 

@@ -4,6 +4,7 @@ use App\Helpers\QrCodeEncryption;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AppAPI\AttendanceController;
 use App\Http\Controllers\AppAPI\AuthenticateController;
+use App\Http\Controllers\AppAPI\PushNotificationController;
 use App\Http\Controllers\AppAPI\QrCodeController;
 use App\Http\Controllers\AppAPI\TruckScanController;
 use App\Http\Controllers\AppAPI\VisitorsController;
@@ -25,6 +26,8 @@ Route::get('delivery-rate', [WelcomeController::class, 'deliveryRate']);
 Route::group(['middleware' => 'cors'], function () {
 
     Route::post('login', [AuthenticateController::class, 'login']);
+    Route::get('visitor-photo-file/{filename}', [VisitorsController::class, 'photo'])
+        ->where('filename', '.*');
     // Reset password
     Route::post('forgot-pass', [UserController::class, 'forgotPass']);
     Route::post('reset-code', [UserController::class, 'verifyCode']);
@@ -44,6 +47,7 @@ Route::group(['middleware' => 'cors'], function () {
 
 
         Route::get('visitors', [VisitorsController::class, 'index']);
+        Route::get('visitor/{id}', [VisitorsController::class, 'show']);
         Route::post('hosters', [VisitorsController::class, 'create']);
         Route::post('create-visitor', [VisitorsController::class, 'store']);
         Route::post('visitor-photo', [VisitorsController::class, 'visitorPhoto']);
@@ -52,6 +56,9 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('visitor-check-out', [VisitorsController::class, 'visitorCheckOut']);
         Route::post('available-badges', [VisitorsController::class, 'getAvailableBadges']);
         Route::post('checkin-with-badge', [VisitorsController::class, 'Vcheckinwithbadge']);
+
+        Route::post('send-notification', [PushNotificationController::class, 'sendToUsers']);
+        Route::post('send-broadcast-notification', [PushNotificationController::class, 'sendBroadcast']);
 
     });
         //check in visitor

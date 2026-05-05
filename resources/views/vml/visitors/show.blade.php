@@ -83,11 +83,11 @@
                         </div>
                             <div class="col-md-4 text-center">
                                 @if($visitor->visitor_photo)
-                                        <img src="{{ asset('storage/visitors/' . $visitor->visitor_photo) }}" 
+                                        <img src="{{ url('api/visitor-photo-file/' . rawurlencode(basename($visitor->visitor_photo))) }}" 
                                             alt="Visitor Photo"
                                             width="150">
                                 @else
-                                        <img src="{{ asset('images/default-avatar.png') }}" alt="No Photo">
+                                        <img src="{{ asset('assets/img/user-icon.webp') }}" alt="No Photo">
                                 @endif
                                 <hr>
                                 @if(!$visitor->is_granted)
