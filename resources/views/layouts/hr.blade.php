@@ -201,7 +201,9 @@ if (!is_null($shop)) {
                                 <li class="{{ request()->is('positions') || request()->is('employees') || request()->is('employees/create') ? 'mm-active active' : '' }}">
                                     <a class="has-arrow" href="#Employees"><i class="fa fa-users"></i><span>Employees</span></a>
                                     <ul class="list-unstyled">
-                                        <li><a href="{{ route('employees.create') }}" class="{{ request()->is('employees/create') ? 'active' : '' }}">Add Employees</a></li>
+                                        @can('create-employee')
+                                        <li><a href="{{ route('employees.create') }}" class="{{ request()->is('employees/create') ? 'active' : '' }}">Add Employees</a></li>                                            
+                                        @endcan
                                         <li><a href="{{ url('employees') }}" class="{{ request()->is('employees') ? 'active' : '' }}">All Employees</a></li>
                                         <li><a href="{{ url('positions') }}" class="{{ request()->is('positions') ? 'active' : '' }}">Positions</a></li>
                                     </ul>

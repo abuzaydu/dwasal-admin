@@ -54,12 +54,10 @@ class RoleAndPermissionSeeder extends Seeder
         }
         
         foreach ($features as $key => $value) {
-            $feature = Feature::where('name', $value)->first();
-            if (is_null($feature)) {
-                $feature = new Feature();
-                $feature->name = $value;
-                $feature->save();
-            }
+            Feature::updateOrCreate(
+                ['name' => $value], 
+                ['name' => $value]  
+            );
         }
 
         // Reset cached roles and permissions
@@ -262,6 +260,13 @@ class RoleAndPermissionSeeder extends Seeder
             ['feature_id' => 21, 'name' => 'manage-labour-costs', 'display_name' => 'Manage Labour Costs'],
             
             ['feature_id' => 22, 'name' => 'access-hr-payroll-module', 'display_name' => 'Access HR & Payroll Module'],
+            ['feature_id' => 22, 'name' => 'create-employee', 'display_name' => 'Create Employees'],
+            ['feature_id' => 22, 'name' => 'view-employee', 'display_name' => 'View Employees'],
+            ['feature_id' => 22, 'name' => 'edit-employee', 'display_name' => 'Edit Employees'],
+            ['feature_id' => 22, 'name' => 'delete-employee', 'display_name' => 'Delete Employees'],
+            ['feature_id' => 22, 'name' => 'access-general-payroll-module', 'display_name' => 'Access General Payroll Module'],
+            ['feature_id' => 22, 'name' => 'view-employee-salary', 'display_name' => 'View Employee Salary'],
+            ['feature_id' => 22, 'name' => 'view-payslips', 'display_name' => 'View Payslips'],
 
             ['feature_id' => 23, 'name' => 'manage-assets', 'display_name' => 'Manage Fixed Assets'],
             ['feature_id' => 23, 'name' => 'modify-balance-sheet', 'display_name' => 'Modify Balance Sheets'],
@@ -296,10 +301,10 @@ class RoleAndPermissionSeeder extends Seeder
         );
 
         foreach ($permissions as $key => $perm) {
-            $permission = Permission::where('name', $perm['name'])->first();
-            if (is_null($permission)) {
-                Permission::create($perm);
-            }
+            Permission::updateOrCreate(
+                ['name' => $perm['name']], 
+                $perm 
+            );
         }
 
         $roles = array(
@@ -309,10 +314,10 @@ class RoleAndPermissionSeeder extends Seeder
         );
 
         foreach ($roles as $key => $role) {
-            $roleext = Role::where('name', $role['name'])->first();
-            if (is_null($roleext)) {
-                Role::create($role);
-            }
+            Role::updateOrCreate(
+                ['name' => $role['name']],
+                $role
+            );
         }
     }
 }

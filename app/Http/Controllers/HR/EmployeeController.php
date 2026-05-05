@@ -2,19 +2,11 @@
 
 namespace App\Http\Controllers\HR;
 
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use File;
-use Response;
-use Session;
 use App\Exports\EmployeeExport;
 use App\Http\Controllers\Controller;
 use App\Imports\EmployeeImport;
 use App\Models\AcademicInfo;
 use App\Models\Company;
-use App\Models\Shop;
 use App\Models\Employee;
 use App\Models\EmployeeDoc;
 use App\Models\EmployeeMedicalInfo;
@@ -23,6 +15,13 @@ use App\Models\NextOfKin;
 use App\Models\PayrollSetting;
 use App\Models\Position;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Maatwebsite\Excel\Facades\Excel;
+use Response;
 
 class EmployeeController extends Controller
 {
@@ -50,7 +49,7 @@ class EmployeeController extends Controller
             //     $employee->emp_id = $this->empID();
             //     $employee->save();
             // }
-            $employees = Employee::where('employees.company_id', $company->id)->join('positions', 'positions.id', '=', 'employees.position_id')->select('employees.id as id', 'emp_id', 'fname', 'mname', 'lname', 'name', 'is_paid_monthly', 'employees.basic_pay_hourly as basic_pay_hourly', 'employees.basic_pay_monthly as basic_pay_monthly')->orderBy('emp_id', 'asc')->get();
+            $employees = Employee::where('employees.company_id', $company->id)->join('positions', 'positions.id', '=', 'employees.position_id')->select('employees.id as id', 'emp_id', 'fname', 'mname', 'lname', 'name', 'is_paid_monthly', 'employees.basic_pay_hourly as basic_pay_hourly', 'employees.basic_pay_monthly as basic_pay_monthly')->orderBy('emp_id', 'desc')->get();
             $positions = Position::all();
             $payroll_settings = PayrollSetting::all();
             return view('hr.employees.index', compact('page', 'title', 'employees', 'positions', 'payroll_settings'));
@@ -126,6 +125,7 @@ class EmployeeController extends Controller
             'is_paid_monthly' => $request['is_paid_monthly'],
             'basic_pay_hourly' => $basic_pay_hourly,
             'basic_pay_monthly' => $basic_pay_monthly,
+            'shop_id' => Session::get('shop_id'),
         ]);
 
         return redirect('employees')->with('success', 'Employee was added successfully');

@@ -85,7 +85,9 @@
                                     <th style="text-align: center;">Photo</th>
                                     <th style="text-align: center;">Full Name</th>
                                     <th style="text-align: center;">Position</th>
+                                    @can('view-employee-salary')
                                     <th style="text-align: center;">Basic Salary</th>
+                                    @endcan
                                     <th style="text-align: center;">Actions</th>
                                 </tr>
                             </thead>
@@ -107,15 +109,23 @@
                                     </td>
                                     <td>{{ $employee->fname }} {{$employee->mname}} {{ $employee->lname }}</td>
                                     <td>{{$employee->name}}</td>
-                                    <td>@if(!$employee->is_paid_monthly){{ number_format($employee->basic_pay_hourly, 2, '.', ',') }} (Per Hour)@else {{ number_format($employee->basic_pay_monthly, 2, '.', ',') }} (Per Month)@endif</td>
+                                    @can('view-employee-salary')
+                                        <td>@if(!$employee->is_paid_monthly){{ number_format($employee->basic_pay_hourly, 2, '.', ',') }} (Per Hour)@else {{ number_format($employee->basic_pay_monthly, 2, '.', ',') }} (Per Month)@endif</td>
+                                    @endcan
                                     <td>
-                                        <a href="{{ route('employees.show', encrypt($employee->id)) }}" class="text-secondary"><i class='fa fa-file-text-o mr-1'></i> View</a> | 
-                                        <a href="{{ route('employees.edit', encrypt($employee->id)) }}"><i class='fa fa-pencil mr-1'></i> Edit</a> | 
-                                        <form id="delete-form-{{$key}}" method="POST" action="{{ route('employees.destroy', encrypt($employee->id)) }}" style="display: inline;">
-                                            @csrf
-                                            @method("DELETE")
-                                            <a class="text-danger" onclick="return confirmDelete('<?php echo $key; ?>')" class="text-danger"><i class='fa fa-trash mr-1'></i> Delete</a>
-                                        </form>
+                                        @can('view-employee')
+                                            <a href="{{ route('employees.show', encrypt($employee->id)) }}" class="text-secondary"><i class='fa fa-file-text-o mr-1'></i> View</a> | 
+                                        @endcan
+                                        @can('edit-employee')
+                                            <a href="{{ route('employees.edit', encrypt($employee->id)) }}"><i class='fa fa-pencil mr-1'></i> Edit</a> | 
+                                        @endcan
+                                        @can('delete-employee')
+                                            <form id="delete-form-{{$key}}" method="POST" action="{{ route('employees.destroy', encrypt($employee->id)) }}" style="display: inline;">
+                                                @csrf
+                                                @method("DELETE")
+                                                <a class="text-danger" onclick="return confirmDelete('<?php echo $key; ?>')" class="text-danger"><i class='fa fa-trash mr-1'></i> Delete</a>
+                                            </form>                                            
+                                        @endcan
                                     </td>
                                 </tr>
                                 @endforeach
