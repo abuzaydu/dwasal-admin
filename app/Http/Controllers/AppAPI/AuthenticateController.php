@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Log;
 
 class AuthenticateController extends Controller
@@ -91,11 +92,32 @@ class AuthenticateController extends Controller
 
     public function storeFCMToken(Request $request)
     {
-        // Log::info($request);
-        $user = User::find($request['user_id']);
+        // Always prefer the authenticated API user to avoid cross-user token overwrite.
+        $user = auth('api')->user();
+        if (is_null($user) && $request->filled('user_id')) {
+            $user = User::find($request['user_id']);
+        }
+
         if (!is_null($user)) {
-            $user->fcm_token = $request['fcm_token'];
+            $token = trim((string) $request->input('fcm_token', ''));
+            if ($token === '') {
+                return response()->json(['statusCode' => 400, 'message' => 'Invalid FCM token']);
+            }
+
+            $user->fcm_token = $token;
             $user->save();
+            $savedToken = (string) optional($user->fresh())->fcm_token;
+
+            Log::info('FCM token stored', [
+                'user_id' => $user->id,
+                'length' => strlen($token),
+                'sha1' => sha1($token),
+                'saved_length' => strlen($savedToken),
+                'saved_sha1' => $savedToken !== '' ? sha1($savedToken) : null,
+                'db' => DB::connection()->getDatabaseName(),
+                'env' => app()->environment(),
+                'base_path' => base_path(),
+            ]);
 
             return response()->json(['statusCode' => 200, 'message' => 'FCM Token stored Successfully']);
         }else {
