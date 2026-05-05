@@ -135,7 +135,9 @@
                                         <td>{{ number_format($deductions, 2, '.', ',') }}</td>
                                         <td>{{ number_format($gross_pay-$payroll->ssf-$payroll->paye-$deductions, 2, '.', ',') }}</td>
                                         <td>
-                                            <a href="{{ url('view-payroll/'. encrypt($payroll->id)) }}" class="text-secondary"><i class='bx bx-detail mr-1'></i>View</a> | 
+                                            @can('view-payslips')
+                                                <a href="{{ url('view-payroll/'. encrypt($payroll->id)) }}" class="text-secondary"><i class='bx bx-detail mr-1'></i>View</a> | 
+                                            @endcan
                                             <a href="{{ url('payroll-edit/'.encrypt($payroll->id)) }}"><i class='bx bx-pencil mr-1'></i>Edit</a> | 
                                             <a href="javascript:;" class="text-danger" onclick="return confirmDeletePayroll('<?php echo encrypt($payroll->id); ?>')" class="text-danger"><i class='bx bx-trash mr-1'></i>Delete</a>
                                         </td>
@@ -165,13 +167,16 @@
                                         <td>{{ $payroll->created_at }}</td>
                                         <td>{{ $payroll->updated_at }}</td>
                                         <td>
-                                            <a href="{{ route('payrolls.show', encrypt($payroll->id)) }}" class="text-secondary"><i class='bx bx-detail mr-1'></i>View</a> | 
+                                            @can('view-payslips')
+                                                <a href="{{ route('payrolls.show', encrypt($payroll->id)) }}" class="text-secondary"><i class='bx bx-detail mr-1'></i>View</a> | 
+                                            @endcan
                                             <a href="{{ route('payrolls.edit', encrypt($payroll->id)) }}"><i class='bx bx-pencil mr-1'></i>Edit</a> | 
                                             <form id="delete-form-{{$key}}" method="POST" action="{{ route('payrolls.destroy', encrypt($payroll->id)) }}" style="display: inline;">
                                                 @csrf
                                                 @method("DELETE")
                                                 <a href="javascript:;" class="text-danger" onclick="return confirmDelete('<?php echo $key; ?>')" class="text-danger"><i class='bx bx-trash mr-1'></i>Delete</a>
                                             </form>
+                                            
                                         </td>
                                     </tr>
                                     @endforeach

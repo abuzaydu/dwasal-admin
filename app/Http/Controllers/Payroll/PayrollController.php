@@ -1298,6 +1298,8 @@ class PayrollController extends Controller
         $total_heslb = 0;
         $total_emp_loan = 0;
         $total_net_pay = 0;
+        $m_recovery = 0; 
+        $total_other_deductions = 0;
         foreach ($mpayrolls as $key => $mpayroll) {
             $allpayrolls = Payroll::where('m_payroll_id', $mpayroll->id)->join('employees', 'employees.id', '=', 'payrolls.employee_id')->get();
             $m_gross_income = 0;
@@ -1308,6 +1310,7 @@ class PayrollController extends Controller
             $m_heslb = 0;
             $m_emp_loan = 0;
             $m_net_pay = 0;
+            $m_recovery = 0;
             foreach ($allpayrolls as $key => $payroll) {
                 $employee = Employee::find($payroll->employee_id);
                  //Earnings
@@ -1396,19 +1399,24 @@ class PayrollController extends Controller
                 $m_heslb += $heslb;
                 $m_net_pay += $net_pay; 
                 $m_emp_loan += $emploan_amount;
+
+                $recovery = $payroll->recovery ?? 0;
+
+                $m_recovery += $recovery;             
+                $total_other_deductions += $recovery;  
+                array_push($payrolls, ['month' => $mpayroll->month, 'gross_income' => $m_gross_income, 'paye' => $m_paye, 'ssf' => $m_ssf, 'mif' => $m_mif, 'wcf' => $m_wcf, 'heslb' => $m_heslb, 'nst_loan' => $m_emp_loan, 'net_pay' => $m_net_pay, 'recovery' => $m_recovery,]);
+
+                $total_gross_income += $m_gross_income;
+                $total_paye += $m_paye;
+                $total_ssf += $m_ssf;
+                $total_mif += $m_mif;
+                $total_wcf += $m_wcf;
+                $total_heslb += $m_heslb;
+                $total_emp_loan += $m_emp_loan;
+                $total_net_pay += $m_net_pay;
             }
-            array_push($payrolls, ['month' => $mpayroll->month, 'gross_income' => $m_gross_income, 'paye' => $m_paye, 'ssf' => $m_ssf, 'mif' => $m_mif, 'wcf' => $m_wcf, 'heslb' => $m_heslb, 'nst_loan' => $m_emp_loan, 'net_pay' => $m_net_pay]);
 
-            $total_gross_income += $m_gross_income;
-            $total_paye += $m_paye;
-            $total_ssf += $m_ssf;
-            $total_mif += $m_mif;
-            $total_wcf += $m_wcf;
-            $total_heslb += $m_heslb;
-            $total_emp_loan += $m_emp_loan;
-            $total_net_pay += $m_net_pay;
+        return view('payrolls.reports', compact('page', 'company','total_other_deductions','payrolls', 'total_gross_income', 'total_paye', 'total_ssf', 'total_mif', 'total_wcf', 'total_heslb', 'total_emp_loan', 'total_net_pay', 'duration', 'is_post_query', 'start_date', 'end_date'));
         }
-
-        return view('payrolls.reports', compact('page', 'company', 'payrolls', 'total_gross_income', 'total_paye', 'total_ssf', 'total_mif', 'total_wcf', 'total_heslb', 'total_emp_loan', 'total_net_pay', 'duration', 'is_post_query', 'start_date', 'end_date'));
     }
 }

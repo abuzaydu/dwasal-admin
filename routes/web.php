@@ -1337,7 +1337,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('payroll-list', [PayrollController::class, 'index']);
     Route::get('payroll-edit/{id}', [PayrollController::class, 'editPayroll']);
     Route::post('update-payroll', [PayrollController::class, 'updatePayroll']);
-    Route::get('payroll-dash', [PayrollController::class, 'dashboard']);
+    Route::get('payroll-dash', [PayrollController::class, 'dashboard'])->middleware('permission:access-general-payroll-module');
     Route::post('payroll-dash', [PayrollController::class, 'dashboard']);
     Route::get('payroll-reports', [PayrollController::class, 'reports']);
     Route::post('payroll-reports', [PayrollController::class, 'reports']);

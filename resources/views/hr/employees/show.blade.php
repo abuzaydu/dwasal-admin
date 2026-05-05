@@ -43,10 +43,12 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="col-3 card py-2 px-2 mt-2">
-                                        <small class="text-muted">Montyl Pay</small>
-                                        <div class="fs-6">{{$employee->basic_pay_monthly}}</div>
-                                    </div>
+                                    @can('view-employee-salary')
+                                        <div class="col-3 card py-2 px-2 mt-2">
+                                            <small class="text-muted">Monthly Pay</small>
+                                            <div class="fs-6">{{$employee->basic_pay_monthly}}</div>
+                                        </div>                                        
+                                    @endcan
                                     <div class="col-3 card py-2 px-2 mt-2">
                                         <small class="text-muted">Type</small>
                                         <div class="fs-6">{{$employee->type}}</div>

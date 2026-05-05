@@ -85,8 +85,8 @@
                                         <td style="padding: 5px;">{{ number_format($payroll['mif'], 2, '.', ',') }}</td>
                                         <td style="padding: 5px;">{{ number_format($payroll['wcf'], 2, '.', ',') }}</td>
                                         <td style="padding: 5px;">{{ number_format($payroll['heslb'], 2, '.', ',') }}</td>
-                                        <td style="padding: 5px;">{{ number_format($payroll['emp_loan'], 2, '.', ',') }}</td>
-                                        <td style="padding: 5px;">{{ number_format($payroll['penalty'], 2, '.', ',') }}</td>
+                                        <td style="padding: 5px;">{{ number_format($payroll['nst_loan'], 2, '.', ',') }}</td>
+                                        <td style="padding: 5px;">{{ number_format($payroll['recovery'], 2, '.', ',') }}</td>
                                         <td style="padding: 5px;">{{ number_format($payroll['net_pay'], 2, '.', ',') }}</td>
                                     </tr>
                                     @endforeach
@@ -102,7 +102,7 @@
                                         <th><b>{{ number_format($total_wcf, 2, '.', ',') }}</b></th>
                                         <th><b>{{ number_format($total_heslb, 2, '.', ',') }}</b></th>
                                         <th><b>{{ number_format($total_emp_loan, 2, '.', ',') }}</b></th>
-                                        <th><b>{{ number_format($other_deductions, 2, '.', ',') }}</b></th>
+                                        <th><b>{{ number_format($total_other_deductions, 2, '.', ',') }}</b></th>
                                         <th><b>{{ number_format($total_net_pay, 2, '.', ',') }}</b></th>
                                     </tr>
                                 </tfoot>
