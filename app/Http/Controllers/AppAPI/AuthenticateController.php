@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Log;
 
 class AuthenticateController extends Controller
@@ -106,18 +105,6 @@ class AuthenticateController extends Controller
 
             $user->fcm_token = $token;
             $user->save();
-            $savedToken = (string) optional($user->fresh())->fcm_token;
-
-            Log::info('FCM token stored', [
-                'user_id' => $user->id,
-                'length' => strlen($token),
-                'sha1' => sha1($token),
-                'saved_length' => strlen($savedToken),
-                'saved_sha1' => $savedToken !== '' ? sha1($savedToken) : null,
-                'db' => DB::connection()->getDatabaseName(),
-                'env' => app()->environment(),
-                'base_path' => base_path(),
-            ]);
 
             return response()->json(['statusCode' => 200, 'message' => 'FCM Token stored Successfully']);
         }else {

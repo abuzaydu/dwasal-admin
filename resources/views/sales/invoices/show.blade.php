@@ -433,9 +433,8 @@
                                                             </tr>
                                                             @if(!empty($sale->tin))
                                                             <tr>
-                                                                <td style="width: 35%;">TIN :<b>{{$sale->tin}}</b></td>
-                                                        
-                                                                <td style="width: 65%;">VRN :<b>{{$sale->vrn}}</b></td>
+                                                                <td>TIN :<b>{{$sale->tin}}</b></td>
+                                                                <td>VRN :<b>{{$sale->vrn}}</b></td>
                                                             </tr>
                                                             @endif
                                                         </tbody>
@@ -447,25 +446,25 @@
                                                             <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="width: 30%; text-align: right;">Invoice Date :</td>
+                                                            <td style="text-align: right;">Invoice Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->time_created)) }}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="width: 30%; text-align: right;"> Due Date :</td>
+                                                            <td style="text-align: right;"> Due Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->due_date))}}</b></td>
                                                         </tr>
                                                         @if(!empty($sale->lpo_no))
                                                         <tr>
-                                                            <td style="width: 30%; text-align: right;">LPO No: </td>
+                                                            <td style="text-align: right;">LPO No: </td>
                                                             <td>{{ $sale->lpo_no }}</td>
                                                         </tr>
                                                         @endif
                                                         <tr>
-                                                            <td style="width: 30%; text-align: right;"> TIN:</td>
+                                                            <td style="text-align: right;"> TIN:</td>
                                                             <td><b>{{$shop->tin}}</b></td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="width: 30%; text-align: right;"> VRN:</td>
+                                                            <td style="text-align: right;"> VRN:</td>
                                                             <td><b>{{$shop->vrn}}</b></td>
                                                         </tr>
                                                     </table>

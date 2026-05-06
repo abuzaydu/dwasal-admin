@@ -11,10 +11,12 @@ use App\Models\Employee;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Notifications\ChekInNotification;
+use App\Notifications\NewVisitorRegisteredNotification;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VisitorsController extends Controller
 {
@@ -24,7 +26,12 @@ class VisitorsController extends Controller
         $visitors = Visitor::where('visitors.shop_id', $request['shop_id'])->join('users', 'users.id', '=', 'visitors.host_id')->select('visitors.id as id', 'visitors.name as name', 'visitors.mobile as mobile',  'visitors.email as email', 'visitors.address as address', 'id_type', 'id_number', 'visitors.visitor_photo', 'badge_no', 'purpose', 'time_in', 'time_out', 'status', 'first_name as fname', 'last_name as lname', 'visitors.came_in_with', 'visitors.came_out_with')
         ->orderBy('visitors.created_at', 'desc')
         ->get();
-            // Log::info($visitors);
+
+        $visitors->transform(function ($visitor) {
+            $visitor->visitor_photo_url = $this->buildVisitorPhotoUrl($visitor->visitor_photo ?? null);
+            return $visitor;
+        });
+
         return response()->json($visitors);
     }
 
@@ -106,11 +113,13 @@ class VisitorsController extends Controller
 
         if (!is_null($visitor)) {
             $location = null;
+            $dir = 'visitors';
+            $current = $visitor->visitor_photo;
 
             if ($request->hasFile('photo')) {
                 if ($request->file('photo')->isValid()) {
 
-                    $old_photo_path = 'visitors/' . $visitor->visitor_photo;
+                    $old_photo_path = $dir . '/' . $current;
                     if (Storage::disk('public')->exists($old_photo_path)) {
                         Storage::disk('public')->delete($old_photo_path);
                     }
@@ -118,15 +127,21 @@ class VisitorsController extends Controller
                     $extension = $request->photo->extension();
                     $filename  = $visitor->id . '.' . $extension;
 
-                    $request->photo->storeAs('visitors', $filename, 'public');
+                    $request->photo->storeAs($dir, $filename, 'public');
                     $location = $filename;
                 }
             } else {
-                $location = $visitor->visitor_photo;
+                $location = $current;
             }
 
             $visitor->visitor_photo = $location;
             $visitor->save();
+
+            // Notify the host in Laravel (web notification) after photo upload succeeds.
+            $host = User::find($visitor->host_id);
+            if ($host) {
+                $host->notify(new NewVisitorRegisteredNotification($visitor));
+            }
 
             return response()->json([
                 'statusCode' => 200,
@@ -144,8 +159,6 @@ class VisitorsController extends Controller
 
    public function Vcheckinwithbadge(Request $request)
     {
-        Log::info($request);
-
         $request->validate([
             'visitor_id' => 'required|exists:visitors,id',
             'qr_data'    => 'required|string',
@@ -293,7 +306,68 @@ class VisitorsController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $visitor = Visitor::where('visitors.id', $id)
+            ->leftJoin('users', 'users.id', '=', 'visitors.host_id')
+            ->select(
+                'visitors.id as id',
+                'visitors.name as name',
+                'visitors.mobile as mobile',
+                'visitors.email as email',
+                'visitors.address as address',
+                'visitors.id_type',
+                'visitors.id_number',
+                'visitors.visitor_photo',
+                'visitors.badge_no',
+                'visitors.purpose',
+                'visitors.time_in',
+                'visitors.time_out',
+                'visitors.status',
+                'users.first_name as fname',
+                'users.last_name as lname',
+                'visitors.came_in_with',
+                'visitors.came_out_with',
+                'visitors.created_at'
+            )
+            ->first();
+
+        if (is_null($visitor)) {
+            return response()->json([
+                'statusCode' => 404,
+                'message' => 'Visitor not found',
+            ], 404);
+        }
+
+        $visitor->visitor_photo_url = $this->buildVisitorPhotoUrl($visitor->visitor_photo ?? null);
+
+        return response()->json($visitor);
+    }
+
+    public function photo(string $filename): BinaryFileResponse
+    {
+        $safeFilename = basename($filename);
+        $path = 'visitors/' . $safeFilename;
+
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $absolutePath = Storage::disk('public')->path($path);
+        return response()->file($absolutePath);
+    }
+
+    private function buildVisitorPhotoUrl(?string $photo): string
+    {
+        if (empty($photo)) {
+            return asset('assets/img/user-icon.webp');
+        }
+
+        if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+            return $photo;
+        }
+
+        $filename = basename($photo);
+        $base = request()->getSchemeAndHttpHost();
+        return $base . '/api/visitor-photo-file/' . rawurlencode($filename);
     }
 
     /**
