@@ -16,7 +16,6 @@ class NewVisitorRegisteredNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        // Web/Laravel notifications only (no mobile push here).
         return ['database'];
     }
 

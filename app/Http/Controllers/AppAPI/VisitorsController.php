@@ -113,11 +113,13 @@ class VisitorsController extends Controller
 
         if (!is_null($visitor)) {
             $location = null;
+            $dir = 'visitors';
+            $current = $visitor->visitor_photo;
 
             if ($request->hasFile('photo')) {
                 if ($request->file('photo')->isValid()) {
 
-                    $old_photo_path = 'visitors/' . $visitor->visitor_photo;
+                    $old_photo_path = $dir . '/' . $current;
                     if (Storage::disk('public')->exists($old_photo_path)) {
                         Storage::disk('public')->delete($old_photo_path);
                     }
@@ -125,11 +127,11 @@ class VisitorsController extends Controller
                     $extension = $request->photo->extension();
                     $filename  = $visitor->id . '.' . $extension;
 
-                    $request->photo->storeAs('visitors', $filename, 'public');
+                    $request->photo->storeAs($dir, $filename, 'public');
                     $location = $filename;
                 }
             } else {
-                $location = $visitor->visitor_photo;
+                $location = $current;
             }
 
             $visitor->visitor_photo = $location;
