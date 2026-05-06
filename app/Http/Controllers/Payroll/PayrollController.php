@@ -120,28 +120,18 @@ class PayrollController extends Controller
         $page = 'Payrolls';
         
         //check if user opted for date range
-        $start_date = null;            
-        $end_date = null;
         $is_post_query = false;
+        $start = Carbon::now()->startOfMonth();
+        $end = Carbon::now()->endOfMonth();
+        $start_date = $start->format('Y-m-d');
+        $end_date = $end->format('Y-m-d');
+
         if (!is_null($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
             $start = $request['start_date'].' 00:00:00';
             $end = $request['end_date'].' 23:59:59';
             $is_post_query = true;
-        }elseif(!is_null($request['month'])){
-            $date = Carbon::createFromFormat('d F Y', '05 '.$request['month']);
-            $start = $date->firstOfMonth()->format('Y-m-d');
-            $start_date = $start;
-            $end = $date->endOfMonth()->format('Y-m-d');
-            $end_date = $end;
-            $is_post_query = true;
-        }else{
-            $start = Carbon::now()->startOfMonth();
-            $end = Carbon::now()->endOfMonth();
-            $is_post_query = false;
-            $start_date = $start->format('Y-m-d');
-            $end_date = $end->format('Y-m-d');
         }
 
         $m = Carbon::today()->startOfMonth();
@@ -149,15 +139,21 @@ class PayrollController extends Controller
         $curmonth = $m->monthName.' '.$y;
         if (!is_null($request['month'])) {
             $curmonth = $request['month'];
+            $date = Carbon::createFromFormat('d F Y', '05 '.$curmonth);
+            $start = $date->firstOfMonth()->format('Y-m-d');
+            $start_date = $start;
+            $end = $date->endOfMonth()->format('Y-m-d');
+            $end_date = $end;
+            $is_post_query = true;
         }
 
         $company = Company::find(Session::get('company_id'));
         $mpayrolls = MPayroll::where('company_id', $company->id)->whereBetween('month', [$start, $end])->get();
         $payrolls = null;
         $employee = null;
-        if (!is_null($request['employee_id'])) {
+        if (!empty($request['employee_id'])) {
             $employee = Employee::find($request['employee_id']);
-            $payrolls = MPayroll::where('company_id', $company->id)->whereBetween('m_payrolls.month', [$start, $end])->join('payrolls', 'payrolls.m_payroll_id', '=', 'm_payrolls.id')->join('employees', 'employees.id', '=', 'payrolls.employee_id')->where('employee_id', $employee->id)->select('payrolls.id as id', 'emp_id', 'fname', 'lname', 'payrolls.created_at as created_at', 'payrolls.updated_at as updated_at')->get();
+            $payrolls = MPayroll::where('m_payrolls.company_id', $company->id)->whereBetween('m_payrolls.month', [$start, $end])->join('payrolls', 'payrolls.m_payroll_id', '=', 'm_payrolls.id')->join('employees', 'employees.id', '=', 'payrolls.employee_id')->where('employee_id', $employee->id)->select('payrolls.id as id', 'emp_id', 'fname', 'lname', 'payrolls.created_at as created_at', 'payrolls.updated_at as updated_at')->get();
         }else{
             $payrolls = MPayroll::where('m_payrolls.company_id', $company->id)->whereBetween('m_payrolls.month', [$start, $end])->join('payrolls', 'payrolls.m_payroll_id', '=', 'm_payrolls.id')->join('employees', 'employees.id', '=', 'payrolls.employee_id')->select('payrolls.id as id', 'emp_id', 'fname', 'lname', 'payrolls.created_at as created_at', 'payrolls.updated_at as updated_at')->get();
         }
