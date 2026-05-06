@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\EmployeeDoc;
 use App\Models\User;
-use Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeDocController extends Controller
 {
@@ -116,8 +116,8 @@ class EmployeeDocController extends Controller
             $doc->link = $link;
             $doc->save();
 
-            if(Storage::exists($link->link)){
-                Storage::delete($link->link);
+            if(Storage::exists($link)){
+                Storage::delete($link);
             }
 
             if($request['e_type'] == "Passport"){
