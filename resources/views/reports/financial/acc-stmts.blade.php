@@ -85,8 +85,8 @@
                                         <tr>
                                             <th style="text-align: left; border-bottom: 2px solid gray;">Date/Time</th>
                                             <th style="text-align: left; border-bottom: 2px solid gray;">{{trans('navmenu.description')}}</th>
-                                            <th style="text-align: center; border-bottom: 2px solid gray;">Debit</th>
                                             <th style="text-align: center; border-bottom: 2px solid gray;">Credit</th>
+                                            <th style="text-align: center; border-bottom: 2px solid gray;">Debit</th>
                                             <th style="text-align: center; border-bottom: 2px solid gray;">{{trans('navmenu.balance')}}</th>
                                         </tr>
                                     </thead>
