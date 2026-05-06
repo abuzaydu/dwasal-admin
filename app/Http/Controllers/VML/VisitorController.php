@@ -29,13 +29,13 @@ class VisitorController extends Controller
 
     public function dashboard(Request $request)
     {
-        $page = 'visitor Dashboard'; 
-    
+        $page = 'visitor Dashboard';
+
         [$from, $to] = $this->getDateRange($request);
         $is_post_query = $request->filled('start_date') || $request->has('period');
         $start_date    = $from ? $from->format('Y-m-d') : now()->format('Y-m-d');
         $end_date      = $to   ? $to->format('Y-m-d')   : now()->format('Y-m-d');
-        
+
         $visitorsLogs = Visitor::where('shop_id', Session::get('shop_id'))
            // ->when($from && $to, fn ($q) => $q->whereBetween('created_at', [$from, $to]))
             ->orderBy('created_at', 'desc')
@@ -57,12 +57,12 @@ class VisitorController extends Controller
             'pendingVisitors',
             'checkedinVisitors',
             'checkedoutVisitors',
-            'is_post_query',   
-            'start_date',      
-            'end_date',  ));      
+            'is_post_query',
+            'start_date',
+            'end_date',  ));
     }
 
-   
+
     public static function getDateRange(Request $request): array
     {
         if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -91,7 +91,7 @@ class VisitorController extends Controller
         $company = Company::find(Session::get('company_id'));
         $departments = Department::where('company_id', $company->id)->select('id', 'name')->get();
         $employees = $company->users()->select('id', 'first_name as fname', 'last_name as lname')->get();
-        
+
         [$from, $to] = $this->getDateRange($request);
 
         $is_post_query = $request->filled('start_date') || $request->has('period');
@@ -151,7 +151,7 @@ class VisitorController extends Controller
             ->update(['status' => 'in_use']);
 
             return redirect('visitor')->with('success', 'New visitor added successfully');
-       
+
         }else{
          return redirect('visitor')->with('error', 'An error occured while adding new visitor');
         }
@@ -177,9 +177,9 @@ class VisitorController extends Controller
     {
         try {
             $visitor = Visitor::findOrFail(decrypt($id));
-            
+
             $user = User::find($visitor->user_id);
-            
+
             $visitor->update([
                 'is_granted' => true,
                 'status' => 'Permission Granted'
@@ -187,20 +187,23 @@ class VisitorController extends Controller
 
             if ($user) {
                 $notificationData = [
-                    'title' => 'Visitor Entry Approved',
-                    'body' => 'Entry permission has been granted for visitor ' . $visitor->name . '. Kindly allow access at the entrance.',
+                    // Keep mobile notification concise and name-first for quick operator recognition.
+                    'title' => $visitor->name,
+                    'body' => 'Entry approved',
                     'data' => [
                         'visitor_id' => $visitor->id,
-                        'type' => 'visitor_permission'
+                        'visitor_name' => $visitor->name,
+                        'type' => 'visitor_permission',
+                        'action' => 'permission_granted',
                     ],
                 ];
                 $user->notify(new FcmNotification($notificationData));
-                
-                $userNotification = Auth::user(); 
-    
+
+                $userNotification = Auth::user();
+
                 $userNotification->unreadNotifications
                     ->filter(function ($notification) use ($visitor) {
-                        return isset($notification->data['visitor_id']) 
+                        return isset($notification->data['visitor_id'])
                             && $notification->data['visitor_id'] == $visitor->id;
                     })
                     ->each->markAsRead();
@@ -297,7 +300,7 @@ class VisitorController extends Controller
             'pending'    => $query->whereIn('status', ['Awaiting Host permission', 'Permission Granted']),
             'checkedin'  => $query->where('status', 'Checked In'),
             'checkedout' => $query->where('status', 'Checked Out'),
-            default      => $query, 
+            default      => $query,
         };
 
         $visitors = $query->orderBy('created_at', 'desc')->get();
