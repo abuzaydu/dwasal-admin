@@ -46,6 +46,7 @@ class CompanyController extends Controller
         $company->name = $request['name'];
         $company->slogan = $request['slogan'];
         $company->brand_color = $request['brand_color'];
+        $company->show_name_on_id_card = $request->boolean('show_name_on_id_card');
         $company->save();
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
@@ -105,6 +106,7 @@ class CompanyController extends Controller
         $company->postal_code = $request['postal_code'];
         $company->city = $request['city'];
         $company->country = $request['country'];
+        $company->show_name_on_id_card = $request->boolean('show_name_on_id_card');
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
                 $request->validate([

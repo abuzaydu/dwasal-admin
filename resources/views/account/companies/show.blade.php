@@ -105,10 +105,26 @@
                                 <label class="form-label">Company Stamp</label>
                                 <input type="file" id="stamp" name="stamp">
                             </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Show Name on ID Card<span style="color:red">*</span></label>
+                                <select name="show_name_on_id_card" class="form-select form-select-sm mb-1">
+                                    @if($company->show_name_on_id_card)
+                                        <option value="1" selected>YES</option>
+                                        <option value="0">NO</option>
+                                    @else
+                                        <option value="0" selected>NO</option>
+                                        <option value="1">YES</option>
+                                    @endif
+                                </select>
+                                <small class="text-muted" style="font-size: 0.7rem;">Choose 'No' if your logo already contains the company name.</small>
+                            </div>
+
                             <div class="col-md-4">
                                 <label class="form-label">Brand Color<span style="color: red; font-weight: bold;">*</span></label>
                                 <input value="{{ $company->brand_color }}" type="color" name="brand_color" required class="form-control form-control-sm mb-1">
                             </div>
+
                             <div class="col-sm-12">
                                 <h6 class="card-title mt-3">Contact information</h6>
                                 <hr>

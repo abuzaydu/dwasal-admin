@@ -83,6 +83,16 @@
                                         <label class="form-label">Company Logo</label>
                                         <input type="file" name="logo" class="form-control form-control-sm mb-1">
                                     </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Show Name on ID Card<span style="color: red; font-weight: bold;">*</span></label>
+                                        <select name="show_name_on_id_card" class="form-select form-select-sm mb-1" required>
+                                            <option value="1" selected>YES</option>
+                                            <option value="0">NO</option>
+                                        </select>
+                                        <small class="text-muted" style="font-size: 0.7rem;">Select 'NO' if the logo has text.</small>
+                                    </div>
+                                    
                                     <div class="col-md-3">
                                     <label class="form-label">Brand Color<span style="color: red; font-weight: bold;">*</span></label>
                                     <input  value="#FFA733" type="color" name="brand_color" required placeholder="Choose Your Company Brand Color" class="form-control form-control-sm mb-1">

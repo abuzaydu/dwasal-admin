@@ -722,7 +722,11 @@
                             @else
                                 <div class="co-logo-placeholder"><i class="fa fa-building"></i></div>
                             @endif
+
+                            @if($showCompanyName)
                             <div class="co-name">{{ $employee->company->name ?? 'Company Name' }}</div>
+                            @endif
+                            
                         </div>
 
                             <div class="wf-photo-wrap">
@@ -785,7 +789,11 @@
                         @else
                             <div class="back-logo-placeholder"><i class="fa fa-building"></i></div>
                         @endif
+
+                        @if($showCompanyName)
                         <div class="back-company-name">{{ $employee->company->name ?? 'Company Name' }}</div>
+                        @endif
+
                         <div class="back-industry">{{ $employee->company->industry ?? 'Industry' }}</div>
                         <div class="back-divider"></div>
                         <div class="back-contact">
@@ -835,7 +843,11 @@
                         @else
                             <div class="co-logo-placeholder"><i class="fa fa-building"></i></div>
                         @endif
+
+                        @if($showCompanyName)
                         <div class="co-name">{{ $employee->company->name ?? 'Company Name' }}</div>
+                        @endif
+                        
                     </div>
 
                         <div class="gf-photo-wrap">
@@ -875,7 +887,10 @@
                             <div class="gb-logo-placeholder"><i class="fa fa-building"></i></div>
                         @endif
 
+                        @if($showCompanyName)
                         <div class="gb-company-name">{{ $employee->company->name ?? 'Company Name' }}</div>
+                        @endif
+
                         <div class="gb-industry">{{ $employee->company->industry ?? 'Industry' }}</div>
                         <div class="gb-divider"></div>
                         <div class="gb-contact">

@@ -610,6 +610,7 @@
                                             'employee'   => $employee,
                                             'position'   => $position,
                                             'user_photo' => $user_photo,
+                                            'showCompanyName' => $employee->company->show_name_on_id_card ?? true,
                                         ])
                                     </div>
                                 </div>
