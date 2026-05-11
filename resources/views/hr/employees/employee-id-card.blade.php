@@ -749,7 +749,7 @@
                                 <span class="wf-info-value">{{ $employee->emp_id ?? 'N/A' }}</span>
                             </div>
                             <div class="wf-info-row">
-                                <span class="wf-info-label">Valid:</span>
+                                <span class="wf-info-label">Issue Date:</span>
                                 <span class="wf-info-value">{{ date('d/m/Y', strtotime($employee->created_at)) }}</span>
                             </div>
                         </div>
@@ -847,7 +847,7 @@
                         @if($showCompanyName)
                         <div class="co-name">{{ $employee->company->name ?? 'Company Name' }}</div>
                         @endif
-                        
+
                     </div>
 
                         <div class="gf-photo-wrap">
