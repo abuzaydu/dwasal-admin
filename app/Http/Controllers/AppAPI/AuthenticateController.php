@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\AppAPI;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Auth;
 use App\Models\User;
+use Auth;
+use Illuminate\Http\Request;
+use JWTAuth;
 use Log;
 
 class AuthenticateController extends Controller
@@ -26,7 +27,7 @@ class AuthenticateController extends Controller
 
         try {
             // Log::info($credentials);
-            $token = \JWTAuth::attempt($credentials);
+            $token = JWTAuth::attempt($credentials);
             if (!$token) {
                 return response()->json([
                     'status' => 'error',
