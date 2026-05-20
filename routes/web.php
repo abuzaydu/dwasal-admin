@@ -400,7 +400,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('signup-complete', [HomeController::class, 'completeSignupForm']);
     Route::post('complete-signup', [HomeController::class, 'completeSignup']);
     Route::get('close-shop', [HomeController::class, 'closeShop']);
-    Route::get('verify-payment', [VerifyPaymentController::class, 'index']);
+    Route::get('verify-payment', [VerifyPaymentController::class, 'index'])->name('verify-payment');
     Route::post('verify-payment', [VerifyPaymentController::class, 'verify']);
     Route::get('verify-module-payment/{id}', [VerifyPaymentController::class, 'modulePayment']);
     Route::post('verify-module-payment', [VerifyPaymentController::class, 'verifyModulePayment']);
