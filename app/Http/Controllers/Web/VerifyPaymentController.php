@@ -27,7 +27,7 @@ class VerifyPaymentController extends Controller
 
         $eservice = ServiceCharge::where('subscription_type_id', 1)->orderBy('initial_pay', 'desc')->get();
         $pservice = ServiceCharge::where('subscription_type_id', 2)->orderBy('initial_pay', 'desc')->get();
-        return view('products.verify-payment', compact('page', 'title', 'title_sw', 'eservice', 'pservice'));
+        return view('verify-payment', compact('page', 'title', 'title_sw', 'eservice', 'pservice'));
     }
 
     public function modulePayment($id)
