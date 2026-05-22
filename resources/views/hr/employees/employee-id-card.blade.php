@@ -179,16 +179,26 @@
         flex-shrink: 0;
         box-sizing: border-box;
     }
-    .wave-front .wf-header .co-logo {
-        height: 38%; width: auto; max-width: 42%;
-        object-fit: contain; border-radius: 4px;
+    
+     .wave-front .wf-header .co-logo {
+        height: 75%; 
+        width: auto; 
+        max-width: 70%;
+        object-fit: contain; 
+        border-radius: 6px; 
     }
+
     .wave-front .wf-header .co-logo-placeholder {
-        height: 36%; width: 36%;
+        height: 70%; 
+        width: 60%;
         background: var(--id-secondary);
-        border-radius: 5px;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; font-size: var(--f-lg);
+        border-radius: 10px;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        color: #fff; 
+        /* Boosted font size for the placeholder text/icon to remain proportional */
+        font-size: calc(var(--f-lg) * 1.5); 
     }
     .wave-front .wf-header .co-name {
         font-size: var(--f-sm);
@@ -311,16 +321,29 @@
         pointer-events: none;
     }
 
-    .wave-back .back-logo {
-        width:26%; aspect-ratio:1; object-fit:contain;
-        border-radius:6px; background:rgba(255,255,255,0.12);
-        padding:3%; margin-bottom:4%; flex-shrink:0;
+     .wave-back .back-logo {
+        width: 40%; 
+        aspect-ratio: 1; 
+        object-fit: contain;
+        border-radius: 10px; 
+        background: rgba(255, 255, 255, 0.12);
+        padding: 4%; 
+        margin-bottom: 3%; 
+        flex-shrink: 0;
     }
+
     .wave-back .back-logo-placeholder {
-        width:20%; aspect-ratio:1;
-        background:rgba(255,255,255,0.15); border-radius:6px;
-        display:flex; align-items:center; justify-content:center;
-        margin-bottom:4%; font-size:var(--f-lg); flex-shrink:0;
+        width: 35%; 
+        aspect-ratio: 1;
+        background: rgba(255, 255, 255, 0.15); 
+        border-radius: 10px;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        margin-bottom: 3%; 
+        /* Boosted the font size so the inner text/icon scales up beautifully with the larger box */
+        font-size: calc(var(--f-lg) * 1.6); 
+        flex-shrink: 0;
     }
     .wave-back .back-company-name {
         font-size:var(--f-md); font-weight:900;
