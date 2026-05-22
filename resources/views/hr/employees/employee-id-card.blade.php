@@ -179,7 +179,6 @@
         flex-shrink: 0;
         box-sizing: border-box;
     }
-    
      .wave-front .wf-header .co-logo {
         height: 75%; 
         width: auto; 
@@ -326,7 +325,8 @@
         aspect-ratio: 1; 
         object-fit: contain;
         border-radius: 10px; 
-        background: rgba(255, 255, 255, 0.12);
+        background: white;
+        /* background: rgba(255, 255, 255, 0.12); */
         padding: 4%; 
         margin-bottom: 3%; 
         flex-shrink: 0;
@@ -335,7 +335,8 @@
     .wave-back .back-logo-placeholder {
         width: 35%; 
         aspect-ratio: 1;
-        background: rgba(255, 255, 255, 0.15); 
+        background: white
+        /* background: rgba(255, 255, 255, 0.15);  */
         border-radius: 10px;
         display: flex; 
         align-items: center; 
