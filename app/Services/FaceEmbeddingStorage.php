@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Contracts\Encryption\DecryptException;
+
+/**
+ * Face embeddings stored in employees.face_embedding (MySQL JSON column).
+ * Must always be valid JSON — use wrapped object for encrypted payloads.
+ */
+class FaceEmbeddingStorage
+{
+    /**
+     * @param array<int, float> $embedding
+     * @return array<string, mixed> Valid JSON object for DB column
+     */
+    public static function packForStorage(array $embedding): array
+    {
+        return [
+            'enc' => base64_encode(encrypt(json_encode($embedding))),
+            'model' => 'facenet',
+        ];
+    }
+
+    /**
+     * @return array|null Decoded single vector or multi-template structure
+     */
+    public static function decodeFromStorage(mixed $value): ?array
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        if (!is_array($value)) {
+            return null;
+        }
+
+        if (isset($value['enc']) && is_string($value['enc'])) {
+            try {
+                $decrypted = decrypt(base64_decode($value['enc'], true));
+                $decoded = json_decode($decrypted, true);
+
+                return is_array($decoded) ? $decoded : null;
+            } catch (DecryptException|\Throwable) {
+                return null;
+            }
+        }
+
+        // Legacy: plain vector or multi-template stored directly in JSON
+        if (isset($value[0]) && is_numeric($value[0])) {
+            return $value;
+        }
+
+        if (isset($value[0]) && is_array($value[0])) {
+            return $value;
+        }
+
+        // Legacy: encrypted string saved incorrectly (pre-fix)
+        if (isset($value[0]) && is_string($value[0])) {
+            try {
+                $decrypted = decrypt($value[0]);
+                $decoded = json_decode($decrypted, true);
+
+                return is_array($decoded) ? $decoded : null;
+            } catch (DecryptException) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<array<float>> Normalized template vectors (one or many per employee)
+     */
+    public static function templatesFromStored(mixed $raw): array
+    {
+        $data = self::decodeFromStorage($raw);
+        if (empty($data)) {
+            return [];
+        }
+
+        if (self::isMultiTemplate($data)) {
+            $templates = [];
+            foreach ($data as $template) {
+                if (!is_array($template)) {
+                    continue;
+                }
+                $normalized = self::normalizeVector($template);
+                if (!empty($normalized)) {
+                    $templates[] = $normalized;
+                }
+            }
+
+            return $templates;
+        }
+
+        $normalized = self::normalizeVector($data);
+        return empty($normalized) ? [] : [$normalized];
+    }
+
+    public static function hasEnrollment(mixed $raw): bool
+    {
+        return count(self::templatesFromStored($raw)) > 0;
+    }
+
+    /**
+     * @param array<int, float|int|string> $embedding
+     * @return array<int, float>
+     */
+    public static function normalizeVector(array $embedding): array
+    {
+        if (empty($embedding)) {
+            return [];
+        }
+
+        $vector = array_map(fn ($v) => (float) $v, $embedding);
+        $sumSquares = 0.0;
+        foreach ($vector as $value) {
+            $sumSquares += ($value * $value);
+        }
+
+        $norm = sqrt($sumSquares);
+        if ($norm <= 0.0) {
+            return [];
+        }
+
+        return array_map(fn ($value) => $value / $norm, $vector);
+    }
+
+    /**
+     * @param array<int, mixed> $data
+     */
+    private static function isMultiTemplate(array $data): bool
+    {
+        if (!isset($data[0]) || !is_array($data[0])) {
+            return false;
+        }
+
+        return isset($data[0][0]) && is_numeric($data[0][0]);
+    }
+}

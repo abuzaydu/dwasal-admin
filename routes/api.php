@@ -69,16 +69,15 @@ Route::group(['middleware' => 'cors'], function () {
         Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
         // Attendance API — JWT (logged-in Entrance Admin)
-        Route::middleware('auth:api')->group(function(){
-            Route::post('attendance-punchin' , [AttendanceController::class , 'punchIn'])->name('api.attendance-punchin');
-            Route::post('attendance-punchin-by-face' , [AttendanceController::class , 'punchInByFace'])->name('api.attendance-punchin-by-face');
-            Route::post('attendance-punchin-pending' , [AttendanceController::class , 'punchInWithPendingToken'])->name('api.attendance-punchin-pending');
-            Route::post('attendance-punchout' , [AttendanceController::class , 'punchOut'])->name('api.attendance-punchout');
-            Route::post('attendance-register-face' , [AttendanceController::class , 'registerFaceTemplate'])->name('api.attendance-register-face');
-            Route::post('attendance-verify-qr' , [AttendanceController::class , 'verifyEmployeeQr'])->name('api.attendance-verify-qr');
-            Route::get('attendance-pending-next' , [AttendanceController::class , 'getNextPendingVerification'])->name('api.attendance-pending-next');
-
-            });
+        Route::middleware(['auth:api', 'throttle:10,1'])->group(function () {
+            Route::post('attendance-punchin', [AttendanceController::class, 'punchIn'])->name('api.attendance-punchin');
+            Route::post('attendance-punchin-by-face', [AttendanceController::class, 'punchInByFace'])->name('api.attendance-punchin-by-face');
+            Route::post('attendance-punchout', [AttendanceController::class, 'punchOut'])->name('api.attendance-punchout');
+            Route::post('attendance-register-face', [AttendanceController::class, 'registerFaceTemplate'])->name('api.attendance-register-face');
+            Route::post('attendance-verify-qr', [AttendanceController::class, 'verifyEmployeeQr'])->name('api.attendance-verify-qr');
+            // attendance-pending-next / attendance-punchin-pending removed — unused by mobile app.
+            // attendance_pending_verifications table: TODO remove after full migration to QR+Face binding.
+        });
 
         });
 

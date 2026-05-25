@@ -70,7 +70,10 @@
                             <h6 class="mb-0 text-uppercase" id="new-title" style="display: none;">New Position</h6>
                             <h6 class="mb-0 text-uppercase" id="list-title">Positions List</h6>
                         </div>
-                        <div class="ms-auto">
+                        <div class="ms-auto d-flex gap-2">
+                            <a href="{{ route('employees.face-id.index') }}" class="btn btn-outline-success btn-sm">
+                                <i class="fa fa-user-circle"></i> Face ID
+                            </a>
                             <button type="button" id="new-btn" class="btn btn-primary" onclick="showHideForm('show')"><i class="fa fa-plus-square"></i>New Position</button>
                         </div>
                     </div>
