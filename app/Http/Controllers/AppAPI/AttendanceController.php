@@ -14,25 +14,18 @@ use App\Models\User;
 use App\Services\FaceEmbeddingStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 
 class AttendanceController extends Controller
 {
-    private const FACE_MATCH_THRESHOLD = 0.78;
-    private const FACE_AMBIGUITY_SECOND_MIN = 0.76;
-    private const FACE_AMBIGUITY_GAP = 0.04;
-
-    // NOTE:
-    // System currently supports face-only punch-in.
-    // QR + Face binding was partially implemented but removed for stability.
-    // Future upgrade can reintroduce secure 1:1 verification using pending_token.
-
-     public function punchIn(Request $request)
+    private const FACE_MATCH_THRESHOLD = 0.72;
+    private const FACE_AMBIGUITY_SECOND_MIN = 0.70;
+    private const FACE_AMBIGUITY_GAP = 0.03;
+    public function punchIn(Request $request)
     {
         // Log::info($request);
-        try{
-            // Policy: attendance is recorded only after face match. QR identifies the employee; it does not replace face.
+        try {
             $request->validate([
                 'qr_data' => 'required|string',
                 'face_embedding' => 'required|array|min:64',
@@ -104,7 +97,7 @@ class AttendanceController extends Controller
                             'time'           => $now->format('H:i:s'),
                             'is_fullday'     => $attendance->is_fullday,
                         ]);
-                    }else{
+                    } else {
                         $att_entry = new AttendanceEntry();
                         $att_entry->employee_attendance_id = $attendance->id;
                         $att_entry->time_in = $now;
@@ -117,7 +110,7 @@ class AttendanceController extends Controller
                             'is_late'    => $attendance->is_late
                         ]);
                     }
-                }else{
+                } else {
                     $att_entry = AttendanceEntry::where('employee_attendance_id', $attendance->id)->first();
                     $att_entry->time_out = $now;
                     $att_entry->save();
@@ -133,7 +126,7 @@ class AttendanceController extends Controller
                         'is_fullday'     => $attendance->is_fullday,
                     ]);
                 }
-            }else{
+            } else {
 
                 // Calculate if late
                 $companyStartTime = Carbon::createFromFormat(
@@ -141,7 +134,7 @@ class AttendanceController extends Controller
                     $today . ' ' . $setting->start_of_day
                 );
 
-                if(is_null($attendance)){
+                if (is_null($attendance)) {
                     $attendance = new EmployeeAttendance();
                     $attendance->company_id  = $employee->company_id;
                     $attendance->employee_id = $employee->id;
@@ -167,8 +160,7 @@ class AttendanceController extends Controller
                 ]);
             }
         } catch (DecryptException $e) {
-            // Handle the error (e.g., log it, return the raw value, or show a user-friendly error)
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]); 
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => 0,
@@ -195,6 +187,13 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
+            if (FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'This employee ID already has Face ID enrolled. Each QR can only be enrolled once. Remove the existing enrollment in admin to replace it.',
+                ], 409);
+            }
+
             $normalized = $this->normalizeEmbedding($request->input('face_embedding', []));
             if (empty($normalized)) {
                 return response()->json([
@@ -211,8 +210,8 @@ class AttendanceController extends Controller
             if ($conflict) {
                 $conflictName = trim(
                     ($conflict->fname ?? '') . ' ' .
-                    ($conflict->mname ?? '') . ' ' .
-                    ($conflict->lname ?? '')
+                        ($conflict->mname ?? '') . ' ' .
+                        ($conflict->lname ?? '')
                 );
                 return response()->json([
                     'success' => 0,
@@ -233,9 +232,9 @@ class AttendanceController extends Controller
                 'employee_id' => $employee->id,
             ]);
         } catch (DecryptException $e) {
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]);
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
         } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('registerFaceTemplate DB error: '.$e->getMessage());
+            Log::error('registerFaceTemplate DB error: ' . $e->getMessage());
             return response()->json([
                 'success' => 0,
                 'message' => 'Could not save face data. Please contact admin.',
@@ -271,15 +270,12 @@ class AttendanceController extends Controller
                     'message' => 'Employee does not belong to your company'
                 ], 403);
             }
-
-            // pending_token kept for API compatibility; attendance_pending_verifications is deprecated.
-            // TODO: remove after full migration to QR+Face binding
             $pendingToken = Str::uuid()->toString();
 
             return response()->json([
                 'message' => 'Employee verified',
                 'employee_id' => $employee->id,
-                'employee_name' => trim(($employee->fname ?? '').' '.($employee->lname ?? '')),
+                'employee_name' => trim(($employee->fname ?? '') . ' ' . ($employee->lname ?? '')),
                 'company_id' => $employee->company_id,
                 'face_registered' => FaceEmbeddingStorage::hasEnrollment(
                     $employee->getRawOriginal('face_embedding')
@@ -287,7 +283,7 @@ class AttendanceController extends Controller
                 'pending_token' => $pendingToken,
             ]);
         } catch (DecryptException $e) {
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]);
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => 0,
@@ -354,8 +350,10 @@ class AttendanceController extends Controller
                 ], 401);
             }
 
-            if ($secondSimilarity >= self::FACE_AMBIGUITY_SECOND_MIN
-                && ($bestSimilarity - $secondSimilarity) < self::FACE_AMBIGUITY_GAP) {
+            if (
+                $secondSimilarity >= self::FACE_AMBIGUITY_SECOND_MIN
+                && ($bestSimilarity - $secondSimilarity) < self::FACE_AMBIGUITY_GAP
+            ) {
                 return response()->json([
                     'message' => 'Face match ambiguous. Please retry.',
                 ], 409);
@@ -388,7 +386,7 @@ class AttendanceController extends Controller
         return (int) $company->id;
     }
 
-     public function punchOut(Request $request)
+    public function punchOut(Request $request)
     {
         $request->validate([
             'employee_id' => 'required|integer',
@@ -447,7 +445,7 @@ class AttendanceController extends Controller
         );
         $attendance->is_fullday = $now->gte($companyEndTime);
 
-         $attendance->save();
+        $attendance->save();
 
         return response()->json([
             'message'        => 'Punch out successful',
@@ -456,14 +454,6 @@ class AttendanceController extends Controller
             'is_fullday'     => $attendance->is_fullday,
         ]);
     }
-
-    /**
-     * QR payload after decrypt is historically one of:
-     * - "{employee_id}&{company_id}" (legacy attendance payloads)
-     * - "{employee_id}&{emp_id}"     (printed ID cards: employee-id-card.blade.php uses encrypt(id.'&'.emp_id))
-     *
-     * We load by primary key, then confirm the second segment matches company_id OR emp_id.
-     */
     private function resolveEmployeeFromQr(string $encryptedQrData): ?Employee
     {
         $data = decrypt($encryptedQrData);

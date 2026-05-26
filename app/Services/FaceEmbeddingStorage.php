@@ -40,14 +40,24 @@ class FaceEmbeddingStorage
         }
 
         if (isset($value['enc']) && is_string($value['enc'])) {
-            try {
-                $decrypted = decrypt(base64_decode($value['enc'], true));
-                $decoded = json_decode($decrypted, true);
+            $enc = $value['enc'];
+            foreach ([$enc, base64_decode($enc, true) ?: null] as $payload) {
+                if (!is_string($payload) || $payload === '') {
+                    continue;
+                }
+                try {
+                    $decrypted = decrypt($payload);
+                    $decoded = json_decode($decrypted, true);
 
-                return is_array($decoded) ? $decoded : null;
-            } catch (DecryptException|\Throwable) {
-                return null;
+                    if (is_array($decoded)) {
+                        return $decoded;
+                    }
+                } catch (DecryptException|\Throwable) {
+                    // Try next decode strategy.
+                }
             }
+
+            return null;
         }
 
         // Legacy: plain vector or multi-template stored directly in JSON
