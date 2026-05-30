@@ -830,7 +830,7 @@ class ProductsController extends Controller
         // }
         $message = 'Price was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function newBuyPrice(Request $request)
@@ -859,7 +859,7 @@ class ProductsController extends Controller
 
         $message = 'Re-order Point was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function priceList(Request $request)
