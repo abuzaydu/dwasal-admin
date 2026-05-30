@@ -48,6 +48,7 @@ use App\Http\Controllers\HR\AttendanceController;
 use App\Http\Controllers\HR\AttendanceSettingController;
 use App\Http\Controllers\HR\DepartmentController;
 use App\Http\Controllers\HR\EmployeeController;
+use App\Http\Controllers\HR\EmployeeFaceIdController;
 use App\Http\Controllers\HR\EmployeeDocController;
 use App\Http\Controllers\HR\EmployeeMedicalInfoController;
 use App\Http\Controllers\HR\EmployeeSalaryController;
@@ -1297,6 +1298,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('hr-dash', [HRDashController::class, 'index']);
     //HR
     Route::resource('positions', PositionController::class);
+    Route::get('employees/face-id', [EmployeeFaceIdController::class, 'index'])->name('employees.face-id.index');
+    Route::delete('employees/{id}/face-id', [EmployeeFaceIdController::class, 'destroy'])->name('employees.face-id.destroy');
     Route::resource('employees', EmployeeController::class);
     Route::get('employee-sample', [EmployeeController::class, 'downloadSample']);
     Route::post('import-employees', [EmployeeController::class, 'importEmployees']);
