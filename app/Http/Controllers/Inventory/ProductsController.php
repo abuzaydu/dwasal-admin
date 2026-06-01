@@ -2,43 +2,44 @@
 
 namespace App\Http\Controllers\Inventory;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Session;
 use App;
-use Auth;
-use Validator;
-use File;
-use Carbon\Carbon;
-use App\Models\Company;
-use App\Imports\ProductsImport;
 use App\Exports\ProductExport;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Models\Shop;
-use App\Models\Payment;
-use App\Models\BarcodeSetting;
-use App\Models\categories;
-use App\Models\Setting;
-use App\Models\UnitMeasure;
-use App\Models\Product;
-use App\Models\Brand;
-use App\Models\ProductUnit;
-use App\Models\Stock;
-use App\Models\Category;
+use App\Http\Controllers\Controller;
+use App\Imports\ProductsImport;
 use App\Models\AnSaleItem;
-use App\Models\ServiceSaleItem;
-use App\Models\ProdDamage;
-use App\Models\TransferOrder;
-use App\Models\TransferOrderItem;
-use App\Models\SaleReturnItem;
-use App\Models\Invoice;
+use App\Models\BarcodeSetting;
+use App\Models\Brand;
+use App\Models\categories;
+use App\Models\Category;
+use App\Models\Company;
 use App\Models\CustomerAccount;
 use App\Models\CustomerTransaction;
-use App\Models\ShopCurrency;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\PriceChange;
+use App\Models\ProdDamage;
+use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\SaleReturnItem;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\ShopCurrency;
+use App\Models\Stock;
 use App\Models\StockCorrection;
+use App\Models\TransferOrder;
+use App\Models\TransferOrderItem;
+use App\Models\UnitMeasure;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Log;
+use Maatwebsite\Excel\Facades\Excel;
+use Validator;
 
 class ProductsController extends Controller
 {
@@ -324,8 +325,14 @@ class ProductsController extends Controller
                     ]);
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
-                    $image_path = $product->id.'_img.'.$extension;
+                    // $request->image->storeAs('/products', $product->id.'_img.'.$extension);
+                    $request->image->storeAs(
+                        'products',
+                        $product->id.'_img.'.$extension,
+                        'public'
+                    );
+                    // $image_path = $product->id.'_img.'.$extension;
+                    $image_path = 'products/'.$product->id.'_img.'.$extension;
                 }
             }
 
@@ -658,14 +665,17 @@ class ProductsController extends Controller
                         'image' => 'mimes:jpg,png,jpeg,webp,gif,svg|max:1024',
                     ]);
 
-                    $old_path = storage_path('/products/'.$image_path);
-                    if (File::exists($old_path)) {
-                        unlink($old_path);
+                    if (!empty($image_path)) {
+                        Storage::disk('public')->delete($image_path);
                     }
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
-                    $image_path = $product->id.'_img.'.$extension;
+                    $fileName = $product->id . '_img.' . $extension;
+
+                    $request->image->storeAs('products', $fileName, 'public');
+                    
+                    $image_path = 'products/' . $fileName;
+
                 }
             }
 
@@ -724,6 +734,7 @@ class ProductsController extends Controller
             return redirect('/products')->with('error', $message);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
