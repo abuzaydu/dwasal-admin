@@ -83,7 +83,7 @@
                             <div class="col-md-2">
                                 <label class="form-label">Storage For</label>
                                 <select name="storage_for" class="form-select form-select-sm mb-1" required>
-                                    <option>--Select--</option>
+                                    <option value="" selected disabled>--Select storage for--</option>
                                     <option>Raw Material</option>
                                     <option>End Products</option>
                                 </select>

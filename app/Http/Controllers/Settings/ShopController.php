@@ -74,7 +74,8 @@ class ShopController extends Controller
                 $shop->name = $request['shop_name'];
                 $shop->business_type_id = $request['business_type_id'];
                 $shop->subscription_type_id = $request['subscription_type_id'];
-                $shop->business_sub_type_id = $request['business_sub_type_id'];
+                // $shop->business_sub_type_id = $request['business_sub_type_id'];
+                $shop->business_type_id = $request['business_type_id'];
                 $shop->is_warehouse = $request['is_warehouse'];
                 if ($shop->is_warehouse) {
                     $shop->parent_shop_id = $request['parent_shop_id'];

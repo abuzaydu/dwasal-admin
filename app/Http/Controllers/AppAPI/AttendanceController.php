@@ -10,20 +10,22 @@ use App\Models\AttendanceSetting;
 use App\Models\Employee;
 use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
-use App\Models\AttendancePendingVerification;
 use App\Models\User;
+use App\Services\FaceEmbeddingStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 
 class AttendanceController extends Controller
 {
-     public function punchIn(Request $request)
+    private const FACE_MATCH_THRESHOLD = 0.72;
+    private const FACE_AMBIGUITY_SECOND_MIN = 0.70;
+    private const FACE_AMBIGUITY_GAP = 0.03;
+    public function punchIn(Request $request)
     {
         // Log::info($request);
-        try{
-            // Policy: attendance is recorded only after face match. QR identifies the employee; it does not replace face.
+        try {
             $request->validate([
                 'qr_data' => 'required|string',
                 'face_embedding' => 'required|array|min:64',
@@ -37,21 +39,20 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
-            if (empty($employee->face_embedding) || !is_array($employee->face_embedding)) {
+            if (!FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
                 return response()->json([
                     'success' => 0,
                     'message' => 'Employee has no face enrolled. Register face in the admin kiosk first.',
                 ], 422);
             }
 
-            $matchResult = $this->verifyFaceMatch(
-                $employee->face_embedding,
+            $matchResult = $this->matchProbeAgainstEmployee(
+                $employee,
                 $request->input('face_embedding', [])
             );
             if (!$matchResult['matched']) {
                 return response()->json([
                     'message' => 'Face verification failed',
-                    'score' => $matchResult['similarity'],
                 ], 401);
             }
 
@@ -96,7 +97,7 @@ class AttendanceController extends Controller
                             'time'           => $now->format('H:i:s'),
                             'is_fullday'     => $attendance->is_fullday,
                         ]);
-                    }else{
+                    } else {
                         $att_entry = new AttendanceEntry();
                         $att_entry->employee_attendance_id = $attendance->id;
                         $att_entry->time_in = $now;
@@ -109,7 +110,7 @@ class AttendanceController extends Controller
                             'is_late'    => $attendance->is_late
                         ]);
                     }
-                }else{
+                } else {
                     $att_entry = AttendanceEntry::where('employee_attendance_id', $attendance->id)->first();
                     $att_entry->time_out = $now;
                     $att_entry->save();
@@ -125,7 +126,7 @@ class AttendanceController extends Controller
                         'is_fullday'     => $attendance->is_fullday,
                     ]);
                 }
-            }else{
+            } else {
 
                 // Calculate if late
                 $companyStartTime = Carbon::createFromFormat(
@@ -133,7 +134,7 @@ class AttendanceController extends Controller
                     $today . ' ' . $setting->start_of_day
                 );
 
-                if(is_null($attendance)){
+                if (is_null($attendance)) {
                     $attendance = new EmployeeAttendance();
                     $attendance->company_id  = $employee->company_id;
                     $attendance->employee_id = $employee->id;
@@ -159,8 +160,7 @@ class AttendanceController extends Controller
                 ]);
             }
         } catch (DecryptException $e) {
-            // Handle the error (e.g., log it, return the raw value, or show a user-friendly error)
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]); 
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => 0,
@@ -187,6 +187,13 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
+            if (FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'This employee ID already has Face ID enrolled. Each QR can only be enrolled once. Remove the existing enrollment in admin to replace it.',
+                ], 409);
+            }
+
             $normalized = $this->normalizeEmbedding($request->input('face_embedding', []));
             if (empty($normalized)) {
                 return response()->json([
@@ -194,7 +201,28 @@ class AttendanceController extends Controller
                 ], 422);
             }
 
-            $employee->face_embedding = $normalized;
+            // Prevent one face being enrolled under multiple employees (same company).
+            $conflict = $this->findConflictingFaceOwner(
+                (int) $employee->company_id,
+                $normalized,
+                (int) $employee->id
+            );
+            if ($conflict) {
+                $conflictName = trim(
+                    ($conflict->fname ?? '') . ' ' .
+                        ($conflict->mname ?? '') . ' ' .
+                        ($conflict->lname ?? '')
+                );
+                return response()->json([
+                    'success' => 0,
+                    'message' => $conflictName !== ''
+                        ? "This face is already registered for {$conflictName} (ID: {$conflict->emp_id}). Each employee must use their own face."
+                        : "This face is already registered for employee ID {$conflict->emp_id}. Each employee must use their own face.",
+                ], 409);
+            }
+
+            // JSON column: store wrapped encrypted object (avoids MySQL 3140 invalid JSON).
+            $employee->face_embedding = FaceEmbeddingStorage::packForStorage($normalized);
             $employee->face_model_version = $request->input('face_model_version', 'facenet');
             $employee->face_registered_at = now();
             $employee->save();
@@ -204,7 +232,13 @@ class AttendanceController extends Controller
                 'employee_id' => $employee->id,
             ]);
         } catch (DecryptException $e) {
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]);
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('registerFaceTemplate DB error: ' . $e->getMessage());
+            return response()->json([
+                'success' => 0,
+                'message' => 'Could not save face data. Please contact admin.',
+            ], 500);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => 0,
@@ -236,143 +270,24 @@ class AttendanceController extends Controller
                     'message' => 'Employee does not belong to your company'
                 ], 403);
             }
-
             $pendingToken = Str::uuid()->toString();
-            AttendancePendingVerification::create([
-                'token' => $pendingToken,
-                'company_id' => $employee->company_id,
-                'employee_id' => $employee->id,
-                'verified_by_user_id' => $user?->id,
-                'qr_data' => $request->input('qr_data'),
-                'expires_at' => now()->addMinutes(2),
-            ]);
 
             return response()->json([
                 'message' => 'Employee verified',
                 'employee_id' => $employee->id,
-                'employee_name' => trim(($employee->fname ?? '').' '.($employee->lname ?? '')),
+                'employee_name' => trim(($employee->fname ?? '') . ' ' . ($employee->lname ?? '')),
                 'company_id' => $employee->company_id,
-                'face_registered' => !empty($employee->face_embedding),
+                'face_registered' => FaceEmbeddingStorage::hasEnrollment(
+                    $employee->getRawOriginal('face_embedding')
+                ),
                 'pending_token' => $pendingToken,
             ]);
         } catch (DecryptException $e) {
-            return response()->json(['success' => 0, 'message' => 'Invalid Payload '.$request['qr_data']]);
+            return response()->json(['success' => 0, 'message' => 'Invalid Payload ' . $request['qr_data']]);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => 0,
                 'message' => 'Invalid request',
-                'errors' => $e->errors(),
-            ], 422);
-        }
-    }
-
-    public function getNextPendingVerification(Request $request)
-    {
-        /** @var User|null $user */
-        $user = auth('api')->user();
-        $companyId = $this->resolveCompanyIdFromAuthUser($user);
-        if (!$companyId) {
-            return response()->json([
-                'message' => 'No default company configured for this account'
-            ], 403);
-        }
-
-        $pending = AttendancePendingVerification::where('company_id', $companyId)
-            ->whereNull('used_at')
-            ->where('expires_at', '>', now())
-            ->orderByDesc('id')
-            ->first();
-
-        if (!$pending) {
-            return response()->json([
-                'message' => 'No pending verification'
-            ], 404);
-        }
-
-        $employee = Employee::find($pending->employee_id);
-        if (!$employee) {
-            return response()->json([
-                'message' => 'Pending verification employee not found'
-            ], 404);
-        }
-
-        return response()->json([
-            'token' => $pending->token,
-            'employee_id' => $employee->id,
-            'employee_name' => trim(($employee->fname ?? '').' '.($employee->lname ?? '')),
-            'expires_at' => $pending->expires_at,
-        ]);
-    }
-
-    public function punchInWithPendingToken(Request $request)
-    {
-        try {
-            $request->validate([
-                'pending_token' => 'required|string|max:120',
-                'face_embedding' => 'required|array|min:64',
-                'face_embedding.*' => 'numeric',
-            ]);
-
-            /** @var User|null $user */
-            $user = auth('api')->user();
-            $companyId = $this->resolveCompanyIdFromAuthUser($user);
-            if (!$companyId) {
-                return response()->json([
-                    'message' => 'No default company configured for this account'
-                ], 403);
-            }
-
-            $pending = AttendancePendingVerification::where('token', $request->input('pending_token'))
-                ->where('company_id', $companyId)
-                ->whereNull('used_at')
-                ->where('expires_at', '>', now())
-                ->first();
-
-            if (!$pending) {
-                return response()->json([
-                    'message' => 'Pending verification expired or invalid'
-                ], 410);
-            }
-
-            $employee = Employee::find($pending->employee_id);
-            if (!$employee) {
-                return response()->json([
-                    'message' => 'Employee not found'
-                ], 404);
-            }
-
-            if (empty($employee->face_embedding) || !is_array($employee->face_embedding)) {
-                return response()->json([
-                    'message' => 'Employee has no face enrolled'
-                ], 422);
-            }
-
-            $matchResult = $this->verifyFaceMatch(
-                $employee->face_embedding,
-                $request->input('face_embedding', [])
-            );
-            if (!$matchResult['matched']) {
-                return response()->json([
-                    'message' => 'Face verification failed',
-                    'score' => $matchResult['similarity'],
-                ], 401);
-            }
-
-            $punchResponse = $this->punchIn(new Request([
-                'qr_data' => $pending->qr_data,
-                'face_embedding' => $request->input('face_embedding', []),
-            ]));
-
-            if ($punchResponse->status() === 200) {
-                $pending->used_at = now();
-                $pending->save();
-            }
-
-            return $punchResponse;
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => 0,
-                'message' => 'Invalid face payload',
                 'errors' => $e->errors(),
             ], 422);
         }
@@ -412,11 +327,11 @@ class AttendanceController extends Controller
             $bestSimilarity = -1.0;
             $secondSimilarity = -1.0;
             foreach ($employees as $employee) {
-                if (empty($employee->face_embedding) || !is_array($employee->face_embedding)) {
+                if (!FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
                     continue;
                 }
-                $result = $this->verifyFaceMatch(
-                    $employee->face_embedding,
+                $result = $this->matchProbeAgainstEmployee(
+                    $employee,
                     $request->input('face_embedding', [])
                 );
                 $sim = (float) ($result['similarity'] ?? 0.0);
@@ -429,14 +344,16 @@ class AttendanceController extends Controller
                 }
             }
 
-            if (!$bestEmployee || $bestSimilarity < 0.75) {
+            if (!$bestEmployee || $bestSimilarity < self::FACE_MATCH_THRESHOLD) {
                 return response()->json([
                     'message' => 'Face not recognized',
                 ], 401);
             }
 
-            // Safety: avoid selecting between two very close candidates.
-            if ($secondSimilarity >= 0.73 && ($bestSimilarity - $secondSimilarity) < 0.03) {
+            if (
+                $secondSimilarity >= self::FACE_AMBIGUITY_SECOND_MIN
+                && ($bestSimilarity - $secondSimilarity) < self::FACE_AMBIGUITY_GAP
+            ) {
                 return response()->json([
                     'message' => 'Face match ambiguous. Please retry.',
                 ], 409);
@@ -469,7 +386,7 @@ class AttendanceController extends Controller
         return (int) $company->id;
     }
 
-     public function punchOut(Request $request)
+    public function punchOut(Request $request)
     {
         $request->validate([
             'employee_id' => 'required|integer',
@@ -528,7 +445,7 @@ class AttendanceController extends Controller
         );
         $attendance->is_fullday = $now->gte($companyEndTime);
 
-         $attendance->save();
+        $attendance->save();
 
         return response()->json([
             'message'        => 'Punch out successful',
@@ -537,14 +454,6 @@ class AttendanceController extends Controller
             'is_fullday'     => $attendance->is_fullday,
         ]);
     }
-
-    /**
-     * QR payload after decrypt is historically one of:
-     * - "{employee_id}&{company_id}" (legacy attendance payloads)
-     * - "{employee_id}&{emp_id}"     (printed ID cards: employee-id-card.blade.php uses encrypt(id.'&'.emp_id))
-     *
-     * We load by primary key, then confirm the second segment matches company_id OR emp_id.
-     */
     private function resolveEmployeeFromQr(string $encryptedQrData): ?Employee
     {
         $data = decrypt($encryptedQrData);
@@ -576,46 +485,92 @@ class AttendanceController extends Controller
         return null;
     }
 
+    /**
+     * Returns another employee (same company) who already owns this face, if any.
+     */
+    private function findConflictingFaceOwner(
+        int $companyId,
+        array $probeEmbedding,
+        int $excludeEmployeeId
+    ): ?Employee {
+        $employees = Employee::where('company_id', $companyId)
+            ->where('id', '!=', $excludeEmployeeId)
+            ->whereNotNull('face_embedding')
+            ->get();
+
+        $bestMatch = null;
+        $bestSimilarity = 0.0;
+
+        foreach ($employees as $other) {
+            if (!FaceEmbeddingStorage::hasEnrollment($other->getRawOriginal('face_embedding'))) {
+                continue;
+            }
+
+            $result = $this->matchProbeAgainstEmployee($other, $probeEmbedding);
+            $sim = (float) ($result['similarity'] ?? 0.0);
+
+            if ($sim > $bestSimilarity) {
+                $bestSimilarity = $sim;
+                $bestMatch = $other;
+            }
+        }
+
+        if ($bestMatch && $bestSimilarity >= self::FACE_MATCH_THRESHOLD) {
+            return $bestMatch;
+        }
+
+        return null;
+    }
+
+    /**
+     * Best similarity across one or more stored templates for an employee.
+     */
+    private function matchProbeAgainstEmployee(Employee $employee, array $probeEmbedding): array
+    {
+        $templates = FaceEmbeddingStorage::templatesFromStored(
+            $employee->getRawOriginal('face_embedding')
+        );
+        $probe = FaceEmbeddingStorage::normalizeVector($probeEmbedding);
+
+        if (empty($probe) || empty($templates)) {
+            return ['matched' => false, 'similarity' => 0.0];
+        }
+
+        $bestSimilarity = 0.0;
+        foreach ($templates as $stored) {
+            $result = $this->verifyFaceMatch($stored, $probe);
+            if ($result['similarity'] > $bestSimilarity) {
+                $bestSimilarity = $result['similarity'];
+            }
+        }
+
+        return [
+            'matched' => $bestSimilarity >= self::FACE_MATCH_THRESHOLD,
+            'similarity' => $bestSimilarity,
+        ];
+    }
+
     private function verifyFaceMatch(array $storedEmbedding, array $probeEmbedding): array
     {
-        $stored = $this->normalizeEmbedding($storedEmbedding);
-        $probe = $this->normalizeEmbedding($probeEmbedding);
-
-        if (empty($stored) || empty($probe) || count($stored) !== count($probe)) {
-            return ['matched' => false, 'similarity' => 0];
+        if (count($storedEmbedding) !== count($probeEmbedding)) {
+            return ['matched' => false, 'similarity' => 0.0];
         }
 
         $dot = 0.0;
-        foreach ($stored as $idx => $value) {
-            $dot += $value * $probe[$idx];
+        foreach ($storedEmbedding as $idx => $value) {
+            $dot += $value * $probeEmbedding[$idx];
         }
 
         $similarity = round($dot, 6);
-        $threshold = 0.75;
 
         return [
-            'matched' => $similarity >= $threshold,
+            'matched' => $similarity >= self::FACE_MATCH_THRESHOLD,
             'similarity' => $similarity,
         ];
     }
 
     private function normalizeEmbedding(array $embedding): array
     {
-        if (empty($embedding)) {
-            return [];
-        }
-
-        $vector = array_map(fn($v) => (float) $v, $embedding);
-        $sumSquares = 0.0;
-        foreach ($vector as $value) {
-            $sumSquares += ($value * $value);
-        }
-
-        $norm = sqrt($sumSquares);
-        if ($norm <= 0.0) {
-            return [];
-        }
-
-        return array_map(fn($value) => $value / $norm, $vector);
+        return FaceEmbeddingStorage::normalizeVector($embedding);
     }
 }

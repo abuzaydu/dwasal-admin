@@ -50,7 +50,10 @@
                         <div class="psetting-relative">
                             <h6 class="mb-0 text-uppercase" >Add New Employees</h6>
                         </div>
-                        <div class="ms-auto">
+                        <div class="ms-auto d-flex gap-2 align-items-center">
+                            <a href="{{ route('employees.face-id.index') }}" class="btn btn-outline-success btn-sm">
+                                <i class="fa fa-user-circle"></i> Face ID
+                            </a>
                             <button type="button" id="new-btn" class="btn btn-primary" onclick="showHideForm('show')"><i class="fa fa-import"></i>Import From Excel</button>
                         </div>
                     </div>

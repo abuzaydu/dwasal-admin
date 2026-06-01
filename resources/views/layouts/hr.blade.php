@@ -198,13 +198,14 @@ if (!is_null($shop)) {
                                         <li><a href="{{ url('hr-salaries') }}" class="{{ request()->is('hr-salaries') ? 'active' : '' }}">Employee Salaries</a></li>
                                     </ul>
                                 </li>
-                                <li class="{{ request()->is('positions') || request()->is('employees') || request()->is('employees/create') ? 'mm-active active' : '' }}">
+                                <li class="{{ request()->is('positions') || request()->is('employees') || request()->is('employees/create') || request()->is('employees/face-id') ? 'mm-active active' : '' }}">
                                     <a class="has-arrow" href="#Employees"><i class="fa fa-users"></i><span>Employees</span></a>
                                     <ul class="list-unstyled">
                                         @can('create-employee')
                                         <li><a href="{{ route('employees.create') }}" class="{{ request()->is('employees/create') ? 'active' : '' }}">Add Employees</a></li>                                            
                                         @endcan
-                                        <li><a href="{{ url('employees') }}" class="{{ request()->is('employees') ? 'active' : '' }}">All Employees</a></li>
+                                        <li><a href="{{ url('employees') }}" class="{{ request()->is('employees') && !request()->is('employees/face-id') ? 'active' : '' }}">All Employees</a></li>
+                                        <li><a href="{{ route('employees.face-id.index') }}" class="{{ request()->is('employees/face-id') ? 'active' : '' }}"><i class="fa fa-user-circle"></i> Face ID</a></li>
                                         <li><a href="{{ url('positions') }}" class="{{ request()->is('positions') ? 'active' : '' }}">Positions</a></li>
                                     </ul>
                                 </li>

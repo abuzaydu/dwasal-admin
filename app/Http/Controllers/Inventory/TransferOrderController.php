@@ -2,40 +2,40 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use \Carbon\Carbon;
 use App\Http\Controllers\Controller;
+use App\Jobs\PMUpdaterJob;
+use App\Jobs\StockUpdaterJob;
+use App\Models\AnSale;
+use App\Models\AnSaleItem;
+use App\Models\Company;
+use App\Models\Product;
+use App\Models\RmDamage;
+use App\Models\RmItem;
+use App\Models\RmUse;
+use App\Models\SaleReturnItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\Stock;
+use App\Models\TpmItem;
+use App\Models\TransferOrder;
+use App\Models\TransferOrderItem;
+use App\Models\TransferOrderItemTemp;
+use App\Models\TransferOrderTemp;
+use App\Models\TransformationTransferItem;
+use App\Models\User;
+use Auth;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
+use Log;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\ImagickEscposImage;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
-use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\ImagickEscposImage;
-use \Carbon\Carbon;
 use Spatie\Permission\Models\Role;
-use Session;
-use Auth;
-use DB;
-use App\Models\Company;
-use App\Models\Setting;
-use App\Models\Shop;
-use App\Models\User;
-use App\Models\TransferOrder;
-use App\Models\TransferOrderTemp;
-use App\Models\TransferOrderItemTemp;
-use App\Models\TransferOrderItem;
-use App\Models\SaleReturnItem;
-use App\Models\Stock;
-use App\Models\Product;
-use App\Models\AnSale;
-use App\Models\AnSaleItem;
-use App\Jobs\StockUpdaterJob;
-use App\Models\TransformationTransferItem;
-use App\Models\TpmItem;
-use App\Jobs\PMUpdaterJob;
-use App\Models\RmItem;
-use App\Models\RmUse;
-use App\Models\RmDamage;
-use Log;
 
 class TransferOrderController extends Controller
 {
@@ -264,15 +264,15 @@ class TransferOrderController extends Controller
             $stock->unit_cost = $destin_unit_cost;
             $stock->source = 'Transfered (From: '.$sproduct->name.')';
             
-$stock->stock_date = $ordertime;
-            $stock->order_id = $transorder->id;
+            $stock->stock_date = $ordertime;
+            $stock->transfer_order_id = $transorder->id;
             $stock->save();
 
             dispatch(new StockUpdaterJob($shop, $dproduct->id));
 
             if (!empty($request['source_pm_id']) || !empty($request['destin_pm_id'])) {
                 $tpmitem = new TpmItem();
-                $tpmitem->order_id = $transorder->id;
+                $tpmitem->transfer_order_id = $transorder->id;
                 $tpmitem->source_product_id = $sproduct->id;
                 $tpmitem->destin_product_id = $dproduct->id;
                 $tpmitem->source_pm_id = $request['source_pm_id'];
@@ -373,7 +373,17 @@ $stock->stock_date = $ordertime;
                         foreach ($itemtemps as $key => $item) {
 
                             $product = $shop->products()->where('is_active', true)->where('id', $item->product_id)->first();
+                            
+                             if (!$product) {
+                                \Log::warning("Missing product ID: ".$item->product_id);
+                                continue;
+                            }
                             $destinproduct = $destinshop->products()->where('is_active', true)->where('slug', $product->slug)->first();
+                            
+                            if (!$destinproduct) {
+                                continue;
+                            }
+
                             if(!is_null($product) && !is_null($destinproduct)) {
                                 $orderItem = new TransferOrderItem;
                                 $orderItem->shop_id = $shop->id;
@@ -475,7 +485,7 @@ $stock->stock_date = $ordertime;
             $user = User::find($transorder->user_id);
             $requester = User::find($transorder->requester_id);
             $orderitems = TransferOrderItem::where('transfer_order_id', $transorder->id)->join('products', 'products.id', '=', 'transfer_order_items.product_id')->select('product_code', 'name', 'basic_uom', 'req_qty', 'source_stock', 'destin_stock', 'quantity', 'source_unit_cost')->get();
-            $endproduct = Stock::where('shop_id', $source->id)->where('order_id', $transorder->id)->join('products', 'products.id', 'stocks.product_id')->select('name', 'quantity_in', 'unit_cost')->get();
+            $endproduct = Stock::where('shop_id', $source->id)->where('transfer_order_id', $transorder->id)->join('products', 'products.id', 'stocks.product_id')->select('name', 'quantity_in', 'unit_cost')->get();
 
             return view('products.transfers.show', compact('page', 'title', 'title_sw', 'company', 'transorder', 'source', 'destin', 'user', 'requester', 'orderitems', 'endproduct'));
         }elseif ($transorder->is_transfer_to_rm) {
@@ -570,7 +580,7 @@ $stock->stock_date = $ordertime;
             }
         } elseif ($transorder->is_mix_transfer) {
 
-            $endproduct = Stock::where('shop_id', $shop->id)->where('order_id', $transorder->id)->join('products', 'products.id', 'stocks.product_id')->select('stocks.id as id', 'product_id', 'name', 'quantity_in', 'unit_cost')->first();
+            $endproduct = Stock::where('shop_id', $shop->id)->where('transfer_order_id', $transorder->id)->join('products', 'products.id', 'stocks.product_id')->select('stocks.id as id', 'product_id', 'name', 'quantity_in', 'unit_cost')->first();
             return view('products.transfers.edit-mix', compact('page', 'title', 'title_sw', 'shop', 'settings', 'transorder', 'orderitems', 'endproduct'));
         } else{
             if (Session::get('shop_id') == $transorder->shop_id) {
@@ -890,7 +900,7 @@ $stock->stock_date = $ordertime;
                 // if (!$transorder->is_request) {
                         
                     $destinshop = Shop::find($transorder->destination_id);
-                    $orderstock = Stock::where('shop_id', $destinshop->id)->where('order_id', $transorder->id)->where('product_id', $orderItem->product_id)->first();
+                    $orderstock = Stock::where('shop_id', $destinshop->id)->where('transfer_order_id', $transorder->id)->where('product_id', $orderItem->product_id)->first();
                     if (!is_null($orderstock)) {
                         //Update destination stock
                         $orderstock->quantity_in = $request['quantity'];
@@ -1196,8 +1206,18 @@ $stock->stock_date = $ordertime;
 
                     $temp->delete();
                 }
+                $request->validate([
+                'quantity_in' => 'required|numeric|min:1',
+                ]);
 
-                $destin_unit_cost = round($tt_cost/$request['quantity_in'], 2);
+                $qty = (float) $request->quantity_in;
+
+                if ($qty <= 0) {
+                return back()->with('error', 'Invalid quantity');
+                }
+
+                $destin_unit_cost = round($tt_cost / $qty, 2);
+                //$destin_unit_cost = round($tt_cost/$request['quantity_in'], 2);
                 $stock = new Stock();
                 $stock->product_id = $request['product_id'];
                 $stock->shop_id = $shop->id;
@@ -1205,8 +1225,8 @@ $stock->stock_date = $ordertime;
                 $stock->unit_cost = $destin_unit_cost;
                 $stock->source = 'Transfered (From: Mixed Items)';
                 
-$stock->stock_date = $ordertime;
-                $stock->order_id = $transorder->id;
+                $stock->stock_date = $ordertime;
+                $stock->transfer_order_id = $transorder->id;
                 $stock->save();
 
                 dispatch(new StockUpdaterJob($shop, $request['product_id']));
@@ -1221,7 +1241,7 @@ $stock->stock_date = $ordertime;
 
     public function addSTOMixItem(Request $request)
     {
-        $transorder = TransferOrder::find($request['order_id']);
+        $transorder = TransferOrder::find($request['transfer_order_id']);
         if (!is_null($transorder)) {
             $shop = Shop::find($transorder->shop_id);
             $product = $shop->products()->where('id', $request['product_id'])->first();
@@ -1274,7 +1294,7 @@ $stock->stock_date = $ordertime;
 
     public function updateTransferMixItems(Request $request)
     {
-        $transorder = TransferOrder::find($request['order_id']);
+        $transorder = TransferOrder::find($request['transfer_order_id']);
         if (!is_null($transorder)) {
             $orderitems = TransferOrderItem::where('transfer_order_id', $transorder->id)->get();
             if ($orderitems->count() >= 2) {
@@ -1297,7 +1317,7 @@ $stock->stock_date = $ordertime;
                 }
 
                 $destin_unit_cost = round($tt_cost/$request['quantity_in'], 2);
-                $stock = Stock::where('order_id', $transorder->id)->first();
+                $stock = Stock::where('transfer_order_id', $transorder->id)->first();
                 $stock->quantity_in = $request['quantity_in'];
                 $stock->unit_cost = $destin_unit_cost;
                 $stock->source = 'Transfered (From: Mixed Items)';

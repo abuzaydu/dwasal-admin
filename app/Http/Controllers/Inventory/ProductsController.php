@@ -710,7 +710,7 @@ class ProductsController extends Controller
                 $prod_unit->unit_name = $product->basic_uom;
                 $prod_unit->is_basic = true;
                 $prod_unit->qty_equal_to_basic = 1;
-                $prod_unit->unit_price = $prodshop->retail_price;
+                $prod_unit->unit_price = $product->retail_price;
                 $prod_unit->save();
             }
 
@@ -802,11 +802,12 @@ class ProductsController extends Controller
     public function postPrice(Request $request)
     {
         $product = Product::find($request['product_id']);
-        // $shop = Shop::find(Session::get('shop_id'));
+        $shop = Shop::find(Session::get('shop_id'));
         $user = Auth::user();
-        $shops = $user->shops()->get();
-        foreach ($shops as $key => $shop) {
+       // $shops = $user->shops()->get();
+        // foreach ($shops as $key => $shop) {
             $product = $shop->products()->where('id', $product->id)->first();
+            
             if (!is_null($product)) {
                 $product->retail_price = $request['new_unit_price'];
                 $product->wholesale_price = $request['wholesale_price'];
@@ -826,10 +827,10 @@ class ProductsController extends Controller
                     $prod_unit->save();
                 }
             }
-        }
+        // }
         $message = 'Price was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function newBuyPrice(Request $request)
@@ -858,7 +859,7 @@ class ProductsController extends Controller
 
         $message = 'Re-order Point was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function priceList(Request $request)

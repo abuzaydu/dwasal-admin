@@ -168,10 +168,10 @@
                                 </div>
                                 <div class="col-sm-3">
                                     <label
-                                        class="form-label">{{ trans('navmenu.unit_cost') }}({{ $currency }})</label>
+                                        class="form-label">{{ trans('navmenu.unit_cost') }}({{ $currency }}) <span style="color: red; font-weight: bold;">*</span></label>
                                     <input id="unit_price" type="number" autocomplete="off" min="0" step="any"
                                         name="unit_cost" placeholder="{{ trans('navmenu.hnt_buying_price') }}"
-                                        class="form-control form-control-sm mb-1">
+                                        class="form-control form-control-sm mb-1" required>
                                 </div>
                                 <div class="col-sm-3">
                                     <label
