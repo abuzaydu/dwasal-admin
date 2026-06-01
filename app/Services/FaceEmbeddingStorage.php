@@ -16,9 +16,36 @@ class FaceEmbeddingStorage
      */
     public static function packForStorage(array $embedding): array
     {
+        $normalized = self::normalizeVector($embedding);
+        return self::packTemplatesForStorage([$normalized]);
+    }
+
+    /**
+     * Store multiple enrollment templates (phone-style: several faces per employee).
+     *
+     * @param list<array<int, float|int|string>> $templates
+     */
+    public static function packTemplatesForStorage(array $templates): array
+    {
+        $packed = [];
+        foreach ($templates as $template) {
+            if (!is_array($template)) {
+                continue;
+            }
+            $normalized = self::normalizeVector($template);
+            if (!empty($normalized)) {
+                $packed[] = $normalized;
+            }
+        }
+
+        if (empty($packed)) {
+            return [];
+        }
+
         return [
-            'enc' => base64_encode(encrypt(json_encode($embedding))),
+            'enc' => base64_encode(encrypt(json_encode($packed))),
             'model' => 'facenet',
+            'template_count' => count($packed),
         ];
     }
 
@@ -116,6 +143,35 @@ class FaceEmbeddingStorage
     public static function hasEnrollment(mixed $raw): bool
     {
         return count(self::templatesFromStored($raw)) > 0;
+    }
+
+    /**
+     * Reject enrollment when samples are not the same person (cosine distance).
+     *
+     * @param list<array<int, float>> $templates Normalized vectors
+     */
+    public static function templatesAreConsistent(array $templates, float $maxCosineDistance = 0.32): bool
+    {
+        $count = count($templates);
+        if ($count < 2) {
+            return true;
+        }
+
+        $maxDistance = 0.0;
+        for ($i = 0; $i < $count - 1; $i++) {
+            for ($j = $i + 1; $j < $count; $j++) {
+                $dot = 0.0;
+                $a = $templates[$i];
+                $b = $templates[$j];
+                $len = min(count($a), count($b));
+                for ($k = 0; $k < $len; $k++) {
+                    $dot += $a[$k] * $b[$k];
+                }
+                $maxDistance = max($maxDistance, 1.0 - $dot);
+            }
+        }
+
+        return $maxDistance <= $maxCosineDistance;
     }
 
     /**

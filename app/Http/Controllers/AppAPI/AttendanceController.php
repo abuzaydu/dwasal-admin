@@ -19,9 +19,15 @@ use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
-    private const FACE_MATCH_THRESHOLD = 0.72;
-    private const FACE_AMBIGUITY_SECOND_MIN = 0.70;
-    private const FACE_AMBIGUITY_GAP = 0.03;
+    /** Minimum cosine similarity to accept a face match (stricter = fewer wrong employee punches). */
+    private const FACE_MATCH_THRESHOLD = 0.78;
+    /** Runner-up similarity that triggers lookalike / ambiguity checks. */
+    private const FACE_AMBIGUITY_RUNNER_UP_MIN = 0.68;
+    /** Required gap between 1st and 2nd match when runner-up is strong (similar-looking staff). */
+    private const FACE_AMBIGUITY_MIN_GAP = 0.06;
+    /** Extra gap required when runner-up is very close to threshold (high collision risk). */
+    private const FACE_AMBIGUITY_STRICT_GAP = 0.08;
+    private const FACE_AMBIGUITY_STRICT_RUNNER_UP_MIN = 0.72;
     public function punchIn(Request $request)
     {
         // Log::info($request);
@@ -175,8 +181,11 @@ class AttendanceController extends Controller
         try {
             $request->validate([
                 'qr_data' => 'required|string',
-                'face_embedding' => 'required|array|min:64',
+                'face_embedding' => 'required_without:face_templates|array|min:64',
                 'face_embedding.*' => 'numeric',
+                'face_templates' => 'sometimes|array|min:1|max:5',
+                'face_templates.*' => 'array|min:64',
+                'face_templates.*.*' => 'numeric',
                 'face_model_version' => 'nullable|string|max:120',
             ]);
 
@@ -194,17 +203,31 @@ class AttendanceController extends Controller
                 ], 409);
             }
 
-            $normalized = $this->normalizeEmbedding($request->input('face_embedding', []));
-            if (empty($normalized)) {
+            $templates = $this->extractEnrollmentTemplates($request);
+            if (empty($templates)) {
                 return response()->json([
                     'message' => 'Invalid face embedding'
+                ], 422);
+            }
+
+            if ($request->has('face_templates') && count($templates) < 3) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'At least 3 face samples are required for enrollment.',
+                ], 422);
+            }
+
+            if (!FaceEmbeddingStorage::templatesAreConsistent($templates)) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Face samples were not consistent. Please enroll again with steady lighting and face centered.',
                 ], 422);
             }
 
             // Prevent one face being enrolled under multiple employees (same company).
             $conflict = $this->findConflictingFaceOwner(
                 (int) $employee->company_id,
-                $normalized,
+                $templates,
                 (int) $employee->id
             );
             if ($conflict) {
@@ -221,8 +244,14 @@ class AttendanceController extends Controller
                 ], 409);
             }
 
-            // JSON column: store wrapped encrypted object (avoids MySQL 3140 invalid JSON).
-            $employee->face_embedding = FaceEmbeddingStorage::packForStorage($normalized);
+            $packed = FaceEmbeddingStorage::packTemplatesForStorage($templates);
+            if (empty($packed)) {
+                return response()->json([
+                    'message' => 'Invalid face embedding'
+                ], 422);
+            }
+
+            $employee->face_embedding = $packed;
             $employee->face_model_version = $request->input('face_model_version', 'facenet');
             $employee->face_registered_at = now();
             $employee->save();
@@ -323,42 +352,25 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
-            $bestEmployee = null;
-            $bestSimilarity = -1.0;
-            $secondSimilarity = -1.0;
-            foreach ($employees as $employee) {
-                if (!FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
-                    continue;
-                }
-                $result = $this->matchProbeAgainstEmployee(
-                    $employee,
-                    $request->input('face_embedding', [])
-                );
-                $sim = (float) ($result['similarity'] ?? 0.0);
-                if ($sim > $bestSimilarity) {
-                    $secondSimilarity = $bestSimilarity;
-                    $bestSimilarity = $sim;
-                    $bestEmployee = $employee;
-                } elseif ($sim > $secondSimilarity) {
-                    $secondSimilarity = $sim;
-                }
-            }
+            $ranked = $this->rankEmployeesByFaceSimilarity(
+                $employees,
+                $request->input('face_embedding', [])
+            );
 
-            if (!$bestEmployee || $bestSimilarity < self::FACE_MATCH_THRESHOLD) {
+            if (empty($ranked)) {
                 return response()->json([
                     'message' => 'Face not recognized',
                 ], 401);
             }
 
-            if (
-                $secondSimilarity >= self::FACE_AMBIGUITY_SECOND_MIN
-                && ($bestSimilarity - $secondSimilarity) < self::FACE_AMBIGUITY_GAP
-            ) {
+            $selection = $this->selectEmployeeFromRankedMatches($ranked);
+            if (!empty($selection['error'])) {
                 return response()->json([
-                    'message' => 'Face match ambiguous. Please retry.',
-                ], 409);
+                    'message' => $selection['error'],
+                ], (int) ($selection['status'] ?? 409));
             }
 
+            $bestEmployee = $selection['employee'];
             $qrData = encrypt($bestEmployee->id . '&' . $bestEmployee->company_id);
             return $this->punchIn(new Request([
                 'qr_data' => $qrData,
@@ -371,6 +383,86 @@ class AttendanceController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
+    }
+
+    /**
+     * @return list<array{employee: Employee, similarity: float}>
+     */
+    private function rankEmployeesByFaceSimilarity($employees, array $probeEmbedding): array
+    {
+        $ranked = [];
+        foreach ($employees as $employee) {
+            if (!FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
+                continue;
+            }
+            $result = $this->matchProbeAgainstEmployee($employee, $probeEmbedding);
+            $sim = (float) ($result['similarity'] ?? 0.0);
+            if ($sim <= 0.0) {
+                continue;
+            }
+            $ranked[] = [
+                'employee' => $employee,
+                'similarity' => $sim,
+            ];
+        }
+
+        usort($ranked, static function (array $a, array $b): int {
+            return $b['similarity'] <=> $a['similarity'];
+        });
+
+        return $ranked;
+    }
+
+    /**
+     * Picks one employee or returns an error when scores are too close (lookalikes).
+     *
+     * @param list<array{employee: Employee, similarity: float}> $ranked
+     * @return array{employee?: Employee, error?: string, status?: int}
+     */
+    private function selectEmployeeFromRankedMatches(array $ranked): array
+    {
+        $best = $ranked[0];
+        $bestSim = (float) $best['similarity'];
+
+        if ($bestSim < self::FACE_MATCH_THRESHOLD) {
+            return [
+                'error' => 'Face not recognized',
+                'status' => 401,
+            ];
+        }
+
+        if (!isset($ranked[1])) {
+            return ['employee' => $best['employee']];
+        }
+
+        $secondSim = (float) $ranked[1]['similarity'];
+        $gap = $bestSim - $secondSim;
+
+        if ($secondSim >= self::FACE_AMBIGUITY_RUNNER_UP_MIN && $gap < self::FACE_AMBIGUITY_MIN_GAP) {
+            return [
+                'error' => 'Face match ambiguous: more than one similar employee. Use Staff Entrance QR or retry with better lighting.',
+                'status' => 409,
+            ];
+        }
+
+        if ($secondSim >= self::FACE_AMBIGUITY_STRICT_RUNNER_UP_MIN && $gap < self::FACE_AMBIGUITY_STRICT_GAP) {
+            return [
+                'error' => 'Face match ambiguous: more than one similar employee. Use Staff Entrance QR or retry with better lighting.',
+                'status' => 409,
+            ];
+        }
+
+        if (isset($ranked[2])) {
+            $thirdSim = (float) $ranked[2]['similarity'];
+            if ($thirdSim >= 0.65 && ($secondSim - $thirdSim) < 0.04 && $gap < 0.10) {
+                return [
+                    'error' => 'Face match ambiguous: more than one similar employee. Use Staff Entrance QR or retry with better lighting.',
+                    'status' => 409,
+                ];
+            }
+        }
+
+        return ['employee' => $best['employee']];
     }
 
     private function resolveCompanyIdFromAuthUser(?User $user): ?int
@@ -488,11 +580,19 @@ class AttendanceController extends Controller
     /**
      * Returns another employee (same company) who already owns this face, if any.
      */
+    /**
+     * @param list<array<int, float>>|array<int, float> $probeTemplates
+     */
     private function findConflictingFaceOwner(
         int $companyId,
-        array $probeEmbedding,
+        array $probeTemplates,
         int $excludeEmployeeId
     ): ?Employee {
+        $probes = $this->coerceTemplateList($probeTemplates);
+        if (empty($probes)) {
+            return null;
+        }
+
         $employees = Employee::where('company_id', $companyId)
             ->where('id', '!=', $excludeEmployeeId)
             ->whereNotNull('face_embedding')
@@ -506,8 +606,7 @@ class AttendanceController extends Controller
                 continue;
             }
 
-            $result = $this->matchProbeAgainstEmployee($other, $probeEmbedding);
-            $sim = (float) ($result['similarity'] ?? 0.0);
+            $sim = $this->maxSimilarityAgainstEmployee($other, $probes);
 
             if ($sim > $bestSimilarity) {
                 $bestSimilarity = $sim;
@@ -520,6 +619,77 @@ class AttendanceController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * @return list<array<int, float>>
+     */
+    private function extractEnrollmentTemplates(Request $request): array
+    {
+        $templates = [];
+        $rawList = $request->input('face_templates');
+        if (is_array($rawList)) {
+            foreach ($rawList as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+                $normalized = $this->normalizeEmbedding($item);
+                if (!empty($normalized)) {
+                    $templates[] = $normalized;
+                }
+            }
+        }
+
+        if (!empty($templates)) {
+            return $templates;
+        }
+
+        $single = $this->normalizeEmbedding($request->input('face_embedding', []));
+        return empty($single) ? [] : [$single];
+    }
+
+    /**
+     * @param list<array<int, float>>|array<int, float> $templates
+     * @return list<array<int, float>>
+     */
+    private function coerceTemplateList(array $templates): array
+    {
+        if (isset($templates[0]) && is_numeric($templates[0])) {
+            $one = $this->normalizeEmbedding($templates);
+            return empty($one) ? [] : [$one];
+        }
+
+        $out = [];
+        foreach ($templates as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $normalized = $this->normalizeEmbedding($item);
+            if (!empty($normalized)) {
+                $out[] = $normalized;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Best match across all probe templates vs all stored templates for one employee.
+     *
+     * @param list<array<int, float>> $probeTemplates
+     */
+    private function maxSimilarityAgainstEmployee(Employee $employee, array $probeTemplates): float
+    {
+        $best = 0.0;
+        foreach ($probeTemplates as $probe) {
+            $result = $this->matchProbeAgainstEmployee($employee, $probe);
+            $sim = (float) ($result['similarity'] ?? 0.0);
+            if ($sim > $best) {
+                $best = $sim;
+            }
+        }
+
+        return $best;
     }
 
     /**
