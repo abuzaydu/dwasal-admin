@@ -174,22 +174,6 @@
         }
 
     </script>
-    <script type="text/javascript">
-        window.addEventListener('DOMContentLoaded', function() {
-            var start = document.querySelector('[name="start_date"]');
-            var end = document.querySelector('[name="end_date"]');
-
-            start.DatePickerX.init({
-                mondayFirst: true,
-                format     : 'yyyy-mm-dd',
-            });
-             
-            end.DatePickerX.init({
-                mondayFirst: true,
-                format     : 'yyyy-mm-dd',
-            });
-        });
-    </script>
 
     <script>
     $(function () {

@@ -126,7 +126,7 @@ class ServiceSaleItemController extends Controller
                 $page = 'Edit sale item';
                 $title = 'Edit sale item';
                 $title_sw = 'Hariri Huduma iliyouzwa';
-                return view('sales.edit-servitem', compact('page', 'title', 'title_sw', 'sale', 'saleitem', 'service', 'services'));
+                return view('sales.invoices.edit-servitem', compact('page', 'title', 'title_sw', 'sale', 'saleitem', 'service', 'services'));
             }else{
                 return redirect()->back()->with('error', 'Item not Found');
             }
