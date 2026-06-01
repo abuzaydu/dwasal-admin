@@ -128,7 +128,8 @@ class ProductsController extends Controller
 
                     return view('products.index1', compact('page', 'title', 'title_sw', 'products', 'units', 'brands', 'childrens', 'categories', 'searchcat', 'isSearched', 'bsetting', 'code', 'settings', 'shop', 'pnos', 'pls', 'currency'));
                 }else {
-                    $products = $shop->products()->where('is_active', true)->get();
+                    $products = $shop->products()->where('is_active', true)->where('is_deleted', false)->get();
+                    //dd($products);
                     $isSearched = false;
                     $categories = $shop->categories()->get();
                     return view('products.index', compact('page', 'title', 'title_sw', 'products', 'units', 'brands', 'categories', 'isSearched', 'bsetting', 'code', 'shop', 'pnos', 'settings', 'pls', 'currency'));
@@ -168,11 +169,11 @@ class ProductsController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = $shop->products()->where('is_active', true)->select('count(*) as allcount')->count();
-        $totalRecordswithFilter = $shop->products()->where('is_active', true)->select('count(*) as allcount')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')->count();
+        $totalRecords = $shop->products()->where('is_active', true)->where('is_deleted', false)->select('count(*) as allcount')->count();
+        $totalRecordswithFilter = $shop->products()->where('is_active', true)->where('is_deleted',false)->select('count(*) as allcount')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')->count();
 
         // Fetch records
-        $records = $shop->products()->where('is_active', true)->orderBy('name', 'asc')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')
+        $records = $shop->products()->where('is_active', true)->where('is_deleted',false)->orderBy('name', 'asc')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')
             ->skip($start)
             ->take($rowperpage)
             ->get();
@@ -738,11 +739,11 @@ class ProductsController extends Controller
         $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-        if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
-            $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
-            Log::info($message);
-            return redirect()->back()->with('info', $message);
-        }else{ 
+        // if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
+        //     $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
+        //     Log::info($message);
+        //     return redirect()->back()->with('info', $message);
+        // }else{ 
             $stocks = Stock::where('product_id', $product->id)->get();
             foreach ($stocks as $key => $value) {
                 $value->delete();
@@ -753,10 +754,12 @@ class ProductsController extends Controller
                     $category->products()->detach($catprod);
                 }
             }
-            $product->delete();
+            $product->is_deleted = true;
+            $product->save();       
+
             $message = 'You have successfully removed this product from your product list!';
             return redirect()->back()->with('success', $message);
-        }
+        // }
     }
 
     public function deleteMultiple(Request $request)
@@ -773,10 +776,10 @@ class ProductsController extends Controller
                 $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-                if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
-                    $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
-                    Log::info($message);
-                }else{
+                // if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
+                //     $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
+                //     Log::info($message);
+                // }else{
                     $stocks = Stock::where('product_id', $product->id)->get();
                     foreach ($stocks as $key => $value) {
                         $value->delete();
@@ -787,8 +790,9 @@ class ProductsController extends Controller
                             $category->products()->detach($catprod);
                         }
                     }
-                    $product->delete();
-                }
+                    $product->is_deleted = true;
+                    $product->save();
+                // }
             }
             $success = 'Products were  successfully removed from your product list!';
             return redirect('products')->with('success', $success);

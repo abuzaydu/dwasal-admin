@@ -1535,6 +1535,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('empty-recycle-purchases', [RecycleBinController::class, 'emptyRecyclePurchases']);
     Route::post('delete-and-restore-multiple', [RecycleBinController::class, 'deleteAndRestoreMultipleSales']);
     Route::get('recyclebin', [RecycleBinController::class, 'index']);
+    Route::get('recycle-products',[RecycleBinController::class, 'products']);
+    Route::post('recycle-products',[RecycleBinController::class, 'products']);
+    Route::get('recycle-product/{id}', [RecycleBinController::class, 'recycleProduct']);
+    Route::post('recycle-multiple-products',[RecycleBinController::class, 'recycleMultipleProducts']);
+    Route::get('del-recy-product/{id}', [RecycleBinController::class, 'delRecycleProduct']);
+    Route::post('del-multiple-recycle-products', [RecycleBinController::class, 'delMultipleRecycleProducts']);
     Route::get('recycle-sales', [RecycleBinController::class, 'sales']);
     Route::post('recycle-sales', [RecycleBinController::class, 'sales']);
     Route::get('recyclebinlive', [RecycleBinController::class, 'indexlive']); /////
