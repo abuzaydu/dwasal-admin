@@ -182,7 +182,7 @@
                                     <th style="text-align: center; vertical-align: middle;"><h5>{{$product->slug}}</h5></th>
                                     <td style="text-align: center;">
                                         @if(!is_null($product->image_url))
-                                        <img src="{{ asset('storage/products/'.$product->image_url) }}" width="60">
+                                            <img src="{{ asset('storage/' . $product->image_url) }}" width="60">
                                         @endif  
                                     </td>
                                 </tr>

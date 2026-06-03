@@ -2,55 +2,55 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Auth;
-use Session;
-use Log;
 use \Carbon\Carbon;
-use App\Models\Shop;
-use App\Models\Customer;
-use App\Models\Supplier;
+use App\Http\Controllers\Controller;
+use App\Jobs\StockUpdaterJob;
+use App\Models\AccountStatement;
+use App\Models\ActionLog;
 use App\Models\AnSale;
 use App\Models\AnSaleItem;
-use App\Models\ServiceSaleItem;
-use App\Models\Stock;
+use App\Models\Customer;
 use App\Models\CustomerTransaction;
-use App\Models\AccountStatement;
-use App\Models\SaleReturnItem;
-use App\Models\TransferOrderItem;
-use App\Models\ProdDamage;
-use App\Models\TransferOrder;
-use App\Models\TransformationTransferItem;
-use App\Models\RmItem;
-use App\Models\SalePayment;
-use App\Models\Invoice;
-use App\Models\Purchase;
-use App\Models\Product;
-use App\Models\PurchasePayment;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
-use App\Models\POrderTemp;
-use App\Models\PurchaseOrderTemp;
-use App\Models\PurchaseCostItem;
-use App\Models\SupplierTransaction;
-use App\Models\SupplierAccount;
-use App\Models\PaymentVoucher;
+use App\Models\DeviceSale;
 use App\Models\Expense;
 use App\Models\ExpensePayment;
 use App\Models\ExpSupplierTransaction;
-use App\Jobs\StockUpdaterJob;
-use App\Models\ActionLog;
-use App\Models\ProInvoice;
+use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\InvoiceServitem;
 use App\Models\InvoiceItemTemp;
 use App\Models\InvoiceServiceItemTemp;
-use App\Models\SaleTemp;
+use App\Models\InvoiceServitem;
+use App\Models\PaymentVoucher;
+use App\Models\POrderTemp;
+use App\Models\ProdDamage;
+use App\Models\Product;
+use App\Models\ProInvoice;
+use App\Models\Purchase;
+use App\Models\PurchaseCostItem;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
+use App\Models\PurchaseOrderTemp;
+use App\Models\PurchasePayment;
+use App\Models\RmItem;
 use App\Models\SaleItemTemp;
+use App\Models\SalePayment;
+use App\Models\SaleReturnItem;
+use App\Models\SaleTemp;
 use App\Models\ServiceItemTemp;
+use App\Models\ServiceSaleItem;
+use App\Models\Shop;
+use App\Models\Stock;
+use App\Models\Supplier;
+use App\Models\SupplierAccount;
+use App\Models\SupplierTransaction;
+use App\Models\TransferOrder;
+use App\Models\TransferOrderItem;
+use App\Models\TransformationTransferItem;
 use App\Models\TripLog;
-use App\Models\DeviceSale;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Log;
 
 class RecycleBinController extends Controller
 {
@@ -70,6 +70,293 @@ class RecycleBinController extends Controller
         $title = 'Recyclebin';
 
         return view('account.recyclebin.index', compact('page', 'title'));
+    }
+
+    public function products(Request $request){
+        $page = 'Recycled Products';
+        $title = 'Recycled Products';
+        $title_sw = 'Recycled Products';
+        $shop = Shop::find(session::get('shop_id'));
+        //dd($shop);
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = $start->format('Y-m-d');
+        $end_date = $end->format('Y-m-d');
+
+        //check if user opted for date range
+        $is_post_query = false;
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'] . ' 00:00:00';
+            $end = $request['end_date'] . ' 23:59:59';
+            $is_post_query = true;
+        }
+        $products = Product::where('products.shop_id', $shop->id)->where('is_deleted', true)->where('is_active',true)->get();
+       // dd($products);
+        // if (!empty($request->customer)) {
+        //     $cus_id = decrypt($request->customer);
+        //     $sales = AnSale::where('an_sales.shop_id', $shop->id)->where('is_deleted', true)->where('customer_id', $cus_id)->whereBetween('an_sales.time_created', [$start, $end])->join('users', 'users.id', '=', 'an_sales.user_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('customers.name as name', 'customers.id as customer_id', 'an_sales.sale_amount_paid as sale_amount_paid', 'an_sales.sale_amount as sale_amount', 'an_sales.sale_discount as sale_discount', 'an_sales.time_created as time_created', 'an_sales.created_at as created_at', 'an_sales.updated_at as updated_at', 'an_sales.id as id', 'an_sales.tax_amount as tax_amount', 'an_sales.del_by as del_by', 'an_sales.time_paid as time_paid', 'an_sales.status as status', 'users.first_name as first_name')->orderBy('an_sales.time_created', 'desc')->paginate(20)->withQueryString();
+        // } else {
+        //     $sales = AnSale::where('an_sales.shop_id', $shop->id)->where('is_deleted', true)->whereBetween('an_sales.time_created', [$start, $end])->join('users', 'users.id', '=', 'an_sales.user_id')->join('customers', 'customers.id', '=', 'an_sales.customer_id')->select('customers.name as name', 'customers.id as customer_id', 'an_sales.sale_amount_paid as sale_amount_paid', 'an_sales.sale_amount as sale_amount', 'an_sales.sale_discount as sale_discount', 'an_sales.time_created as time_created', 'an_sales.created_at as created_at', 'an_sales.updated_at as updated_at', 'an_sales.id as id', 'an_sales.tax_amount as tax_amount', 'an_sales.del_by as del_by', 'an_sales.time_paid as time_paid', 'an_sales.status as status', 'users.first_name as first_name')->orderBy('an_sales.time_created', 'desc')->paginate(20)->withQueryString();
+        // }
+        //$customers = Customer::where('shop_id', $shop->id)->get();
+
+        return view('account.recyclebin.products', compact('page', 'title', 'title_sw',  'is_post_query', 'start_date', 'end_date','products'));
+
+    }
+
+    public function recycleProduct($id)
+    {
+        $product = Product::find(decrypt($id));
+        $shop = Shop::find(Session::get('shop_id'));
+
+        if (!$product) {
+            return redirect()->back()->with('error', 'Product not found');
+        }
+
+        if (!$product->is_deleted) {
+            return redirect()->back()->with('info', 'Product is already active');
+        }
+
+        $product->is_deleted = false;
+        $product->save();
+
+        return redirect()->back()->with('success', 'Product restored successfully');
+    }
+
+   public function delRecycleProduct($id)
+    {
+        $product = Product::find(decrypt($id));
+        $shop = Shop::find(Session::get('shop_id'));
+
+        if (!$product) {
+            return redirect()->back()->with('error', 'Product not found');
+        }
+
+        $sales = AnSaleItem::where('product_id', $product->id)
+            ->where('shop_id', $shop->id)
+            ->count();
+
+        $transfers = TransferOrderItem::where('product_id', $product->id)
+            ->where('shop_id', $shop->id)
+            ->count();
+
+        $stocks = Stock::where('product_id', $product->id)
+            ->where('shop_id', $shop->id)
+            ->count();
+
+        $invoiceItems = InvoiceItem::where('product_id', $product->id)->count();
+
+        $categories = $shop->categories()
+            ->whereHas('products', function ($q) use ($product) {
+                $q->where('product_id', $product->id);
+            })->count();
+
+        if ($sales || $transfers || $stocks || $invoiceItems || $categories) {
+            return redirect()->back()->with(
+                'info',
+                'Cannot permanently delete this product because it has related records.'
+            );
+        }
+
+        foreach ($shop->categories as $category) {
+            $category->products()->detach($product->id);
+        }
+
+        Stock::where('product_id', $product->id)->delete();
+
+        $product->delete();
+
+        return redirect()->back()->with('success', 'Product permanently deleted');
+    }
+
+    public function delMultipleRecycleProducts(Request $request)
+    {
+        $shop = Shop::find(Session::get('shop_id'));
+
+        $ids = $request->ids;
+
+        if (empty($ids)) {
+            return redirect()->back()->with('info', 'No products selected');
+        }
+
+        $deletedCount = 0;
+        $blockedProducts = [];
+
+        foreach ($ids as $id) {
+
+            $product = Product::find($id);
+
+            if (!$product) {
+                continue;
+            }
+
+            $sales = AnSaleItem::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $transfers = TransferOrderItem::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $stocks = Stock::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $invoiceItems = InvoiceItem::where('product_id', $product->id)->count();
+
+            $categories = $shop->categories()
+                ->whereHas('products', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })->count();
+
+            if ($sales || $transfers || $stocks || $invoiceItems || $categories) {
+                $blockedProducts[] = $product->name;
+                continue;
+            }
+
+            foreach ($shop->categories as $category) {
+                $category->products()->detach($product->id);
+            }
+
+            Stock::where('product_id', $product->id)->delete();
+
+            $product->delete();
+
+            $deletedCount++;
+        }
+
+        if ($deletedCount > 0 && count($blockedProducts) > 0) {
+            return redirect()->back()->with(
+                'warning',
+                "{$deletedCount} products deleted. Cannot delete: " . implode(', ', $blockedProducts)
+            );
+        }
+
+        if ($deletedCount > 0) {
+            return redirect()->back()->with(
+                'success',
+                "{$deletedCount} products permanently deleted."
+            );
+        }
+
+        return redirect()->back()->with(
+            'info',
+            'No products were deleted because all have related records.'
+        );
+    }
+
+    public function recycleMultipleProducts(Request $request)
+    {
+        $ids = $request->ids ?? [];
+
+        if (empty($ids)) {
+            return redirect()->back()->with('info', 'No products selected');
+        }
+
+        foreach ($ids as $id) {
+
+            $product = Product::find($id);
+
+            if (!$product) continue;
+
+            // restore
+            $product->is_deleted = false;
+            $product->save();
+        }
+
+        return redirect()->back()->with('success', 'Selected products restored successfully');
+    }
+
+    public function emptyRecycleProducts(Request $request)
+    {
+        $shop = Shop::find(Session::get('shop_id'));
+
+        if (!Auth::user()->can('view-recyclebin')) {
+            return view('errors.401');
+        }
+
+        $deletedProducts = Product::where('is_deleted', true)->get();
+
+        if ($deletedProducts->isEmpty()) {
+            return redirect('recyclebin')->with('info', 'No Recycle Products selected to Delete');
+        }
+
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($deletedProducts as $product) {
+
+            // 1. Check all related records (IMPORTANT FIX)
+            $sales = AnSaleItem::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $transfers = TransferOrderItem::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $stocks = Stock::where('product_id', $product->id)
+                ->where('shop_id', $shop->id)
+                ->count();
+
+            $categories = $shop->categories()
+                ->whereHas('products', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })
+                ->count();
+
+            // 🔥 IMPORTANT: missing FK check that caused your crash
+            $invoiceItems = InvoiceItem::where('product_id', $product->id)->count();
+
+            // 2. Block deletion if ANY relation exists
+            if (
+                $sales > 0 ||
+                $transfers > 0 ||
+                $stocks > 0 ||
+                $categories > 0 ||
+                $invoiceItems > 0
+            ) {
+                $skippedCount++;
+                continue;
+            }
+
+            // 3. Clean related stocks
+            Stock::where('product_id', $product->id)->delete();
+
+            // 4. Detach categories
+            foreach ($shop->categories as $category) {
+                $category->products()->detach($product->id);
+            }
+
+            // 5. Finally delete product permanently
+            $product->delete();
+
+            // 6. Log action
+            $actlog = new ActionLog();
+            $actlog->shop_id = $shop->id;
+            $actlog->user_id = Auth::user()->id;
+            $actlog->action_type = 'Delete Product';
+            $actlog->log_message = 'Product ' . $product->name . ' permanently deleted from recycle bin';
+            $actlog->save();
+
+            $deletedCount++;
+        }
+
+        // 7. Proper response messages
+        if ($deletedCount > 0) {
+            return redirect('recyclebin')->with(
+                'success',
+                "$deletedCount products deleted permanently. $skippedCount skipped due to related records."
+            );
+        }
+
+        return redirect('recyclebin')->with(
+            'info',
+            "No products were deleted because all have related records."
+        );
     }
 
     public function sales(Request $request)

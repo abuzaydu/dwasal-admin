@@ -2,43 +2,44 @@
 
 namespace App\Http\Controllers\Inventory;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Session;
 use App;
-use Auth;
-use Validator;
-use File;
-use Carbon\Carbon;
-use App\Models\Company;
-use App\Imports\ProductsImport;
 use App\Exports\ProductExport;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Models\Shop;
-use App\Models\Payment;
-use App\Models\BarcodeSetting;
-use App\Models\categories;
-use App\Models\Setting;
-use App\Models\UnitMeasure;
-use App\Models\Product;
-use App\Models\Brand;
-use App\Models\ProductUnit;
-use App\Models\Stock;
-use App\Models\Category;
+use App\Http\Controllers\Controller;
+use App\Imports\ProductsImport;
 use App\Models\AnSaleItem;
-use App\Models\ServiceSaleItem;
-use App\Models\ProdDamage;
-use App\Models\TransferOrder;
-use App\Models\TransferOrderItem;
-use App\Models\SaleReturnItem;
-use App\Models\Invoice;
+use App\Models\BarcodeSetting;
+use App\Models\Brand;
+use App\Models\categories;
+use App\Models\Category;
+use App\Models\Company;
 use App\Models\CustomerAccount;
 use App\Models\CustomerTransaction;
-use App\Models\ShopCurrency;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\PriceChange;
+use App\Models\ProdDamage;
+use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\SaleReturnItem;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\ShopCurrency;
+use App\Models\Stock;
 use App\Models\StockCorrection;
+use App\Models\TransferOrder;
+use App\Models\TransferOrderItem;
+use App\Models\UnitMeasure;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Log;
+use Maatwebsite\Excel\Facades\Excel;
+use Validator;
 
 class ProductsController extends Controller
 {
@@ -128,7 +129,8 @@ class ProductsController extends Controller
 
                     return view('products.index1', compact('page', 'title', 'title_sw', 'products', 'units', 'brands', 'childrens', 'categories', 'searchcat', 'isSearched', 'bsetting', 'code', 'settings', 'shop', 'pnos', 'pls', 'currency'));
                 }else {
-                    $products = $shop->products()->where('is_active', true)->get();
+                    $products = $shop->products()->where('is_active', true)->where('is_deleted', false)->get();
+                    //dd($products);
                     $isSearched = false;
                     $categories = $shop->categories()->get();
                     return view('products.index', compact('page', 'title', 'title_sw', 'products', 'units', 'brands', 'categories', 'isSearched', 'bsetting', 'code', 'shop', 'pnos', 'settings', 'pls', 'currency'));
@@ -168,11 +170,11 @@ class ProductsController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = $shop->products()->where('is_active', true)->select('count(*) as allcount')->count();
-        $totalRecordswithFilter = $shop->products()->where('is_active', true)->select('count(*) as allcount')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')->count();
+        $totalRecords = $shop->products()->where('is_active', true)->where('is_deleted', false)->select('count(*) as allcount')->count();
+        $totalRecordswithFilter = $shop->products()->where('is_active', true)->where('is_deleted',false)->select('count(*) as allcount')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')->count();
 
         // Fetch records
-        $records = $shop->products()->where('is_active', true)->orderBy('name', 'asc')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')
+        $records = $shop->products()->where('is_active', true)->where('is_deleted',false)->orderBy('name', 'asc')->where(\DB::raw('CONCAT_WS(" ", `name`, `barcode`, `product_code`)'), 'like', '%' . $searchValue . '%')
             ->skip($start)
             ->take($rowperpage)
             ->get();
@@ -323,8 +325,14 @@ class ProductsController extends Controller
                     ]);
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
-                    $image_path = $product->id.'_img.'.$extension;
+                    // $request->image->storeAs('/products', $product->id.'_img.'.$extension);
+                    $request->image->storeAs(
+                        'products',
+                        $product->id.'_img.'.$extension,
+                        'public'
+                    );
+                    // $image_path = $product->id.'_img.'.$extension;
+                    $image_path = 'products/'.$product->id.'_img.'.$extension;
                 }
             }
 
@@ -657,14 +665,17 @@ class ProductsController extends Controller
                         'image' => 'mimes:jpg,png,jpeg,webp,gif,svg|max:1024',
                     ]);
 
-                    $old_path = storage_path('/products/'.$image_path);
-                    if (File::exists($old_path)) {
-                        unlink($old_path);
+                    if (!empty($image_path)) {
+                        Storage::disk('public')->delete($image_path);
                     }
 
                     $extension = $request->image->extension();
-                    $request->image->storeAs('/products', $product->id.'_img.'.$extension);
-                    $image_path = $product->id.'_img.'.$extension;
+                    $fileName = $product->id . '_img.' . $extension;
+
+                    $request->image->storeAs('products', $fileName, 'public');
+                    
+                    $image_path = 'products/' . $fileName;
+
                 }
             }
 
@@ -710,7 +721,7 @@ class ProductsController extends Controller
                 $prod_unit->unit_name = $product->basic_uom;
                 $prod_unit->is_basic = true;
                 $prod_unit->qty_equal_to_basic = 1;
-                $prod_unit->unit_price = $prodshop->retail_price;
+                $prod_unit->unit_price = $product->retail_price;
                 $prod_unit->save();
             }
 
@@ -723,6 +734,7 @@ class ProductsController extends Controller
             return redirect('/products')->with('error', $message);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -738,11 +750,11 @@ class ProductsController extends Controller
         $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
         $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-        if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
-            $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
-            Log::info($message);
-            return redirect()->back()->with('info', $message);
-        }else{ 
+        // if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
+        //     $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
+        //     Log::info($message);
+        //     return redirect()->back()->with('info', $message);
+        // }else{ 
             $stocks = Stock::where('product_id', $product->id)->get();
             foreach ($stocks as $key => $value) {
                 $value->delete();
@@ -753,10 +765,12 @@ class ProductsController extends Controller
                     $category->products()->detach($catprod);
                 }
             }
-            $product->delete();
+            $product->is_deleted = true;
+            $product->save();       
+
             $message = 'You have successfully removed this product from your product list!';
             return redirect()->back()->with('success', $message);
-        }
+        // }
     }
 
     public function deleteMultiple(Request $request)
@@ -773,10 +787,10 @@ class ProductsController extends Controller
                 $sales = AnSaleItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $transfers = TransferOrderItem::where('shop_id', $shop->id)->where('product_id', $product->id)->count();
                 $stocks = Stock::where('product_id', $product->id)->where('shop_id', $shop->id)->get();
-                if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
-                    $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
-                    Log::info($message);
-                }else{
+                // if ($sales > 0 || $transfers > 0 || $stocks->count() > 2) {
+                //     $message = 'Item '.$product->name.' for '.$shop->name.' can not be deleted';
+                //     Log::info($message);
+                // }else{
                     $stocks = Stock::where('product_id', $product->id)->get();
                     foreach ($stocks as $key => $value) {
                         $value->delete();
@@ -787,8 +801,9 @@ class ProductsController extends Controller
                             $category->products()->detach($catprod);
                         }
                     }
-                    $product->delete();
-                }
+                    $product->is_deleted = true;
+                    $product->save();
+                // }
             }
             $success = 'Products were  successfully removed from your product list!';
             return redirect('products')->with('success', $success);
@@ -802,11 +817,12 @@ class ProductsController extends Controller
     public function postPrice(Request $request)
     {
         $product = Product::find($request['product_id']);
-        // $shop = Shop::find(Session::get('shop_id'));
+        $shop = Shop::find(Session::get('shop_id'));
         $user = Auth::user();
-        $shops = $user->shops()->get();
-        foreach ($shops as $key => $shop) {
+       // $shops = $user->shops()->get();
+        // foreach ($shops as $key => $shop) {
             $product = $shop->products()->where('id', $product->id)->first();
+            
             if (!is_null($product)) {
                 $product->retail_price = $request['new_unit_price'];
                 $product->wholesale_price = $request['wholesale_price'];
@@ -826,10 +842,10 @@ class ProductsController extends Controller
                     $prod_unit->save();
                 }
             }
-        }
+        // }
         $message = 'Price was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function newBuyPrice(Request $request)
@@ -858,7 +874,7 @@ class ProductsController extends Controller
 
         $message = 'Re-order Point was successfully updated';
 
-        return redirect()->route('products.show', encrypt($product->id))->with('message', $message);
+        return redirect()->route('products.show', encrypt($product->id))->with('success', $message);
     }
 
     public function priceList(Request $request)

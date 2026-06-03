@@ -56,6 +56,16 @@
                         <li class="list-group-item">
                             <div class="row g-1">
                                 <div class="col-sm-2">
+                                    <i class="fa fa-file-o"></i>
+                                </div>
+                                <div class="col-sm-10">
+                                    <h6 class="mb-1"><a target="_blank" href="{{ url('recycle-products') }}">{{ trans('navmenu.products') }}</a></h6>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="row g-1">
+                                <div class="col-sm-2">
                                     <i class="fa fa-trash" style=" color: red;"></i>
                                 </div>
                                 <div class="col-sm-10" style="vertical-align: middle;">

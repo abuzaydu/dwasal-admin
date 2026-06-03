@@ -99,7 +99,6 @@
 @endsection
 
 @section('page-scripts')
-  
     <script>
         function confirmDelete(id) {
             Swal.fire({

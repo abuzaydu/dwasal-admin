@@ -27,7 +27,7 @@ class VerifyPaymentController extends Controller
 
         $eservice = ServiceCharge::where('subscription_type_id', 1)->orderBy('initial_pay', 'desc')->get();
         $pservice = ServiceCharge::where('subscription_type_id', 2)->orderBy('initial_pay', 'desc')->get();
-        return view('verify-payment', compact('page', 'title', 'title_sw', 'eservice', 'pservice'));
+        return view('sales.payments.verify-payment', compact('page', 'title', 'title_sw', 'eservice', 'pservice'));
     }
 
     public function modulePayment($id)
@@ -37,7 +37,7 @@ class VerifyPaymentController extends Controller
         $title_sw = 'Thibitisha malipo ya Moduli';
         $module = Module::find(decrypt($id));
 
-        return view('verify-module-payment', compact('page', 'title', 'title_sw', 'module'));
+        return view('sales.payments.verify-module-payment', compact('page', 'title', 'title_sw', 'module'));
     }
 
     public function verify(Request $request)
