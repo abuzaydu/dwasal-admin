@@ -37,7 +37,7 @@ class VehicleController extends Controller
     public function dashboard(Request $request)
     {
         $page = 'VMS Dashboard';
-        $now = Carbon::now(); 
+        $now = Carbon::now();
         $start = $now->copy()->startOfMonth()->format('Y-m-d');
         $end = \Carbon\Carbon::now()->format('Y-m-d');
         $start_date = date('Y-m-d', strtotime($start));
@@ -47,16 +47,16 @@ class VehicleController extends Controller
         if (!empty($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
-            $start = $request['start_date'].' 00:00:00';
-            $end = $request['end_date'].' 23:59:59';
+            $start = $request['start_date'] . ' 00:00:00';
+            $end = $request['end_date'] . ' 23:59:59';
             $is_post_query = true;
         }
         $totalVehicles = Vehicle::count();
 
         $tripStats = RequisitionTripLog::select(
-                DB::raw("CASE WHEN end_time IS NULL THEN 'Ongoing' ELSE 'Completed' END as status"),
-                DB::raw('COUNT(*) as total')
-            )
+            DB::raw("CASE WHEN end_time IS NULL THEN 'Ongoing' ELSE 'Completed' END as status"),
+            DB::raw('COUNT(*) as total')
+        )
             ->groupBy('status')
             ->pluck('total', 'status');
 
@@ -64,9 +64,9 @@ class VehicleController extends Controller
         $activeTrips = $tripStats['Ongoing'] ?? 0;
 
         $expenses = VmsExpenseItem::select(
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('SUM(total_price) as total')
-            )
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('SUM(total_price) as total')
+        )
             ->whereYear('created_at', now()->year)
             ->groupBy('month')
             ->orderBy('month')
@@ -87,7 +87,7 @@ class VehicleController extends Controller
         $recentExpenses = VmsExpenseItem::with('expenseType')->latest()->take(5)->get();
         $maintenanceAlerts = Maintenance::where('status', 'pending')->take(5)->get();
 
-        return view('vms.index', compact('page','is_post_query','start_date','end_date','totalVehicles','completedTrips','activeTrips','months','expensesData','monthlyExpenses','pendingRequests','recentTrips','recentExpenses','maintenanceAlerts'));
+        return view('vms.index', compact('page', 'is_post_query', 'start_date', 'end_date', 'totalVehicles', 'completedTrips', 'activeTrips', 'months', 'expensesData', 'monthlyExpenses', 'pendingRequests', 'recentTrips', 'recentExpenses', 'maintenanceAlerts'));
     }
 
     public function totalVehicles()
@@ -102,9 +102,9 @@ class VehicleController extends Controller
     {
         $page  = 'Active Trips';
         $trips = RequisitionTripLog::with('vehicleRequisition.vehicle', 'vehicleRequisition.driver')
-                    ->whereNull('end_time')          
-                    ->latest()
-                    ->paginate(20);
+            ->whereNull('end_time')
+            ->latest()
+            ->paginate(20);
 
         return view('vms.active-trips', compact('page', 'trips'));
     }
@@ -118,12 +118,12 @@ class VehicleController extends Controller
         $end_date   = $request->get('end_date',   $now->format('Y-m-d'));
 
         $expenses = VmsExpenseItem::with('expenseType')
-                        ->whereBetween('created_at', [
-                            $start_date . ' 00:00:00',
-                            $end_date   . ' 23:59:59',
-                        ])->latest()->paginate(20);
+            ->whereBetween('created_at', [
+                $start_date . ' 00:00:00',
+                $end_date   . ' 23:59:59',
+            ])->latest()->paginate(20);
 
-        $totalAmount = $expenses->sum('total_price');   
+        $totalAmount = $expenses->sum('total_price');
 
         return view('vms.total-expenses', compact('page', 'expenses', 'totalAmount', 'start_date', 'end_date'));
     }
@@ -132,9 +132,9 @@ class VehicleController extends Controller
     {
         $page     = 'Pending Requests';
         $requests = VehicleRequisition::with('vehicle', 'driver')
-                        ->where('status', 'Awaiting for Approval')
-                        ->latest()
-                        ->paginate(20);
+            ->where('status', 'Awaiting for Approval')
+            ->latest()
+            ->paginate(20);
 
         return view('vms.pending-requests', compact('page', 'requests'));
     }
@@ -156,18 +156,26 @@ class VehicleController extends Controller
         if (!empty($request['start_date'])) {
             $start_date = $request['start_date'];
             $end_date = $request['end_date'];
-            $start = $request['start_date'].' 00:00:00';
-            $end = $request['end_date'].' 23:59:59';
+            $start = $request['start_date'] . ' 00:00:00';
+            $end = $request['end_date'] . ' 23:59:59';
             $is_post_query = true;
         }
+
         $companyId = (int) Session::get('company_id');
         Ownership::ensureDefaultsForCompany($companyId);
-
         $units = UnitMeasure::select('unit_name')->get();
-        $vehicles = Vehicle::where('vehicles.company_id', Session::get('company_id'))->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')->select('vehicles.id as id', 'plate_no', 'vehicle_name',  'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')
-        ->whereBetween('vehicles.created_at', [$start, $end])
-        ->get();
-        
+        $vehiclesQuery = Vehicle::where('vehicles.company_id', Session::get('company_id'))
+            ->when(!empty($request->start_date) && !empty($request->end_date), function ($query) use ($start_date, $end_date) {
+                return $query->whereBetween('vehicles.reg_date', [$start_date, $end_date]);
+            });
+
+        $vehicles = $vehiclesQuery
+            ->join('vehicle_types', 'vehicle_types.id', '=', 'vehicles.vehicle_type_id')
+            ->join('ownerships', 'ownerships.id', '=', 'vehicles.ownership_id')
+            ->select('vehicles.id as id', 'plate_no', 'vehicle_name', 'reg_date', 'name as type', 'type as ownership', 'status', 'capacity', 'uom')
+            ->orderBy('vehicles.created_at', 'desc')
+            ->get();
+
         $vehtypes = VehicleType::where('company_id', Session::get('company_id'))->get();
         $ownerships = Ownership::where('company_id', $companyId)
             ->where('is_system', true)
@@ -176,7 +184,7 @@ class VehicleController extends Controller
             ->get();
         $departments = Department::where('company_id', Session::get('company_id'))->get();
 
-        return view('vms.vehicles.index', compact('page','start','end','start_date','end_date','is_post_query','vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
+        return view('vms.vehicles.index', compact('page', 'start', 'end', 'start_date', 'end_date', 'is_post_query', 'vehicles', 'units', 'vehtypes', 'ownerships', 'departments'));
     }
 
     /**
@@ -207,7 +215,7 @@ class VehicleController extends Controller
 
     /**
      * Store a newly created resource in storage.
-       */
+     */
     public function store(Request $request)
     {
         $request->merge([
@@ -514,7 +522,7 @@ class VehicleController extends Controller
             $vehicle->save();
 
             return redirect('vehicles')->with('success', 'Vehicle Details updated successfully');
-        }else {
+        } else {
             return redirect('vehicles')->with('error', 'Vehicle not found');
         }
     }
@@ -530,10 +538,10 @@ class VehicleController extends Controller
             // if ($orderdeliveries > 0) {
             //     return redirect()->back()->with('info', "Vehicle with Order details can't be deleted");
             // }else{
-               // $vehicle->delete();
-               $vehicle->status = 'UnAvailable';
-               $vehicle->save();
-                return redirect('vehicles')->with('success', 'Vehicle deleted successfully');
+            // $vehicle->delete();
+            $vehicle->status = 'UnAvailable';
+            $vehicle->save();
+            return redirect('vehicles')->with('success', 'Vehicle deleted successfully');
             //}
         }
     }
