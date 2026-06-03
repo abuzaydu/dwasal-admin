@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
-use DB;
-use Log;
 use \Carbon\Carbon;
-use App\Models\Company;
-use App\Models\Shop;
-use App\Models\User;
-use App\Models\DeliveryNote;
-use App\Models\DeliveryNoteItem;
+use App\Http\Controllers\Controller;
 use App\Models\AnSale;
 use App\Models\AnSaleItem;
-use App\Models\ProductUnit;
-use App\Models\Setting;
-use App\Models\ProInvoice;
-use App\Models\InvoiceItem;
-use App\Models\ServiceSaleItem;
-use App\Models\InvoiceServitem;
-use App\Models\Vehicle;
+use App\Models\Company;
 use App\Models\DeliveryAddress;
+use App\Models\DeliveryNote;
+use App\Models\DeliveryNoteItem;
+use App\Models\InvoiceItem;
+use App\Models\InvoiceServitem;
+use App\Models\ProductUnit;
+use App\Models\ProInvoice;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\User;
+use App\Models\Vehicle;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Log;
 
 class DeliveryNoteController extends Controller
 {
@@ -320,6 +320,7 @@ class DeliveryNoteController extends Controller
 
         $delivaddresses = DeliveryAddress::where('customer_id', $sale->customer_id)->get();
         $vehicles = Vehicle::where('company_id', Session::get('company_id'))->get();
+      
         return view('sales.delivery-notes.edit', compact('page', 'title', 'title_sw', 'dnote', 'sale', 'user', 'dnoteitems', 'vehicles', 'delivaddresses'));
     }
 

@@ -3,29 +3,28 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Auth;
-use Session;
-use Log;
-use App\Models\Shop;
-use App\Models\Setting;
-use App\Models\AnSale;
-use App\Models\AnSaleItem;
-use App\Models\ServiceSaleItem;
-use App\Models\User;
-use App\Models\Product;
-use App\Models\ProductUnit;
-use App\Models\Stock;
-use App\Models\ProdDamage;
-use App\Models\TransferOrderItem;
-use App\Models\SaleReturnItem;
 use App\Jobs\StockUpdaterJob;
-use App\Models\SalePayment;
-use App\Models\Settings;
-USE App\Models\Invoice;
-use App\Models\CustomerTransaction;
 use App\Models\Account;
 use App\Models\AccountStatement;
+use App\Models\AnSale;
+use App\Models\AnSaleItem;
+use App\Models\CustomerTransaction;
+use App\Models\ProdDamage;
+use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\SalePayment;
+use App\Models\SaleReturnItem;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Settings;
+use App\Models\Shop;
+use App\Models\Stock;
+use App\Models\TransferOrderItem;
+use App\Models\User;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Log;
 
 class AnSaleItemController extends Controller
 {

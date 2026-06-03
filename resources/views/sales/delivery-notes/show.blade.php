@@ -90,10 +90,10 @@
                                         <td style="width: 30%; border: 1px solid gray;">
                                             <table width="100%;">
                                                 <tr>
-                                                    <td style="vertical-align: top; text-align: left;">Delivery To :</td>
+                                                    <td style="vertical-align: top; text-align: left;">Delivery To : {{ $sale->name ?? '' }}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td><span class="" style="font-size: 14px;">{{$delivaddress->plus_code}}</span><br>
+                                                    <td><span class="" style="font-size: 14px;">{{$delivaddress->plus_code ?? ''}}</span><br>
                                                     @if(!empty($delivaddress->postcode))Postcode :  {{$delivaddress->postcode}}@endif
                                                     @if(!empty($delivaddress->state)){{$delivaddress->state}}, @endif
                                                     @if(!empty($delivaddress->country)) {{$delivaddress->country}}@endif</td>

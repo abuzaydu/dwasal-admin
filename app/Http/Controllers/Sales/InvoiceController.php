@@ -2,46 +2,46 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
-use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
-use Mike42\Escpos\CapabilityProfile;
-use Mike42\Escpos\Printer;
-use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\ImagickEscposImage;
-use Log;
-use Session;
-use Auth;
-use \DB;
 use \Carbon\Carbon;
-use App\Models\Company;
-use App\Models\Shop;
-use App\Models\ShopCurrency;
-use App\Models\User;
-use App\Models\Invoice;
-use App\Models\Setting;
-use App\Models\AnSale;
-use App\Models\AnSaleItem;
-use App\Models\ProductUnit;
-use App\Models\ServiceSaleItem;
-use App\Models\Customer;
-use App\Models\CustomerTransaction;
-use App\Models\SalePayment;
-use App\Models\CreditNote;
-use App\Models\CreditNoteItem;
-use App\Models\SmsAccount;
-use App\Models\SenderId;
-use App\Models\SmsTemplate;
-use App\Models\CashIn;
-use App\Models\CashOut;
+use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountStatement;
+use App\Models\AnSale;
+use App\Models\AnSaleItem;
 use App\Models\Booking;
+use App\Models\CashIn;
+use App\Models\CashOut;
+use App\Models\Company;
 use App\Models\Contract;
 use App\Models\ContractService;
+use App\Models\CreditNote;
+use App\Models\CreditNoteItem;
+use App\Models\Customer;
+use App\Models\CustomerTransaction;
 use App\Models\DailyDeposit;
+use App\Models\Invoice;
+use App\Models\ProductUnit;
+use App\Models\SalePayment;
+use App\Models\SenderId;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\ShopCurrency;
+use App\Models\SmsAccount;
+use App\Models\SmsTemplate;
 use App\Models\TripLog;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
+use Mike42\Escpos\CapabilityProfile;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\ImagickEscposImage;
+use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\Printer;
 
 class InvoiceController extends Controller
 {
@@ -438,7 +438,15 @@ class InvoiceController extends Controller
     }
 
     public function applyPayment($request)
-    {
+    {    
+        $amount = str_replace(',', '', $request['amount']);
+
+        if (!is_numeric($amount) || $amount <= 0) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Amount paid must be greater than zero.');
+        }
+
         $shop = Shop::find(Session::get('shop_id'));
         $user = Auth::user();
         $settings = Setting::where('shop_id', $shop->id)->first();
@@ -973,11 +981,11 @@ class InvoiceController extends Controller
             $sale->save();
         }
 
-        $booking = Booking::where('an_sale_id', $sale->id)->where('shop_id', $sale->shop_id)->first();
-        if (!is_null($booking)) {
-            $booking->status = 'Paid';
-            $booking->save();
-        }
+        // $booking = Booking::where('an_sale_id', $sale->id)->where('shop_id', $sale->shop_id)->first();
+        // if (!is_null($booking)) {
+        //     $booking->status = 'Paid';
+        //     $booking->save();
+        // }
     }
 
     public function updateContractStatus($sale, $payment)
@@ -1124,6 +1132,14 @@ class InvoiceController extends Controller
 
     public function updatePaymentTrans(Request $request)
     {
+        $amount = str_replace(',', '', $request['amount']);
+
+        if (!is_numeric($amount) || $amount <= 0) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Amount paid must be greater than zero.');
+        }
+
         $acctrans = CustomerTransaction::find($request['id']);
         if (!is_null($acctrans)) {
             $shop = Shop::find($acctrans->shop_id);
