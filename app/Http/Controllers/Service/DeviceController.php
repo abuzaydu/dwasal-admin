@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use App\Models\Shop;
-use App\Models\Setting;
 use App\Models\Device;
-use Log;
+use App\Models\HourMeter;
+use App\Models\Setting;
+use App\Models\Shop;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class DeviceController extends Controller
 {
@@ -35,7 +36,7 @@ class DeviceController extends Controller
         $title_sw = 'Vifaa Vyangu';
         $shop = Shop::find(Session::get('shop_id'));
         $settings = Setting::where('shop_id', $shop->id)->first();
-        $devices = Device::where('shop_id', $shop->id)->get();
+        $devices = Device::where('shop_id', $shop->id)->latest()->get();
         foreach ($devices as $key => $value) {
             if ( preg_match('/\s/',$value->device_number) ){
                Log::info("The name (".$value->device_number.") has the space");
@@ -46,7 +47,9 @@ class DeviceController extends Controller
                Log::info("The Name (".$value->device_number.") has not the space");
             }
         }
-        return view('services.devices.index', compact('page', 'title', 'title_sw', 'settings', 'devices'));    
+        $company_id = session('company_id');
+        $hourMeters = HourMeter::with('device')->where('shop_id', $shop->id)->where('company_id', $company_id)->latest()->get();
+        return view('services.devices.index', compact('page', 'title', 'title_sw', 'settings', 'devices', 'hourMeters'));    
     }
 
     public function autoSearch(Request $request)

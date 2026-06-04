@@ -48,8 +48,8 @@ use App\Http\Controllers\HR\AttendanceController;
 use App\Http\Controllers\HR\AttendanceSettingController;
 use App\Http\Controllers\HR\DepartmentController;
 use App\Http\Controllers\HR\EmployeeController;
-use App\Http\Controllers\HR\EmployeeFaceIdController;
 use App\Http\Controllers\HR\EmployeeDocController;
+use App\Http\Controllers\HR\EmployeeFaceIdController;
 use App\Http\Controllers\HR\EmployeeMedicalInfoController;
 use App\Http\Controllers\HR\EmployeeSalaryController;
 use App\Http\Controllers\HR\EventController;
@@ -194,6 +194,7 @@ use App\Http\Controllers\SandProd\WashingEquipmentController;
 use App\Http\Controllers\SandProd\WashingPlantController;
 use App\Http\Controllers\Service\DeviceController;
 use App\Http\Controllers\Service\GradeController;
+use App\Http\Controllers\Service\HourMeterController;
 use App\Http\Controllers\Service\ServCategoryController;
 use App\Http\Controllers\Service\ServiceController;
 use App\Http\Controllers\Service\ShopServiceApiController;
@@ -988,6 +989,8 @@ Route::group(['middleware' => 'auth'], function () {
     // Service Business Routes
     Route::get('auto-service-code', [ServiceController::class, 'autoCode']);
     Route::resource('services', ServiceController::class);
+    Route::put('hour-meter/{hour_meter}', [HourMeterController::class, 'update'])->name('hour-meter.update')->where('hour_meter', '.*');
+    Route::resource('hour-meter', HourMeterController::class);
     Route::get('services/destroy/{id}', [ServiceController::class, 'destroy']);
     Route::resource('chako-tours', ChakoTourController::class);
     Route::post('f-chako-tours', [ChakoTourController::class, 'index']);
