@@ -989,7 +989,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Service Business Routes
     Route::get('auto-service-code', [ServiceController::class, 'autoCode']);
     Route::resource('services', ServiceController::class);
-    Route::put('hour-meter/{hour_meter}', [HourMeterController::class, 'update'])->name('hour-meter.update')->where('hour_meter', '.*');
+    // Route::put('hour-meter/{hour_meter}', [HourMeterController::class, 'update'])->name('hour-meter.update')->where('hour_meter', '.*');
     Route::resource('hour-meter', HourMeterController::class);
     Route::get('services/destroy/{id}', [ServiceController::class, 'destroy']);
     Route::resource('chako-tours', ChakoTourController::class);
