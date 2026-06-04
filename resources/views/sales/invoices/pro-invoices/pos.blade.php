@@ -127,7 +127,7 @@
                                 <label class="form-label">Due/Validity date <span style="color: red; font-weight: bold;">*</span></label>
                                 <div class="inner-addon left-addon">
                                     <i class="myaddon fa fa-calendar"></i>
-                                    <input type="text" name="due_date" placeholder="Choose Due date" class="form-control form-control-sm mb-3" required>
+                                    <input type="text" name="due_date" value="{{ $duedate }}" placeholder="Choose Due date" class="form-control form-control-sm mb-3" required>
                                 </div>
                             </div>
                             @if($settings->use_barcode)

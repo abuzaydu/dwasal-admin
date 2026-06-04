@@ -126,6 +126,16 @@
                                 @endforeach
                             </ul>
                         </div>
+                      
+                        <div class="col-md-6">
+                            <label class="form-label">Invoice Prefix</label>
+                            <select name="invoice_prefix" class="form-select form-select-sm mb-1">
+                                <option value="" {{ $settings->invoice_prefix == '' ? 'selected' : '' }}>None</option>
+                                <option value="Year" {{ $settings->invoice_prefix == 'Year' ? 'selected' : '' }}>Year</option>
+                                <option value="Year-Month" {{ $settings->invoice_prefix == 'Year-Month' ? 'selected' : '' }}>Year-Month</option>
+                                <option value="Inv-Year" {{ $settings->invoice_prefix == 'Inv-Year' ? 'selected' : '' }}>INV-Year</option>
+                            </select>
+                        </div>
                         <div class="col-md-12">
                             <label class="form-label">Invoice End Note</label>
                             <input type="text" name="invoice_end_note" value="{{$settings->invoice_end_note}}" class="form-control form-control-sm mb-1" placeholder="Enter your End note">

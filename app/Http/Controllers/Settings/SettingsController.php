@@ -192,6 +192,7 @@ class SettingsController extends Controller
             $setting->invoice_color = $request['invoice_color'];
             $setting->invoice_title_color = $request['invoice_title_color'];
             $setting->invoice_end_note = $request['invoice_end_note'];
+            $setting->invoice_prefix = $request['invoice_prefix'];
             $setting->save();
         }else {
             $setting->tax_rate = $taxrate;

@@ -443,8 +443,9 @@
                                                 <td style="text-align: left; width: 40%; border: 1px solid black; border-bottom-right-radius: 15px;">
                                                     <table class="customer-info">
                                                         <tr style="border: 1px solid gray; border-radius: 20px;">
-                                                            <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td>
-                                                        </tr>
+                                                            {{-- <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td> --}}
+                                                            <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{$sale->invoice_no}}</b></td>
+                                                     </tr>
                                                         <tr>
                                                             <td style="text-align: right;">Invoice Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->time_created)) }}</b></td>

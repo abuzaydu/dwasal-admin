@@ -169,7 +169,8 @@
                                             @else
                                             <td><a href="{{ route('an-sales.show', encrypt($sale->id)) }}">{{ $sale->name }}</a></td>
                                             @endif
-                                            <td style="text-align: center;"><a href="{{ route('invoices.show', encrypt($sale->id)) }}">{{ sprintf('%04d', $sale->invoice_no)}}</a></td>
+                                            {{-- <td style="text-align: center;"><a href="{{ route('invoices.show', encrypt($sale->id)) }}">{{ sprintf('%04d', $sale->invoice_no)}}</a></td> --}}
+                                            <td style="text-align: center;"><a href="{{ route('invoices.show', encrypt($sale->id)) }}">{{ $sale->invoice_no }}</a></td>
                                             <td style="text-align: center;">{{ number_format($netsales_amount, 2, '.', ',') }}</td>
                                             <td style="text-align: center;">{{ number_format($sale->sale_amount_paid, 2, '.', ',') }}</td>
                                             <td style="text-align: center;">{{ number_format($netsales_amount - $sale->sale_amount_paid, 2, '.', ',') }}</td>

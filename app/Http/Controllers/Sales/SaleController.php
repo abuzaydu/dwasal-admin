@@ -2,52 +2,53 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
-use \Response;
-use Log;
 use \Carbon\Carbon;
-use App\Models\Shop;
+use \Response;
+use App\Http\Controllers\Controller;
+use App\Jobs\SendSMS;
+use App\Jobs\StockUpdaterJob;
+use App\Models\Account;
+use App\Models\AccountStatement;
 use App\Models\AnSale;
-use App\Models\SaleTemp;
+use App\Models\AnSaleItem;
+use App\Models\BankDetail;
+use App\Models\Customer;
+use App\Models\CustomerCategory;
+use App\Models\CustomerTransaction;
+use App\Models\Device;
+use App\Models\DeviceSale;
+use App\Models\Grade;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\InvoiceNote;
+use App\Models\LatestStockSoldLog;
+use App\Models\Payment;
+use App\Models\ProdDamage;
+use App\Models\Product;
+use App\Models\ProductUnit;
+use App\Models\ProInvoice;
 use App\Models\SaleItemTemp;
 use App\Models\SaleOrder;
 use App\Models\SaleOrderItem;
-use App\Models\ServiceItemTemp;
-use App\Models\AnSaleItem;
-use App\Models\ServiceSaleItem;
-use App\Models\ProInvoice;
-use App\Models\InvoiceItem;
-use App\Models\Product;
-use App\Models\ProductUnit;
-use App\Models\Stock;
-use App\Models\ProdDamage;
-use App\Models\Customer;
-use App\Models\Setting;
-use App\Models\Invoice;
-use App\Models\TransferOrderItem;
-use App\Models\SaleReturnItem;
 use App\Models\SalePayment;
-use App\Models\LatestStockSoldLog;
-use App\Models\Device;
-use App\Models\DeviceSale;
-use App\Models\CustomerTransaction;
-use App\Models\Payment;
-use App\Models\ServiceCharge;
-use App\Models\BankDetail;
-use App\Models\Account;
-use App\Models\AccountStatement;
-use App\Models\Grade;
-use App\Models\SmsAccount;
+use App\Models\SaleReturnItem;
+use App\Models\SaleTemp;
 use App\Models\SenderId;
-use App\Models\SmsTemplate;
-use App\Jobs\SendSMS;
+use App\Models\ServiceCharge;
+use App\Models\ServiceItemTemp;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
 use App\Models\ShopCurrency;
-use App\Jobs\StockUpdaterJob;
-use App\Models\CustomerCategory;
-use App\Models\InvoiceNote;
+use App\Models\SmsAccount;
+use App\Models\SmsTemplate;
+use App\Models\Stock;
+use App\Models\TransferOrderItem;
+use DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Log;
 
 class SaleController extends Controller
 {
@@ -185,6 +186,7 @@ class SaleController extends Controller
             $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Invoice')->where('note_type', 'Notes')->first();
             $categories = CustomerCategory::where('shop_id', $shop->id)->select('id', 'cat_name')->get();
             $utransactions = 0;
+            $due_date = Carbon::now()->format('Y-m-d');
             if ($shop->business_type_id == 3) {
                 $devices = Device::where('shop_id', $shop->id)->get();
                 $grades = Grade::where('shop_id', $shop->id)->get();
@@ -192,7 +194,7 @@ class SaleController extends Controller
             } elseif ($shop->business_type_id == 4 || $settings->is_manufacturing_with_service) {
                 return view('sales.invoices.both-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'categories', 'utransactions', 'notes'));
             } else {
-                return view('sales.invoices.pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'utransactions', 'notes'));
+                return view('sales.invoices.pos', compact('page','due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'utransactions', 'notes'));
             }
         } else {
             $info = 'Dear customer your account is not activated please make payment and activate now.';
@@ -225,11 +227,16 @@ class SaleController extends Controller
      */
     public function store(Request $request)
     {
+        // $validated = $request->validate([
+        //     'sale_date' => 'required|date|date_format:Y-m-d|before_or_equal:today',
+        //     'due_date' => 'required|date|date_format:Y-m-d|after_or_equal:invoice_date',
+        //     // 'vendor_invoice.*' => 'required|file|mimes:jpg,png,pdf,docx|max:2048', // 2MB max per file
+        // ]);
         $shop = Shop::find(Session::get('shop_id'));
         $settings = Setting::where('shop_id', $shop->id)->first();
         $user = Auth::user();
         $now = Carbon::now();
-        if (!empty($request['sale_date'])) {
+          if (!empty($request['sale_date'])) {
             $timenow = Carbon::now();
             $time = date('H:i:s', strtotime($timenow));
             $now = $request['sale_date'] . ' ' . $time;
@@ -241,14 +248,37 @@ class SaleController extends Controller
             $due_date = $request['due_date'];
         }
 
-        $maxsaleno = AnSale::where('shop_id', $shop->id)->orderByRaw('CONVERT(invoice_no, SIGNED) desc')->first();
-        $invoice_no = null;
-        if (!is_null($maxsaleno)) {
-            $invoice_no = $maxsaleno->invoice_no + 1;
-        } else {
-            $invoice_no = 1;
+       // $maxsaleno = AnSale::where('shop_id', $shop->id)->orderByRaw('CONVERT(invoice_no, SIGNED) desc')->first();
+        // $invoice_no = null;
+        // if (!is_null($maxsaleno)) {
+        //     $invoice_no = $maxsaleno->invoice_no + 1;
+        // } else {
+        //     $invoice_no = 1;
+        // }
+        $prefixSetting = $settings->invoice_prefix;
+    
+        $invdate =  Carbon::parse($request['sale_date']) ?? Carbon::parse($now)->adddays(10);
+        $prefixValue = match ($prefixSetting) {
+            'Year' => $invdate->format('Y'),
+            'Year-Month' => $invdate->format('Y-m'),
+            'Inv-Year' => 'INV-' . $invdate->format('Y'),
+            default => 'INV'
+        };
+        $prefix = $prefixValue . '-';
+        // $lastinvoice = AnSale::where('shop_id', $shop->id)->where(\DB::raw('CONCAT_WS(" ", `invoice_no`)'),'LIKE', '%'.$prefix.'%')->orderBy('invoice_no', 'desc')->first();
+        $lastinvoice = AnSale::where('shop_id', $shop->id)
+            ->where('invoice_no', 'LIKE', $prefix . '%') 
+            ->orderByRaw('CAST(SUBSTRING_INDEX(invoice_no, "-", -1) AS UNSIGNED) DESC')
+            ->first();
+        $invoice_no = '';
+        if (!is_null($lastinvoice)) {
+            $lastno = str_replace($prefix, '', $lastinvoice->invoice_no);
+            $lastno = (int)$lastno;
+            $invoice_no = $prefix.''.sprintf('%04d', $lastno+1);
+        }else{
+            $invoice_no = $prefix.''.sprintf('%04d', 1);
         }
-
+// dd($invoice_no);
         $pay_type = null;
         if ($request['pay_type'] == 'Cheque') {
             $pay_type = 'Bank';
@@ -1006,7 +1036,7 @@ class SaleController extends Controller
     }
 
     public function postTempData(Request $request)
-    {
+    {//dd($request->all());
         $page = 'Point of Sale';
         $title = 'Point of Sale(New Invoice)';
         $title_sw = 'Sehemu ya Kuuzia';
@@ -1083,6 +1113,7 @@ class SaleController extends Controller
                     $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Invoice')->where('note_type', 'Notes')->first();
                     $categories = CustomerCategory::where('shop_id', $shop->id)->select('id', 'cat_name')->get();
                     $utransactions = CustomerTransaction::where('shop_id', $shop->id)->where('customer_id', $saletemp->customer_id)->whereNotNull('receipt_no')->where('is_utilized', false)->where('is_deleted', false)->count();
+                    $due_date = \Carbon\Carbon::now()->format('Y-m-d');
                     if ($shop->business_type_id == 3) {
                         $devices = Device::where('shop_id', $shop->id)->get();
                         $grades = Grade::where('shop_id', $shop->id)->get();
@@ -1090,7 +1121,7 @@ class SaleController extends Controller
                     } elseif ($shop->business_type_id == 4 || $settings->is_manufacturing_with_service) {
                         return view('sales.invoices.both-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'currencies', 'categories', 'utransactions', 'notes'));
                     } else {
-                        return view('sales.invoices.pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
+                        return view('sales.invoices.pos', compact('page','due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
                     }
                 }else{
                     $temp_serv_items = ServiceItemTemp::where('sale_temp_id', $saletemp->id)->get();
