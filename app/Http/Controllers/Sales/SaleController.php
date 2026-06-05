@@ -190,9 +190,9 @@ class SaleController extends Controller
             if ($shop->business_type_id == 3) {
                 $devices = Device::where('shop_id', $shop->id)->get();
                 $grades = Grade::where('shop_id', $shop->id)->get();
-                return view('sales.invoices.service-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'utransactions', 'notes'));
+                return view('sales.invoices.service-pos', compact('page', 'due_date','title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'utransactions', 'notes'));
             } elseif ($shop->business_type_id == 4 || $settings->is_manufacturing_with_service) {
-                return view('sales.invoices.both-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'categories', 'utransactions', 'notes'));
+                return view('sales.invoices.both-pos', compact('page','due_date','title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'categories', 'utransactions', 'notes'));
             } else {
                 return view('sales.invoices.pos', compact('page','due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'utransactions', 'notes'));
             }
@@ -961,6 +961,7 @@ class SaleController extends Controller
             $currencies = ShopCurrency::where('shop_id', $shop->id)->get();
             $dfcurr = ShopCurrency::where('shop_id', $shop->id)->where('is_default', true)->first();
             $saletemp = SaleTemp::find($request['id']);
+            
             if (!is_null($saletemp)) {
                 $pendingtemps = SaleTemp::where('sale_temps.shop_id', $shop->id)->where('user_id', $user->id)->whereNotNull('customer_id')->join('customers', 'customers.id', '=', 'sale_temps.customer_id')->select('sale_temps.id as id', 'name', 'sale_temps.created_at as created_at')->get();
 
@@ -1017,14 +1018,15 @@ class SaleController extends Controller
                 $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Invoice')->where('note_type', 'Notes')->first();
                 $categories = CustomerCategory::where('shop_id', $shop->id)->select('id', 'cat_name')->get();
                 $utransactions = CustomerTransaction::where('shop_id', $shop->id)->where('customer_id', $saletemp->customer_id)->whereNotNull('receipt_no')->where('is_utilized', false)->where('is_deleted', false)->count();
+                $due_date = \Carbon\Carbon::now()->format('Y-m-d');
                 if ($shop->business_type_id == 3) {
                     $devices = Device::where('shop_id', $shop->id)->get();
                     $grades = Grade::where('shop_id', $shop->id)->get();
-                    return view('sales.invoices.service-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
+                    return view('sales.invoices.service-pos', compact('page', 'due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
                 } elseif ($shop->business_type_id == 4 || $settings->is_manufacturing_with_service) {
-                    return view('sales.invoices.both-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'categories', 'products', 'currencies', 'utransactions', 'notes'));
+                    return view('sales.invoices.both-pos', compact('page', 'due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'categories', 'products', 'currencies', 'utransactions', 'notes'));
                 } else {
-                    return view('sales.invoices.pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
+                    return view('sales.invoices.pos', compact('page', 'due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
                 }
             }else{
                 return redirect('pos');
@@ -1117,9 +1119,9 @@ class SaleController extends Controller
                     if ($shop->business_type_id == 3) {
                         $devices = Device::where('shop_id', $shop->id)->get();
                         $grades = Grade::where('shop_id', $shop->id)->get();
-                        return view('sales.invoices.service-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
+                        return view('sales.invoices.service-pos', compact('page','due_date','title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'devices', 'accounts', 'mindays', 'grades', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
                     } elseif ($shop->business_type_id == 4 || $settings->is_manufacturing_with_service) {
-                        return view('sales.invoices.both-pos', compact('page', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'currencies', 'categories', 'utransactions', 'notes'));
+                        return view('sales.invoices.both-pos', compact('page', 'due_date','title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'custids', 'products', 'currencies', 'categories', 'utransactions', 'notes'));
                     } else {
                         return view('sales.invoices.pos', compact('page','due_date', 'title', 'title_sw', 'payment', 'status', 'saletemp', 'pendingtemps', 'customers', 'settings', 'shop', 'accounts', 'mindays', 'products', 'custids', 'categories', 'currencies', 'utransactions', 'notes'));
                     }

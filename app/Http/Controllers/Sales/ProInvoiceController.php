@@ -146,11 +146,11 @@ class ProInvoiceController extends Controller
             );
         
         $invoice_date = Carbon::now()->format('Y-m-d');
-        $duedate = Carbon::now()->addDays(30)->format('Y-m-d');
+        $duedate = Carbon::now()->format('Y-m-d');
         if ($shop->business_type_id == 3) {
-            return view('sales.invoices.pro-invoices.service-pos', compact('page', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status' , 'custids', 'notes'));    
+            return view('sales.invoices.pro-invoices.service-pos', compact('page','duedate', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status' , 'custids', 'notes'));    
         } elseif ($shop->business_type_id == 4) {
-            return view('sales.invoices.pro-invoices.both-pos', compact('page', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status', 'custids', 'notes'));
+            return view('sales.invoices.pro-invoices.both-pos', compact('page','duedate', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status', 'custids', 'notes'));
         }else{
             return view('sales.invoices.pro-invoices.pos', compact('page','duedate', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status' , 'custids', 'notes'));
         }

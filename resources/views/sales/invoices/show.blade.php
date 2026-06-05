@@ -184,13 +184,14 @@
                                             <p>
                                               {{$shop->postal_address}} {{$shop->physical_address}} @if(!is_null($shop->street)){{$shop->street}},@endif @if(!is_null($shop->district)){{$shop->district}},@endif {{$shop->city}}<br>
                                               {{trans('navmenu.email')}}   : {{$shop->email}} 
-                                                {{trans('navmenu.mobile')}}   : {{$shop->mobile}}<br>
+                                                {{trans('n]avmenu.mobile')}}   : {{$shop->mobile}}<br>
                                                 {{trans('navmenu.tin')}}   : {{$shop->tin}} 
                                                 {{trans('navmenu.vrn')}}   : {{$shop->vrn}}<br>
                                             </p>
                                         </div>
                                         <div>
-                                            <span style="font-size: 16px;"><b>{{trans('navmenu.invoice_no')}}: {{ sprintf('%04d', $sale->invoice_no)}}</b></span>
+                                            {{-- <span style="font-size: 16px;"><b>{{trans('navmenu.invoice_no')}}: {{ sprintf('%04d', $sale->invoice_no)}}</b></span> --}}
+                                            <span style="font-size: 16px;"><b>{{trans('navmenu.invoice_no')}}: {{$sale->invoice_no}}</b></span>
                                         </div>
                                         <div>
                                             <span>{{trans('navmenu.date')}}: <strong>{{$date}}</strong></span><br>

@@ -730,7 +730,7 @@
                 </div>
             </div>
         </div>
-        </form>
+    
         <form class="row g-3" method="POST" action="{{ url('reset-pos-temp') }}" id="ptemp-form-reset">
             @csrf
             <input type="hidden" name="id" value="{{$saletemp->id}}">

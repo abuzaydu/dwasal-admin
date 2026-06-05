@@ -308,7 +308,7 @@
                                     <label for="total" class="form-label">{{trans('navmenu.due_date')}}</label>
                                     <div class="inner-addon left-addon"> 
                                         <i class="myaddon fa fa-calendar"></i>
-                                        <input type="text" name="due_date" value="{{$saletemp->due_date}}" placeholder="{{trans('navmenu.pick_date')}}" class="form-control form-control-sm mb-1">
+                                        <input type="text" name="due_date" value="{{$due_date}}" placeholder="{{trans('navmenu.pick_date')}}" class="form-control form-control-sm mb-1">
                                     </div>
                                 </div>
                                 @endif
