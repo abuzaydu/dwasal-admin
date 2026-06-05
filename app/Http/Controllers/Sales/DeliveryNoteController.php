@@ -247,6 +247,7 @@ class DeliveryNoteController extends Controller
         $shop = Shop::find(Session::get('shop_id'));
         $settings = Setting::where('shop_id', $shop->id)->first();
         $dnote = DeliveryNote::find(decrypt($id));
+        $vehicle = Vehicle::find($dnote->vehicle_id);
         $user = User::find($dnote->user_id);
         if (!is_null($dnote)) {
             if (empty($dnote->issued_by)) {
@@ -282,20 +283,22 @@ class DeliveryNoteController extends Controller
             }else{
                 $sale = ProInvoice::where('pro_invoices.id', $dnote->pro_invoice_id)->join('customers', 'customers.id', '=', 'pro_invoices.customer_id')->select('customers.name as name', 'customers.cust_no as cust_no', 'customers.postal_address as po_address', 'customers.physical_address as ph_address', 'customers.street as street', 'customers.email as email', 'customers.phone as phone', 'customers.tin as tin', 'customers.vrn as vrn', 'pro_invoices.id as id')->first();
                 
-                $items = InvoiceItem::where('pro_invoice_id', $sale->id)->join('products', 'products.id', '=', 'invoice_items.product_id')->join('product_shop', 'product_id', '=', 'products.id')->groupBy('name')->orderBy('invoice_items.time_created', 'desc')->get([
-                    DB::raw('products.name as name'),
-                    DB::raw('invoice_items.product_id as product_id'),
-                    DB::raw('product_code as product_code'),
-                    DB::raw('SUM(invoice_items.quantity) as quantity_sold'),
-                    DB::raw('invoice_items.product_unit_id as product_unit_id')
-                ]);
+                // $items = InvoiceItem::where('pro_invoice_id', $sale->id)->join('products', 'products.id', '=', 'invoice_items.product_id')->join('product_shop', 'product_id', '=', 'products.id')->groupBy('name')->orderBy('invoice_items.time_created', 'desc')->get([
+                //     DB::raw('products.name as name'),
+                //     DB::raw('invoice_items.product_id as product_id'),
+                //     DB::raw('product_code as product_code'),
+                //     DB::raw('SUM(invoice_items.quantity) as quantity_sold'),
+                //     DB::raw('invoice_items.product_unit_id as product_unit_id')
+                // ]);
 
 
-                $servitems = InvoiceServitem::where('pro_invoice_id', $sale->id)->join('services', 'services.id', '=', 'invoice_servitems.service_id')->select('services.id as serv_id', 'services.name as name', 'code', 'invoice_servitems.repeatition as qty')->get();
+               // $servitems = InvoiceServitem::where('pro_invoice_id', $sale->id)->join('services', 'services.id', '=', 'invoice_servitems.service_id')->select('services.id as serv_id', 'services.name as name', 'code', 'invoice_servitems.repeatition as qty')->get();
 
                 $proinvoice = ProInvoice::where('id', $sale->id)->select('ref_no', 'invoice_no')->first();
 
-                return view('sales.delivery-notes.show', compact('page', 'title', 'title_sw', 'company', 'shop', 'user', 'settings', 'dnote', 'sale', 'items', 'servitems', 'proinvoice'));
+                return view('sales.delivery-notes.show', compact('page', 'title', 'title_sw', 'company', 'shop', 'user', 'settings', 'dnote', 'sale', 
+                //  'servitems','items',
+                  'proinvoice', 'vehicle'));
             }
         }else{
             return redirect()->back()->with('error', 'Delivery Note record not Found');

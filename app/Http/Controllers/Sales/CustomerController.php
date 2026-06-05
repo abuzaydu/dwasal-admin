@@ -445,19 +445,19 @@ class CustomerController extends Controller
                 $trans->delete();
             }
 
-            $contracts = Contract::where('customer_id', $customer->id)->get();
-            foreach ($contracts as $key => $contract) {
-                $cservices = ContractService::where('contract_id', $contract->id)->get();
-                foreach ($cservices as $key => $value) {
-                    $value->delete();
-                }
+            // $contracts = Contract::where('customer_id', $customer->id)->get();
+            // foreach ($contracts as $key => $contract) {
+            //     $cservices = ContractService::where('contract_id', $contract->id)->get();
+            //     foreach ($cservices as $key => $value) {
+            //         $value->delete();
+            //     }
 
-                $deposits = DailyDeposit::where('contract_id', $contract->id)->get();
-                foreach ($deposits as $key => $value) {
-                    $value->delete();
-                }
-                $contract->delete();
-            }
+            //     $deposits = DailyDeposit::where('contract_id', $contract->id)->get();
+            //     foreach ($deposits as $key => $value) {
+            //         $value->delete();
+            //     }
+            //     $contract->delete();
+            // }
 
             $triplogs = TripLog::where('customer_id', $customer->id)->get();
             foreach ($triplogs as $key => $value) {
@@ -471,10 +471,10 @@ class CustomerController extends Controller
                     $value->delete();
                 }
 
-                $invservitems = InvoiceServitem::where('pro_invoice_id', $invoice->id)->get();
-                foreach ($invservitems as $key => $value) {
-                    $value->delete();
-                }
+                // $invservitems = InvoiceServitem::where('pro_invoice_id', $invoice->id)->get();
+                // foreach ($invservitems as $key => $value) {
+                //     $value->delete();
+                // }
             }
 
             $saletemps = SaleTemp::where('customer_id', $customer->id)->get();
@@ -492,10 +492,10 @@ class CustomerController extends Controller
                 $value->delete();
             }
 
-            $garanters = Garantor::where('customer_id', $customer->id)->get();
-            foreach ($garanters as $key => $value) {
-                $value->delete();
-            }
+            // $garanters = Garantor::where('customer_id', $customer->id)->get();
+            // foreach ($garanters as $key => $value) {
+            //     $value->delete();
+            // }
 
             $customer->delete();
 

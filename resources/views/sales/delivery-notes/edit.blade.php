@@ -24,26 +24,26 @@
         }
 
         function confirmDelete() {
-        Swal.fire({
-          title: "Are you sure you wan't to cancel this Delivery Note?",
-          text: "{{trans('navmenu.no_revert')}}",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: "{{trans('navmenu.cancel_it')}}",
-          cancelButtonText: "{{trans('navmenu.no')}}"
-        }).then((result) => {
-          if (result.value) {
-            document.getElementById('delete-form').submit();
-            Swal.fire(
-              "{{trans('navmenu.deleted')}}",
-              "{{trans('navmenu.cancelled')}}",
-              'success'
-            )
-          }
-        })
-    }
+            Swal.fire({
+            title: "Are you sure you wan't to cancel this Delivery Note?",
+            text: "{{trans('navmenu.no_revert')}}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "{{trans('navmenu.cancel_it')}}",
+            cancelButtonText: "{{trans('navmenu.no')}}"
+            }).then((result) => {
+            if (result.value) {
+                document.getElementById('delete-form').submit();
+                Swal.fire(
+                "{{trans('navmenu.deleted')}}",
+                "{{trans('navmenu.cancelled')}}",
+                'success'
+                )
+            }
+            })
+        }
     </script>
 
 @section('content')
@@ -151,7 +151,8 @@
                             </div>
                             <div class="col-md-12">
                                 <button class="btn btn-primary btn-sm" style="margin-left: 5px;">Update</button>
-                                <a href="#" onclick="confirmDelete()" class="btn btn-warning btn-sm">Cancel</a>
+                                {{-- <a href="#" onclick="confirmDelete()" class="btn btn-warning btn-sm">Cancel</a> --}}
+                                     <a href="{{ url()->previous() }}" class="btn btn-warning btn-sm">Cancel</a>
                             </div>
                         </form>
                         <form id="delete-form" method="POST" action="{{ route('delivery-notes.destroy', encrypt($dnote->id))}}" style="display: inline;">

@@ -379,9 +379,9 @@
     }
     
     if ($page == 'Home' || $page == 'Orders' || $page == 'Sales Orders' || $page == 'Sales' || $page == 'Sales Payments' || $page == 'Proforma Invoices' || $page == 'Delivery Notes' || $page == 'Quote Requests' || $page == 'Quotations' || $page == 'Purchases' || $page == 'Purchases Payments' || $page == 'Cash Flows' || $page == 'Account Statement' || $page == 'Recycle Bin' || $page == 'Opening/Closing Amount' || $page == 'Petty Cash Report' || $page == 'Trip Logs' || $page == 'New Invoice' || $page == 'Product Sales History' || $page == 'User Action Logs' || $page == 'Daily Closing Stock Report' || $page == 'Stock Transfer Orders' || $page == 'Stock Corrections' || $page == 'Recycled Sales' || $page == 'Rental Status Report' || $page == 'Cash Flow Statement' || $page == 'Management Report' || $page == 'Income Statement' || $page == 'Balance Sheet' || $page == 'Monthly Balance Sheet' || $page == 'General Ledger' || $page == 'Bookings' || $page == 'Contracts' || $page == 'Daily Deposits Report' ||  $page == 'Monthly Deposits Report' || $page == 'TL Daily Performance Report' ||  $page == 'TL Monthly Performance Report' || $page == 'Monthly Profit Report' || $page == 'Over Deposited' || $page == 'Monthly Registration Report' || $page == 'Riders Dashboard' || $page == 'Payroll Deductions') {
-        $is_post = $is_post_query;
-        $startdate = $start_date;
-        $enddate = $end_date;
+        $is_post = $is_post_query ?? false;
+        $startdate = $start_date ?? null;
+        $enddate = $end_date ?? null;
     }
     
     if ($page == 'Customers' || $page == 'Suppliers' || $page == 'Profile') {
