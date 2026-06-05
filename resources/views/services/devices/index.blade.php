@@ -42,7 +42,7 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="hourmeter-tab" data-bs-toggle="tab"
                                 data-bs-target="#hourmeter-panel" type="button" role="tab">
-                                <i class="bx bx-time me-1"></i> Hour Meter Records
+                                <i class="bx bx-time me-1"></i>Device Usage Records
                             </button>
                         </li>
                     </ul>
@@ -65,7 +65,7 @@
                                 <button type="button" id="new-hourmeter-btn" class="btn btn-success btn-sm"
                                     onclick="showHideHourMeterForm('show')">
                                     <i class="bx bx-time-five me-1"></i>
-                                    Add Hour Meter
+                                    Add Device Usage Record
                                 </button>
                             </div>
 
@@ -140,7 +140,7 @@
                             <div class="p-4 border rounded mb-3" id="new-hourmeter-form" style="display: none;">
                                 <h6 class="mb-3 fw-semibold">
                                     <i class="bx bx-time-five me-1 text-success"></i>
-                                    New Hour Meter Record
+                                    New Usage Hour Meter Readings
                                 </h6>
                                 <form class="row g-3" method="POST" action="{{ route('hour-meter.store') }}">
                                     @csrf
@@ -172,20 +172,15 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Date <span class="text-danger fw-bold">*</span></label>
-                                        <input type="date" name="date" max="{{ date('Y-m-d') }}"
-                                            value="{{ date('Y-m-d') }}" required class="form-control form-control-sm">
+                                        <input type="date" name="date" max="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" required class="form-control form-control-sm">
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">Start Hr <span
-                                                class="text-danger fw-bold">*</span></label>
-                                        <input type="number" name="start_hr" required min="0"
-                                            placeholder="e.g. 100" class="form-control form-control-sm">
+                                        <label class="form-label">Start Hrs <span class="text-danger fw-bold">*</span></label>
+                                        <input type="number" name="start_hr" required min="0" step="any" placeholder="e.g. 100" class="form-control form-control-sm">
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">End Hr <span
-                                                class="text-danger fw-bold">*</span></label>
-                                        <input type="number" name="end_hr" required min="0"
-                                            placeholder="e.g. 200" class="form-control form-control-sm">
+                                        <label class="form-label">End Hrs <span class="text-danger fw-bold">*</span></label>
+                                        <input type="number" name="end_hr" required min="0" step="any" placeholder="e.g. 200" class="form-control form-control-sm">
                                     </div>
                                     <div class="col-12 d-flex gap-2">
                                         <button type="submit" class="btn btn-success btn-sm px-4">
@@ -299,9 +294,9 @@
                                                 @endif
                                             </th>
                                             <th>Date</th>
-                                            <th>Start Hr</th>
-                                            <th>End Hr</th>
-                                            <th>Total Working Hr</th>
+                                            <th>Start Hrs</th>
+                                            <th>End Hrs</th>
+                                            <th>Total Working Hrs</th>
                                             <th>{{ trans('navmenu.actions') }}</th>
                                         </tr>
                                     </thead>
@@ -312,11 +307,11 @@
                                                     <td>{{ $key + 1 }}</td>
                                                     <td>{{ $record->device->device_number ?? '-' }}</td>
                                                     <td>{{ \Carbon\Carbon::parse($record->date)->format('d M Y') }}</td>
-                                                    <td>{{ $record->start_hr }} hr</td>
-                                                    <td>{{ $record->end_hr }} hr</td>
+                                                    <td>{{ $record->start_hr+0 }} hr</td>
+                                                    <td>{{ $record->end_hr+0 }} hr</td>
                                                     <td>
                                                         <span class="badge bg-info text-dark">
-                                                            {{ $record->end_hr - $record->start_hr }} hr
+                                                            {{ $record->total_hr+0 }} hr
                                                         </span>
                                                     </td>
                                                     <td class="d-flex align-items-center gap-2">
@@ -360,7 +355,7 @@
                                 <div class="modal-header py-3">
                                     <h6 class="modal-title fw-semibold" id="editHourMeterModalLabel">
                                         <i class="bx bx-edit-alt me-1 text-warning"></i>
-                                        Edit Hour Meter Record
+                                        Edit Usage Hours Record
                                     </h6>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
@@ -407,13 +402,13 @@
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label class="form-label">Start Hr <span class="text-danger fw-bold">*</span></label>
-                                                <input type="number" name="start_hr" id="edit_start_hr" required min="0" placeholder="e.g. 100" class="form-control form-control-sm">
+                                                <label class="form-label">Start Hrs <span class="text-danger fw-bold">*</span></label>
+                                                <input type="number" name="start_hr" id="edit_start_hr" required min="0" step="any" placeholder="e.g. 100" class="form-control form-control-sm">
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label class="form-label">End Hr <span class="text-danger fw-bold">*</span></label>
-                                                <input type="number" name="end_hr" id="edit_end_hr" required min="0" placeholder="e.g. 200" class="form-control form-control-sm">
+                                                <label class="form-label">End Hrs <span class="text-danger fw-bold">*</span></label>
+                                                <input type="number" name="end_hr" id="edit_end_hr" required min="0" step="any" placeholder="e.g. 200" class="form-control form-control-sm">
                                             </div>
                                         </div>
                                     </div>
