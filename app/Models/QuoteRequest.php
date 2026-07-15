@@ -11,7 +11,7 @@ class QuoteRequest extends Model
 {
     use HasFactory;
 
-    public $fillable = ['name', 'email', 'phone', 'address', 'product', 'message'];
+    public $fillable = ['name', 'email', 'phone', 'address', 'product', 'message','status','processed_by'];
 
     /**
      * Write code on Method

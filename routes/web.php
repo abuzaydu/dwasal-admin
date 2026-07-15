@@ -844,6 +844,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Customers Routes
     Route::get('search-customer', [CustomerController::class, 'autoSearch']);
+    Route::get('fetch-customer', [CustomerController::class, 'fetchCustomer'])->name('fetch-customer');
     Route::get('excel-sample-customers', [CustomerController::class, 'download']);
     Route::post('import-customer', [CustomerController::class, 'import']);
     Route::resource('customers', CustomerController::class);
@@ -1394,7 +1395,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('quality-tests', QualityTestController::class);
 
     Route::resource('quote-requests', QuoteRequestController::class);
+    Route::post('quote-requests/{id}/approve', [QuoteRequestController::class, 'approve'])->name('quote-requests.approve');    
+    // Route::post('create-qrequest',[QuotationController::class, 'createFromQuoteRequest'])->name('create-qrequest');
     Route::resource('quotations', QuotationController::class);
+    Route::post('create-qrequest', [QuotationController::class, 'createFromQuoteRequest'])->name('quotations.from-request');
+    Route::post('f-quotations', [QuotationController::class, 'index'])->name('quotations.filter');
+
 
     //OrdersProcessing
     Route::resource('orders', OrderController::class);

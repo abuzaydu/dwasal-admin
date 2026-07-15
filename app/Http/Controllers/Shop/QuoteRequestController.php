@@ -54,24 +54,67 @@ class QuoteRequestController extends Controller
      */
     public function create()
     {
-        //
+        $page = 'New Quote Request';
+        $custids = array(
+                ['id' => 1, 'name' => 'TIN'],
+                ['id' => 2, 'name' => 'Driving License'],
+                ['id' => 3, 'name' => 'Voters Number'],
+                ['id' => 4, 'name' => 'Passport'],
+                ['id' => 5, 'name' => 'NIN'],
+                ['id' => 6, 'name' => 'NIL'],
+                ['id' => 7, 'name' => 'Meter No']
+            );
+
+        return view('shop.quotes.requests.create', compact('page','custids'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+   public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name'    => 'nullable|string|max:125',
+            'email'   => 'required|email|max:125',
+            'phone'   => 'required|string|max:125',
+            'address' => 'nullable|string|max:125',
+            'product' => 'nullable|string',
+            'message' => 'required|string',
+        ]);
+
+        QuoteRequest::create([
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'address' => $request->address,
+            'product' => $request->product,
+            'message' => $request->message,
+            'status'  => 'SENT',
+        ]);
+
+        return redirect()->route('quote-requests.index')->with('success', 'Quote request submitted successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(String $id)
     {
-        //
+        try {
+            $decryptedId = decrypt($id);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return redirect()->route('quote-requests.index')->with('error', 'Invalid quote request.');
+        }
+
+        $qrequest = QuoteRequest::findOrFail($decryptedId);
+        $page = 'Quote Request Details';
+
+        return view('shop.quotes.requests.show', compact('qrequest', 'page'));
     }
+
+
+
+
 
     /**
      * Show the form for editing the specified resource.
@@ -86,14 +129,65 @@ class QuoteRequestController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            $decryptedId = decrypt($id);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return redirect()->route('quote-requests.index')->with('error', 'Invalid quote request.');
+        }
+
+        $request->validate([
+            'name'    => 'nullable|string|max:125',
+            'email'   => 'required|email|max:125',
+            'phone'   => 'required|string|max:125',
+            'address' => 'nullable|string|max:125',
+            'product' => 'nullable|string',
+            'message' => 'required|string',
+            'status'  => 'required|string|max:125',
+        ]);
+
+        $qrequest = QuoteRequest::findOrFail($decryptedId);
+
+        $qrequest->update([
+            'name'    => $request->name,
+            'email'   => $request->email,
+            'phone'   => $request->phone,
+            'address' => $request->address,
+            'product' => $request->product,
+            'message' => $request->message,
+            'status'  => $request->status,
+        ]);
+
+        return redirect()->route('quote-requests.index')->with('success', 'Quote request updated successfully.');
+    }
+
+    public function approve(Request $request, $id)
+    { 
+        try {
+            $decryptedId = decrypt($id);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return redirect()->route('quote-requests.index')->with('error', 'Invalid quote request.');
+        }
+        $qrequest = QuoteRequest::findOrFail($decryptedId);
+        $qrequest->update([
+            'status'       => 'Approved',
+            'processed_by' => auth()->check() ? (auth()->user()->first_name ?? auth()->user()->name ?? null) : null,
+        ]);
+        return redirect()->route('quote-requests.show', encrypt($qrequest->id))->with('success', 'Quote request approved. You can now create a quotation.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(String $id)
     {
-        //
+        try {
+            $decryptedId = decrypt($id);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return redirect()->route('quote-requests.index')->with('error', 'Invalid quote request.');
+        }
+        $qrequest = QuoteRequest::findOrFail($decryptedId);
+        $qrequest->delete();
+
+        return redirect()->route('quote-requests.index')->with('success', 'Quote request deleted successfully.');
     }
 }

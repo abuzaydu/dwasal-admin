@@ -180,6 +180,17 @@ class CustomerController extends Controller
         }
     }
 
+    public function fetchCustomer(Request $request)
+    {
+        $customer = \App\Models\Customer::where('id', $request->customer_id)->where('shop_id', Session::get('shop_id'))->where('is_active', true)->first();
+
+        if (!$customer) {
+            return response()->json(['error' => 'Customer not found'], 404);
+        }
+
+        return response()->json($customer);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
