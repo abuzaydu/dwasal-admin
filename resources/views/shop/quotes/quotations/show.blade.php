@@ -9,7 +9,6 @@
         </ul>
     </div>
 
-    ```
     <div class="row clearfix">
         <div class="col-md-10 mx-auto">
             <div class="card">
@@ -23,11 +22,10 @@
                             Back to List
                         </a>
 
-                        <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" class="btn btn-primary btn-sm">
-                            Edit
-                        </a>
-
                         @if ($quotation->status === 'Draft')
+                            <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" class="btn btn-primary btn-sm">
+                                Edit
+                            </a>
                             <form action="{{ route('quotations.send', encrypt($quotation->id)) }}" method="POST"
                                 class="d-inline">
                                 @csrf
@@ -55,20 +53,11 @@
                             </form>
                         @endif
 
-                        {{-- Accepted -> Create Proforma --}}
-                        {{-- @if ($quotation->status === 'Accepted')
-                            <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}"
-                                class="btn btn-success btn-sm">
-                                Create Proforma Invoice
+                        @if($quotation->status === 'Accepted' && $quotation->is_proinvoice_created === 0)
+                            <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}" class="btn btn-success btn-sm" onclick="return confirm('Create a Proforma Invoice from this quotation? This cannot be undone.')">
+                                <i class="fa fa-file-invoice"></i> Create Proforma
                             </a>
-                        @endif --}}
-                        @if($quotation->status === 'Accepted')
-    <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}"
-       class="btn btn-success btn-sm"
-       onclick="return confirm('Create a Proforma Invoice from this quotation? This cannot be undone.')">
-        <i class="fa fa-file-invoice"></i> Create Proforma
-    </a>
-@endif
+                        @endif
 
                     </div>
                 </div>
@@ -199,10 +188,11 @@
                         </div>
                     </div>
 
-                    @if ($quotation->notes)
+                    @if($quotation->is_proinvoice_created === 1)
                         <hr>
-                        <strong>Notes</strong>
-                        <p>{{ $quotation->notes }}</p>
+                        <div class="alert alert-success mb-0">
+                            <i class="fa fa-check-circle"></i> The Pro Invoice for this quotation has already been created.
+                        </div>
                     @endif
 
                 </div>

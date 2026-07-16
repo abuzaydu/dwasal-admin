@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('tax_amount', 12, 2)->default(0);
             $table->decimal('total', 12, 2)->default(0);
             $table->string('status', 50)->default('Draft'); // Draft, Sent, Accepted, Rejected, Expired
+            $table->boolean('is_proinvoice_created')->default(false);
             $table->date('valid_until')->nullable();
             $table->text('notes')->nullable();
             $table->string('created_by', 125)->nullable();

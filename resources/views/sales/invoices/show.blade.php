@@ -349,8 +349,7 @@
                                     @endif
 
                                     @if(!$sale->is_paid && Auth::user()->can('create-sale-payment'))
-                                    <a href="#"  class="btn btn-success btn-sm" data-toggle="modal" data-target="#payModal" data-backdrop="static" data-keyboard="false" style="margin-right: 2px; padding-top: 5px"><i class="fa fa-money"></i> {{trans('navmenu.add_payment')}}</a>
-                                    @endif 
+                                        <a href="#" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#payModal" data-bs-backdrop="static" data-bs-keyboard="false" style="margin-right: 2px; padding-top: 5px"><i class="fa fa-money"></i> {{trans('navmenu.add_payment')}}</a>                                    @endif 
                                 </div>
                                 <div class="col-md-2">
                                     <form method="GET" action="{{route('invoices.show', encrypt($sale->id))}}" >
@@ -787,12 +786,11 @@
 
      <!-- Modal -->
     <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{trans('navmenu.add_payment')}}</h5>
-                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                </div>
                 <form class="row g-3" method="POST" action="{{ url('acc-payments') }}">
                     <div class="modal-body row">
                         @csrf
@@ -909,7 +907,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-warning btn-sm" data-dismiss="modal">{{trans('navmenu.btn_cancel')}}</button>
+                        <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">{{trans('navmenu.btn_cancel')}}</button>
                         <button type="submit" class="btn btn-primary btn-sm" id="btn-submit">{{trans('navmenu.btn_save')}}</button>
                     </div>
                 </form>

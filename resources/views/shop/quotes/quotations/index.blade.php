@@ -50,6 +50,7 @@
                                     <th>Email</th>
                                     <th>Total</th>
                                     <th>Status</th>
+                                    <th>Proinvoice</th>
                                     <th>Created At</th>
                                     <th>Valid Until</th>
                                     <th>Actions</th>
@@ -64,27 +65,31 @@
                                     <td>{{$quotation->email}}</td>
                                     <td>{{ number_format($quotation->total, 2) }}</td>
                                     <td>
-                                        <span class="badge
-                                            @if($quotation->status == 'Accepted') bg-success
-                                            @elseif($quotation->status == 'Rejected') bg-danger
-                                            @elseif($quotation->status == 'Sent') bg-info
-                                            @elseif($quotation->status == 'Expired') bg-secondary
-                                            @else bg-warning @endif">
-                                            {{$quotation->status}}
+                                        <span class="badge 
+                                            {{ $quotation->status == 'Accepted' ? 'bg-success' : ($quotation->status == 'Rejected' ? 'bg-danger' : ($quotation->status == 'Sent' ? 'bg-info' : ($quotation->status == 'Expired' ? 'bg-secondary' : 'bg-warning'))) }}">
+                                            {{ $quotation->status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $quotation->is_proinvoice_created ? 'bg-success' : 'bg-info' }}">
+                                            {{ $quotation->is_proinvoice_created ? 'Proinvoice Created' : 'Not Yet Created' }}
                                         </span>
                                     </td>
                                     <td>{{$quotation->created_at}}</td>
                                     <td>{{$quotation->valid_until ?? '-'}}</td>
                                     <td>
-                                        <a href="{{ route('quotations.show', encrypt($quotation->id)) }}" title="View"><i class="fa fa-eye"></i></a> |
-                                        <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" title="Edit"><i class="fa fa-edit" style="color: blue;"></i></a> |
-                                        <form action="{{ route('quotations.destroy', encrypt($quotation->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quotation?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-link p-0" title="Delete" style="border:none; background:none;">
-                                                <i class="fa fa-trash" style="color: red;"></i>
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('quotations.show', encrypt($quotation->id)) }}" title="View"><i class="fa fa-eye"></i></a> 
+                                        @if ($quotation->status === 'SENT')
+                                            |
+                                            <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" title="Edit"><i class="fa fa-edit" style="color: blue;"></i></a> |
+                                            <form action="{{ route('quotations.destroy', encrypt($quotation->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quotation?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-link p-0" title="Delete" style="border:none; background:none;">
+                                                    <i class="fa fa-trash" style="color: red;"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

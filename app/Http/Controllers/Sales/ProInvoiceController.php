@@ -164,6 +164,9 @@ class ProInvoiceController extends Controller
         if ($quotation->status != 'Accepted') {
             return redirect()->back()->with('error','Only accepted quotations can create proforma');
         }
+        if ($quotation->is_proinvoice_created) {
+            return redirect()->back()->with('error','A proforma invoice has already been created from this quotation.');
+        }
 
         $shop = Shop::find(Session::get('shop_id'));
         $user = Auth::user();
@@ -226,7 +229,8 @@ class ProInvoiceController extends Controller
 
             $invoice->net_amount = $net_amount;
             $invoice->save();
-
+            $quotation->is_proinvoice_created = true;
+            $quotation->save();
             DB::commit();
             return redirect()->route('pro-invoices.show',encrypt($invoice->id))->with('success','Proforma created successfully');
 
