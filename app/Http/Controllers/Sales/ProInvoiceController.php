@@ -2,48 +2,50 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
-use Response;
-use Log;
-use Session;
 use \Carbon\Carbon;
-use Auth;
-use App\Models\Company;
-use App\Models\Shop;
-use App\Models\User;
-use App\Models\Setting;
+use App\Http\Controllers\Controller;
 use App\Models\Account;
-use App\Models\ShopCurrency;
-use App\Models\Payment;
-use App\Models\ProInvoice;
+use App\Models\AnSale;
+use App\Models\AnSaleItem;
+use App\Models\Company;
 use App\Models\Customer;
+use App\Models\CustomerTransaction;
+use App\Models\Invoice;
+use App\Models\InvoiceApproval;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceItemTemp;
-use App\Models\InvoiceServitem;
+use App\Models\InvoiceNote;
 use App\Models\InvoiceServiceItemTemp;
-use App\Models\SaleTemp;
-use App\Models\SaleItemTemp;
-use App\Models\ServiceItemTemp;
-use App\Models\AnSale;
-use App\Models\Invoice;
-use App\Models\ServiceSaleItem;
-use App\Models\CustomerTransaction;
-use App\Models\AnSaleItem;
-use App\Models\Stock;
+use App\Models\InvoiceServitem;
+use App\Models\LatestStockSoldLog;
+use App\Models\Payment;
 use App\Models\ProdDamage;
-use App\Models\TransferOrderItem;
-use App\Models\Service;
 use App\Models\Product;
 use App\Models\ProductUnit;
-use App\Models\SaleReturnItem;
-use App\Models\LatestStockSoldLog;
+use App\Models\ProInvoice;
+use App\Models\Quotation;
+use App\Models\SaleItemTemp;
 use App\Models\SaleOrder;
 use App\Models\SaleOrderItem;
-use App\Models\InvoiceNote;
-use App\Models\InvoiceApproval;
+use App\Models\SaleReturnItem;
+use App\Models\SaleTemp;
+use App\Models\Service;
+use App\Models\ServiceItemTemp;
+use App\Models\ServiceSaleItem;
+use App\Models\Setting;
+use App\Models\Shop;
+use App\Models\ShopCurrency;
+use App\Models\Stock;
+use App\Models\TransferOrderItem;
+use App\Models\User;
 use App\Notifications\ProformaInvoiceApprovalNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Session;
+use Log;
+use Response;
 
 class ProInvoiceController extends Controller
 {
@@ -120,11 +122,7 @@ class ProInvoiceController extends Controller
         $settings = Setting::where('shop_id', $shop->id)->first();
         $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Proforma')->where('note_type', 'Notes')->first();
         if (is_null($settings)) {
-            $settings = Setting::create([
-                'shop_id' => $shop->id,
-                'tax_rate' => 18,
-                'inv_no_type' => 'Automatic'                
-            ]);
+            $settings = Setting::create(['shop_id' => $shop->id,'tax_rate' => 18,'inv_no_type' => 'Automatic']);
         }
 
         $status = null;
@@ -134,7 +132,6 @@ class ProInvoiceController extends Controller
             $now = Carbon::now();
             $status = $date->diffInDays($now);
         }
-
         $custids = array(
                 ['id' => 1, 'name' => 'TIN'],
                 ['id' => 2, 'name' => 'Driving License'],
@@ -155,6 +152,91 @@ class ProInvoiceController extends Controller
             return view('sales.invoices.pro-invoices.pos', compact('page','duedate', 'title', 'title_sw', 'invoice_date', 'invoice', 'settings', 'payment', 'status' , 'custids', 'notes'));
         }
     }
+    
+    public function createFromQuotation($id)
+    {
+        try {
+            $quotationId = decrypt($id);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Invalid quotation');
+        }
+        $quotation = Quotation::with('items')->findOrFail($quotationId);
+        if ($quotation->status != 'Accepted') {
+            return redirect()->back()->with('error','Only accepted quotations can create proforma');
+        }
+
+        $shop = Shop::find(Session::get('shop_id'));
+        $user = Auth::user();
+        DB::beginTransaction();
+
+        try {
+            $customer = Customer::where('shop_id', $shop->id)->where(function ($q) use ($quotation) {$q->where('email', $quotation->email)->orWhere('phone', $quotation->phone);})->first();
+
+            if (!$customer) {
+                $maxCustNo = Customer::where('shop_id', $shop->id)->max('cust_no');
+                $custNo = $maxCustNo ? $maxCustNo + 1 : 1;
+
+                $customer = new Customer();
+                $customer->shop_id = $shop->id;
+                $customer->name = $quotation->customer_name ?: ('Customer #' . $custNo);
+                $customer->phone = $quotation->phone;
+                $customer->email = $quotation->email;
+                $customer->physical_address = $quotation->address;
+                $customer->cust_no = $custNo;
+                $customer->time_created = now();
+                $customer->save();
+
+            }
+            $max_no = ProInvoice::where('shop_id', $shop->id)->orderByRaw('CONVERT(invoice_no,SIGNED) desc')->first();
+            $invoice_no = $max_no ? $max_no->invoice_no + 1 : 1;
+
+            $invoice = new ProInvoice();
+            $invoice->shop_id = $shop->id;
+            $invoice->user_id = $user->id;
+            $invoice->customer_id = $customer->id;
+            $invoice->invoice_no = $invoice_no;
+            $invoice->ref_no = $quotation->quote_number;
+            $invoice->summary = "Created from quotation";
+            $invoice->due_date = $quotation->valid_until ?? Carbon::now()->addDays(30);
+            $invoice->discount = $quotation->discount ?? 0;
+            $invoice->shipping_cost = 0;
+            $invoice->adjustment = 0;
+            $invoice->notes = $quotation->notes;
+            $invoice->time_created = now();
+            $invoice->status = "Pending";
+            $invoice->save();
+
+            $net_amount = 0;
+            foreach ($quotation->items as $item) {
+                $invoiceItem = new InvoiceItem();
+                $invoiceItem->pro_invoice_id = $invoice->id;
+                $invoiceItem->product_id = $item->product_id;
+                $invoiceItem->product_unit_id = $item->product_unit_id;
+                $invoiceItem->quantity = $item->quantity;
+                $invoiceItem->cost_per_unit = $item->unit_price;
+                $invoiceItem->amount =  $item->total_price;
+                $invoiceItem->discount = 0;
+                $invoiceItem->total_discount = 0;
+                $invoiceItem->tax_amount = 0;
+                $invoiceItem->time_created = now();
+                $invoiceItem->save();
+
+                $net_amount += $item->total_price;
+            }
+
+            $invoice->net_amount = $net_amount;
+            $invoice->save();
+
+            DB::commit();
+            return redirect()->route('pro-invoices.show',encrypt($invoice->id))->with('success','Proforma created successfully');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+    }
+
 
     /**
      * Store a newly created resource in storage.

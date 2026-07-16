@@ -1400,7 +1400,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('quotations', QuotationController::class);
     Route::post('create-qrequest', [QuotationController::class, 'createFromQuoteRequest'])->name('quotations.from-request');
     Route::post('f-quotations', [QuotationController::class, 'index'])->name('quotations.filter');
-
+    Route::post('quotations/{id}/send', [QuotationController::class, 'send'])->name('quotations.send');
+    Route::post('quotations/{id}/accept', [QuotationController::class, 'accept'])->name('quotations.accept');
+    Route::post('quotations/{id}/reject', [QuotationController::class, 'reject'])->name('quotations.reject');
+    Route::get('proforma/from-quotation/{id}', [ProInvoiceController::class, 'createFromQuotation'])->name('proforma.from-quotation');
 
     //OrdersProcessing
     Route::resource('orders', OrderController::class);

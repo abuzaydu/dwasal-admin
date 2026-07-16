@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('quotation_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('quotation_id')->nullable();
+            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('product_unit_id')->nullable()->constrained()->nullOnDelete();
             $table->string('item_name', 125);
             $table->text('item_description')->nullable();
             $table->integer('quantity')->default(1);

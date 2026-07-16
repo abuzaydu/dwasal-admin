@@ -99,19 +99,20 @@ class QuotationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'quote_request_id'   => 'nullable|string',
-            'customer_name'      => 'nullable|string|max:125',
-            'email'              => 'required|email|max:125',
-            'phone'              => 'required|string|max:125',
-            'address'            => 'nullable|string|max:125',
-            'valid_until'        => 'nullable|date',
-            'notes'              => 'nullable|string',
-            'discount'           => 'nullable|numeric|min:0',
-            'tax_amount'         => 'nullable|numeric|min:0',
-            'items'              => 'required|array|min:1',
-            'items.*.description'=> 'required|string',
-            'items.*.quantity'   => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'quote_request_id'    => 'nullable|string',
+            'customer_name'       => 'nullable|string|max:125',
+            'email'               => 'required|email|max:125',
+            'phone'               => 'required|string|max:125',
+            'address'             => 'nullable|string|max:125',
+            'valid_until'         => 'nullable|date',
+            'notes'               => 'nullable|string',
+            'discount'            => 'nullable|numeric|min:0',
+            'tax_amount'          => 'nullable|numeric|min:0',
+            'items'               => 'required|array|min:1',
+            'items.*.product_id'  => 'nullable|integer',
+            'items.*.description' => 'required|string',
+            'items.*.quantity'    => 'required|numeric|min:0.01',
+            'items.*.unit_price'  => 'required|numeric|min:0',
         ]);
 
         $quotation = DB::transaction(function () use ($request) {
@@ -151,15 +152,19 @@ class QuotationController extends Controller
                 'notes'            => $request->notes,
                 'created_by'       => auth()->check() ? (auth()->user()->first_name ?? auth()->user()->name ?? null) : null,
             ]);
+
             foreach ($request->items as $item) {
                 QuotationItem::create([
-                    'quotation_id' => $quotation->id,
+                    'quotation_id'      => $quotation->id,
+                    'product_id'        => $item['product_id'] ?? null,
+                    'product_unit_id'  => $item['product_unit_id'],
                     'item_description'  => $item['description'],
-                    'quantity'     => $item['quantity'],
-                    'unit_price'   => $item['unit_price'],
-                    'total_price'        => $item['quantity'] * $item['unit_price'],
+                    'quantity'          => $item['quantity'],
+                    'unit_price'        => $item['unit_price'],
+                    'total_price'       => $item['quantity'] * $item['unit_price'],
                 ]);
             }
+
             if ($quoteRequestId) {
                 QuoteRequest::where('id', $quoteRequestId)->update([
                     'is_quoted'    => 1,
@@ -190,6 +195,61 @@ class QuotationController extends Controller
         return view('shop.quotes.quotations.show', compact('quotation', 'page'));
     }
 
+    public function send($id)
+    {
+        try {
+            $quotation = Quotation::findOrFail(decrypt($id));
+
+            if ($quotation->status !== 'Draft') {
+                return back()->with('error', 'Only draft quotations can be sent.');
+            }
+            $quotation->update([
+                'status' => 'Sent',
+            ]);
+
+            // Optional for later use
+            // Mail::to($quotation->email)->send(new QuotationMail($quotation));
+
+            return back()->with('success', 'Quotation sent successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function accept($id)
+    {
+        try {
+            $quotation = Quotation::findOrFail(decrypt($id));
+
+            if ($quotation->status !== 'Sent') {
+                return back()->with('error', 'Only sent quotations can be accepted.');
+            }
+            $quotation->update([
+                'status' => 'Accepted',
+            ]);
+            return back()->with('success','Quotation accepted. You can now create a Proforma Invoice.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function reject($id)
+    {
+        try {
+            $quotation = Quotation::findOrFail(decrypt($id));
+
+            if ($quotation->status !== 'Sent') {
+                return back()->with('error', 'Only sent quotations can be rejected.');
+            }
+            $quotation->update([
+                'status' => 'Rejected',
+            ]);
+            return back()->with('success', 'Quotation rejected.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -210,28 +270,27 @@ class QuotationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-     public function update(Request $request, string $id)
+    public function update(Request $request, string $id)
     {
         try {
             $decryptedId = decrypt($id);
         } catch (DecryptException $e) {
             return redirect()->route('quotations.index')->with('error', 'Invalid quotation.');
         }
-
         $request->validate([
-            'customer_name'      => 'nullable|string|max:125',
-            'email'              => 'required|email|max:125',
-            'phone'              => 'required|string|max:125',
-            'address'            => 'nullable|string|max:125',
-            'status'             => 'required|string|max:50',
-            'valid_until'        => 'nullable|date',
-            'notes'              => 'nullable|string',
-            'discount'           => 'nullable|numeric|min:0',
-            'tax_amount'         => 'nullable|numeric|min:0',
-            'items'              => 'required|array|min:1',
-            'items.*.description'=> 'required|string',
-            'items.*.quantity'   => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'customer_name'       => 'nullable|string|max:125',
+            'email'               => 'required|email|max:125',
+            'phone'               => 'required|string|max:125',
+            'address'             => 'nullable|string|max:125',
+            'valid_until'         => 'nullable|date',
+            'notes'               => 'nullable|string',
+            'discount'            => 'nullable|numeric|min:0',
+            'tax_amount'          => 'nullable|numeric|min:0',
+            'items'               => 'required|array|min:1',
+            'items.*.product_id'  => 'nullable|integer',
+            'items.*.description' => 'required|string',
+            'items.*.quantity'    => 'required|numeric|min:0.01',
+            'items.*.unit_price'  => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request, $decryptedId) {
@@ -254,7 +313,7 @@ class QuotationController extends Controller
                 'discount'      => $discount,
                 'tax_amount'    => $tax,
                 'total'         => $total,
-                'status'        => $request->status,
+                'status'        => 'Draft',
                 'valid_until'   => $request->valid_until,
                 'notes'         => $request->notes,
             ]);
@@ -262,11 +321,12 @@ class QuotationController extends Controller
             $quotation->items()->delete();
             foreach ($request->items as $item) {
                 QuotationItem::create([
-                    'quotation_id' => $quotation->id,
+                    'quotation_id'      => $quotation->id,
+                    'product_id'        => $item['product_id'] ?? null,
                     'item_description'  => $item['description'],
-                    'quantity'     => $item['quantity'],
-                    'unit_price'   => $item['unit_price'],
-                    'total_price'        => $item['quantity'] * $item['unit_price'],
+                    'quantity'          => $item['quantity'],
+                    'unit_price'        => $item['unit_price'],
+                    'total_price'       => $item['quantity'] * $item['unit_price'],
                 ]);
             }
         });
