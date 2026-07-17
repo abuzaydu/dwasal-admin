@@ -1,68 +1,71 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="block-header pt-4">
-        <ul class="breadcrumb">
-            <li class="breadcrumb-item"> <a href="{{ url('/home') }}"><i class="icon-home"></i></a> </li>
-            <li class="breadcrumb-item"> <a href="{{ route('quotations.index') }}">Quotes</a> </li>
-            <li class="breadcrumb-item active">{{ $page }}</li>
-        </ul>
+    <!--breadcrumb-->
+    <div class="block-header pt-3">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url('/home') }}"><i class="icon-home"></i></a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('quotations.index') }}">Quotes</a></li>
+                    <li class="breadcrumb-item active">{{ $page }}</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
-    <div class="row clearfix">
+    <div class="row">
         <div class="col-md-10 mx-auto">
             <div class="card">
-                <div class="card-header">
-
-                    <h5 class="d-inline">{{ $quotation->quote_number }}</h5>
-
-                    <div class="float-right">
-
-                        <a href="{{ route('quotations.index') }}" class="btn btn-default btn-sm">
-                            Back to List
-                        </a>
-
-                        @if ($quotation->status === 'Draft')
-                            <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" class="btn btn-primary btn-sm">
-                                Edit
-                            </a>
-                            <form action="{{ route('quotations.send', encrypt($quotation->id)) }}" method="POST"
-                                class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-info btn-sm">
-                                    Mark as Sent
-                                </button>
-                            </form>
-                        @endif
-
-                        @if ($quotation->status === 'Sent')
-                            <form action="{{ route('quotations.accept', encrypt($quotation->id)) }}" method="POST"
-                                class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    Accept
-                                </button>
-                            </form>
-
-                            <form action="{{ route('quotations.reject', encrypt($quotation->id)) }}" method="POST"
-                                class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    Reject
-                                </button>
-                            </form>
-                        @endif
-
-                        @if($quotation->status === 'Accepted' && $quotation->is_proinvoice_created === 0)
-                            <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}" class="btn btn-success btn-sm" onclick="return confirm('Create a Proforma Invoice from this quotation? This cannot be undone.')">
-                                <i class="fa fa-file-invoice"></i> Create Proforma
-                            </a>
-                        @endif
-
-                    </div>
-                </div>
-
                 <div class="card-body">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h5 class="mb-0 text-uppercase">{{ $quotation->quote_number }}</h5>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <a href="{{ route('quotations.index') }}" class="btn btn-default btn-sm text-nowrap">
+                                <i class="fa fa-list"></i> Back to List
+                            </a>
+
+                            @if ($quotation->status === 'Draft')
+                                <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" class="btn btn-primary btn-sm text-nowrap">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                                <form action="{{ route('quotations.send', encrypt($quotation->id)) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-info btn-sm text-nowrap">
+                                        <i class="fa fa-paper-plane"></i> Mark as Sent
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if ($quotation->status === 'Sent')
+                                <form action="{{ route('quotations.accept', encrypt($quotation->id)) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-sm text-nowrap">
+                                        <i class="fa fa-check"></i> Accept
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('quotations.reject', encrypt($quotation->id)) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm text-nowrap">
+                                        <i class="fa fa-times"></i> Reject
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if ($quotation->status === 'Accepted' && $quotation->is_proinvoice_created === 0)
+                                <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}" class="btn btn-success btn-sm text-nowrap" onclick="return confirm('Create a Proforma Invoice from this quotation? This cannot be undone.')">
+                                    <i class="fa fa-file-invoice"></i> Create Proforma
+                                </a>
+                            @endif
+
+                        </div>
+                    </div>
+
+                    <hr class="mt-0">
 
                     <div class="row mb-3">
                         <div class="col-md-3">
@@ -127,32 +130,34 @@
 
                     <hr>
 
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Qty</th>
-                                <th>Unit Price</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($quotation->items as $item)
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
                                 <tr>
-                                    <td>{{ $item->item_description }}</td>
-                                    <td>{{ $item->quantity }}</td>
-                                    <td>{{ number_format($item->unit_price, 2) }}</td>
-                                    <td>{{ number_format($item->total_price, 2) }}</td>
+                                    <th>Description</th>
+                                    <th>Qty</th>
+                                    <th>Unit Price</th>
+                                    <th>Total</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center">
-                                        No quotation items found.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($quotation->items as $item)
+                                    <tr>
+                                        <td>{{ $item->item_description }}</td>
+                                        <td>{{ $item->quantity }}</td>
+                                        <td>{{ number_format($item->unit_price, 2) }}</td>
+                                        <td>{{ number_format($item->total_price, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            No quotation items found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div class="row justify-content-end">
                         <div class="col-md-4">
@@ -188,10 +193,24 @@
                         </div>
                     </div>
 
-                    @if($quotation->is_proinvoice_created === 1)
+                    @if ($quotation->notes)
                         <hr>
-                        <div class="alert alert-success mb-0">
-                            <i class="fa fa-check-circle"></i> The Pro Invoice for this quotation has already been created.
+                        <strong>Notes</strong>
+                        <p>{{ $quotation->notes }}</p>
+                    @endif
+
+                    @if ($quotation->is_proinvoice_created === 1)
+                        <hr>
+                        <div class="alert alert-success border-0 bg-success alert-dismissible fade show py-2">
+                            <div class="d-flex align-items-center">
+                                <div class="font-35 text-white"><i class="fa fa-check-circle"></i></div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0 text-white">Proforma Created</h6>
+                                    <div class="text-white">The Pro Invoice for this quotation has already been created.
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -199,5 +218,4 @@
             </div>
         </div>
     </div>
-    ```
 @endsection

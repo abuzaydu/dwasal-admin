@@ -31,32 +31,27 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Customer Name</label>
-                                <input type="text" name="customer_name" class="form-control"
-                                    value="{{ old('customer_name', $quoteRequest->name ?? '') }}">
+                                <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name', $quoteRequest->name ?? '') }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control"
-                                    value="{{ old('email', $quoteRequest->email ?? '') }}" required>
+                                <input type="email" name="email" class="form-control" value="{{ old('email', $quoteRequest->email ?? '') }}" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Mobile <span class="text-danger">*</span></label>
-                                <input type="text" name="phone" class="form-control"
-                                    value="{{ old('phone', $quoteRequest->phone ?? '') }}" required>
+                                <input type="text" name="phone" class="form-control" value="{{ old('phone', $quoteRequest->phone ?? '') }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Address</label>
-                                <input type="text" name="address" class="form-control"
-                                    value="{{ old('address', $quoteRequest->address ?? '') }}">
+                                <input type="text" name="address" class="form-control" value="{{ old('address', $quoteRequest->address ?? '') }}">
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                           <div class="col-md-6 mb-3">
                                 <label class="form-label">Valid Until</label>
-                                <input type="date" name="valid_until" class="form-control"
-                                    value="{{ old('valid_until') }}">
+                                <input type="date" name="valid_until" class="form-control" value="{{ old('valid_until', now()->format('Y-m-d')) }}">
                             </div>
                         </div>
 
@@ -68,13 +63,10 @@
                             <div class="col-md-8">
                                 <label class="form-label">Search Item</label>
                                 <div class="input-group mb-0">
-                                    <input type="text" id="search_key" class="form-control form-control-sm"
-                                        placeholder="Search product to add..." autocomplete="off">
-                                    <button class="btn btn-outline-danger btn-sm" type="button" id="clearSearch"><i
-                                            class="fa fa-close"></i></button>
+                                    <input type="text" id="search_key" class="form-control form-control-sm" placeholder="Search product to add..." autocomplete="off">
+                                    <button class="btn btn-outline-danger btn-sm" type="button" id="clearSearch"><i class="fa fa-close"></i></button>
                                 </div>
-                                <ul id="searchResult3" class="list-group position-absolute"
-                                    style="z-index: 1000; width: 66%;"></ul>
+                                <ul id="searchResult3" class="list-group position-absolute" style="z-index: 1000; width: 66%;"></ul>
                             </div>
                         </div>
 
@@ -93,7 +85,8 @@
                                 {{-- Rows are injected here via JS after item selection --}}
                             </tbody>
                         </table>
-                        <p class="text-muted small" id="noItemsMsg">No items added yet. Search and select a product above.
+                        <p class="text-muted small" id="noItemsMsg">
+                            No items added yet. Search and select a product above.
                         </p>
 
                         <div class="row justify-content-end">
@@ -104,15 +97,12 @@
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-6">Discount</div>
-                                    <div class="col-6"><input type="number" step="0.01" min="0" name="discount"
-                                            id="discountInput" class="form-control form-control-sm text-end" value="0">
+                                    <div class="col-6"><input type="number" step="0.01" min="0" name="discount" id="discountInput" class="form-control form-control-sm text-end" value="0">
                                     </div>
                                 </div>
                                 <div class="row mb-2">
                                     <div class="col-6">Tax</div>
-                                    <div class="col-6"><input type="number" step="0.01" min="0"
-                                            name="tax_amount" id="taxInput"
-                                            class="form-control form-control-sm text-end" value="0"></div>
+                                    <div class="col-6"><input type="number" step="0.01" min="0" name="tax_amount" id="taxInput" class="form-control form-control-sm text-end" value="0"></div>
                                 </div>
                                 <div class="row mb-2 fw-bold">
                                     <div class="col-6">Total</div>

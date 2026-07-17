@@ -211,7 +211,9 @@
                                             <td>
                                                 <!-- <a href="{{ url('issue-vfd/' . encrypt($sale->id)) }}" title="VFD Receipt"><i class="fa fa-receipt"></i></a> | -->
                                                 <!-- <a href="{{ url('print-receipt/'.encrypt($sale->id)) }}"><i class="fa fa-eye"></i></a> |  -->
-                                                <a href="{{ url('create-dnote/' . encrypt($sale->id)) }}" title="Create Delivery Note" style="color: black;"><i class="fa fa-file"></i></a> |
+                                                @if (!$sale->is_full_shipped)
+                                                    <a href="{{ url('create-dnote/' . encrypt($sale->id)) }}" title="Create Delivery Note" style="color: rgb(32, 224, 45);"><i class="fa fa-file"></i></a> |
+                                                @endif
                                                 @if ($sale->status == 'Partially Paid' || $sale->status == 'Unpaid')
                                                     <a href="{{ url('send-sms/' . encrypt($sale->id)) }}" title="{{ trans('navmenu.send_sms') }}" style="color: orange;"><i class="fa fa-send"></i></a> |
                                                 @endif

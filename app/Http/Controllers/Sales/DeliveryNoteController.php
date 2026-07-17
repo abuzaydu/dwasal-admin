@@ -122,7 +122,8 @@ class DeliveryNoteController extends Controller
                     return redirect()->route('delivery-notes.edit', encrypt($dnote->id))->with('info', 'Delivery Note initialised successfully. Please update and confirm the Delivery quantities');
                 }else{
 
-                    $sale->is_full_shipped = true;
+                    $sale = AnSale::findOrFail(decrypt($id));
+                    $sale->is_full_shipped = 1;
                     $sale->save();
                     
                     return redirect()->back()->with('info', 'Invoice is full shipped');
