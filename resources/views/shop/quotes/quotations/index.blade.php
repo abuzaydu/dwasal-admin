@@ -28,7 +28,6 @@
             </div>
         </div>
     </div>
-    <!--end breadcrumb-->
 
     <div class="row clearfix">
         <div class="col-md-12 mx-auto">
@@ -79,7 +78,7 @@
                                     <td>{{$quotation->valid_until ?? '-'}}</td>
                                     <td>
                                         <a href="{{ route('quotations.show', encrypt($quotation->id)) }}" title="View"><i class="fa fa-eye"></i></a> 
-                                        @if ($quotation->status === 'SENT')
+                                        @if ($quotation->status === 'Draft')
                                             |
                                             <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" title="Edit"><i class="fa fa-edit" style="color: blue;"></i></a> |
                                             <form action="{{ route('quotations.destroy', encrypt($quotation->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quotation?');">

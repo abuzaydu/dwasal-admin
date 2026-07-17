@@ -101,13 +101,13 @@
                                             </a>
                                             |
                                         @endif
-                                            <form action="{{ route('quote-requests.destroy', encrypt($qrequest->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quote request?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-link p-0" title="Delete qrequest" style="border:none; background:none;">
-                                                    <i class="fa fa-trash-o" style="color: red;"></i>
-                                                </button>
-                                            </form>
+                                        <form action="{{ route('quote-requests.destroy', encrypt($qrequest->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quote request?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link p-0" title="Delete qrequest" style="border:none; background:none;">
+                                                <i class="fa fa-trash-o" style="color: red;"></i>
+                                            </button>
+                                        </form>
     			                    </td>
                                 </tr>
                                 @endforeach
