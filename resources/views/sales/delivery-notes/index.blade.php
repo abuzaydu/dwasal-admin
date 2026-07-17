@@ -88,10 +88,16 @@
                                     <td>
                                         <a href="{{ route('delivery-notes.show', encrypt($dnote->id)) }}">
                                             <i class="fa fa-eye"></i>
-                                        </a> | 
+                                        </a>
+                                        @if ($dnote->status === 'Loaded')
+                                           | 
                                         <a href="{{ route('delivery-notes.edit', encrypt($dnote->id)) }}">
                                             <i class="fa fa-edit" style="color: blue;"></i>
-                                        </a> |
+                                        </a>  
+                                        @else
+                                            
+                                        @endif
+                                        |
                                         <form id="delete-form-{{$index}}" method="POST" action="{{ route('delivery-notes.destroy', encrypt($dnote->id))}}" style="display: inline;">
                                             @csrf
                                             @method("DELETE")

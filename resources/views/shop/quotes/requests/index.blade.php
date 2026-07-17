@@ -30,16 +30,23 @@
                             <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
                         </div>
                     </div>
-                    <!-- /.form group -->
                 </form>
             </div>
         </div>
     </div>
-    <!--end breadcrumb-->
 
     <div class="row clearfix">
         <div class="col-md-12 mx-auto">
             <div class="card">
+                <div class="card-header">
+                    <h5>{{$page}}</h5>
+                    {{-- <button type="button" class="btn btn-primary btn-sm float-right" data-bs-toggle="modal" data-bs-target="#createQuoteModal">
+                        <i class="fa fa-plus"></i> New Quote Request
+                    </button> --}}
+                    <a href="{{ route('quote-requests.create') }}" class="btn btn-primary btn-sm float-right">
+                        <i class="fa fa-plus"></i> New Quote Request
+                    </a>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                     	<table id="del-multiple" class="table table-striped display nowrap" style="width: 100%;">
@@ -57,7 +64,7 @@
                          		</tr>
                       		</thead>
                       		<tbody>
-                      		    @foreach($quoterequests as $key => $qrequest)
+                      		    @foreach($quoterequests as $index => $qrequest)
                                 <tr>
                                     <td>{{$qrequest->id}}</td>
                                     <td><a href="{{ route('quote-requests.show', encrypt($qrequest->id)) }}">{{$qrequest->name}}</a></td>
@@ -66,21 +73,41 @@
     			                    <td>{{ $qrequest->address }}</td>
                                     <td>{{ $qrequest->created_at }}</td>
     			                    <td>{{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $qrequest->updated_at)->diffForHumans() }}</td>
-                                    <td>{{$qrequest->status}}</td>
                                     <td>
-                                        <a href="{{ route('quote-requests.show', encrypt($qrequest->id)) }}" title="View qrequest"><span class="fa fa-eye"></span></a>@if($qrequest->status == 'Approved')|
-                                        <a href="javascript:;" onclick="createqrequest('<?php echo $index; ?>')" style="color: green;" title="Create Tax qrequest"><i class="fa fa-file"></i></a>
-                                        <form id="create-qrequest-{{$index}}" action="{{ url('create-qrequest') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="id" value="{{$qrequest->id}}">
-                                        </form> @endif
-                                        @if($qrequest->status == 'Awaiting for Approval')
-                                        | <a href="{{url('cancel-profoma/'.encrypt($qrequest->id))}}" style="color: orange;" title="Cancel Proforma qrequest"> <i class="fa fa-times-circle"></i></a> |
-                                        <a href="{{ route('quote-requests.edit', encrypt($qrequest->id)) }}" title="edit Profoma qrequest"><i class="fa fa-edit" style="color: blue;"></i></a> |
-                                        <a href="{{ url('pro-qrequests/destroy/'.encrypt($qrequest->id))}}" onclick="return confirm('Are you sure you want to delete this record')"><i class="fa fa-trash" style="color: red;"></i></a>
-                                        @elseif($qrequest->status == 'Cancelled')
-                                        <a href="{{url('resume-profoma/'.encrypt($qrequest->id))}}"> Resume</a>
+                                        {{$qrequest->status}}
+                                        @if($qrequest->is_quoted)
+                                            <span class="badge bg-success ms-1" title="Quoted on {{ $qrequest->quoted_at }}">Quoted</span>
                                         @endif
+                                    </td>                                   
+                                    <td>
+                                        <a href="{{ route('quote-requests.show', encrypt($qrequest->id)) }}" title="View qrequest"><span class="fa fa-eye"></span></a>
+                                        @if($qrequest->status == 'SENT')      
+                                            |
+                                            <a href="javascript:;"
+                                            title="Edit qrequest"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editQuoteModal"
+                                            data-id="{{ $qrequest->id }}"
+                                            data-encrypted_id="{{ encrypt($qrequest->id) }}"
+                                            data-name="{{ $qrequest->name }}"
+                                            data-email="{{ $qrequest->email }}"
+                                            data-phone="{{ $qrequest->phone }}"
+                                            data-address="{{ $qrequest->address }}"
+                                            data-product="{{ $qrequest->product }}"
+                                            data-message="{{ $qrequest->message }}"
+                                            data-status="{{ $qrequest->status }}"
+                                            class="edit-quote-btn">
+                                                <i class="fa fa-pencil" style="color: #17a2b8;"></i>
+                                            </a>
+                                            |
+                                        @endif
+                                            <form action="{{ route('quote-requests.destroy', encrypt($qrequest->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quote request?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-link p-0" title="Delete qrequest" style="border:none; background:none;">
+                                                    <i class="fa fa-trash-o" style="color: red;"></i>
+                                                </button>
+                                            </form>
     			                    </td>
                                 </tr>
                                 @endforeach
@@ -93,6 +120,108 @@
                     </form>
 	            </div>
 	        </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createQuoteModal" tabindex="-1" aria-labelledby="createQuoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ url('quote-requests') }}" method="POST">
+                    @csrf
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title" id="createQuoteModalLabel">New Quote Request</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-2">
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-2">
+                                <label for="c_name" class="form-label mb-1">Name</label>
+                                <input type="text" name="name" id="c_name" class="form-control form-control-sm" value="{{ old('name') }}">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="c_email" class="form-label mb-1">Email <span class="text-danger">*</span></label>
+                                <input type="email" name="email" id="c_email" class="form-control form-control-sm" value="{{ old('email') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="c_phone" class="form-label mb-1">Mobile <span class="text-danger">*</span></label>
+                                <input type="text" name="phone" id="c_phone" class="form-control form-control-sm" value="{{ old('phone') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="c_address" class="form-label mb-1">Address</label>
+                                <input type="text" name="address" id="c_address" class="form-control form-control-sm" value="{{ old('address') }}">
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label for="c_product" class="form-label mb-1">Product(s)</label>
+                                <input type="text" name="product" id="c_product" class="form-control form-control-sm" value="{{ old('product') }}">
+                            </div>
+                            <div class="col-12 mb-1">
+                                <label for="c_message" class="form-label mb-1">Message <span class="text-danger">*</span></label>
+                                <textarea name="message" id="c_message" rows="2" class="form-control form-control-sm" required>{{ old('message') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-default btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editQuoteModal" tabindex="-1" aria-labelledby="editQuoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editQuoteForm" action="" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title" id="editQuoteModalLabel">Edit Quote Request</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-2">
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-2">
+                                <label for="edit_name" class="form-label mb-1">Name</label>
+                                <input type="text" name="name" id="edit_name" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="edit_email" class="form-label mb-1">Email <span class="text-danger">*</span></label>
+                                <input type="email" name="email" id="edit_email" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="edit_phone" class="form-label mb-1">Mobile <span class="text-danger">*</span></label>
+                                <input type="text" name="phone" id="edit_phone" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="edit_status" class="form-label mb-1">Status</label>
+                                <select name="status" id="edit_status" class="form-select form-select-sm">
+                                    <option value="SENT">SENT</option>
+                                    <option value="Awaiting for Approval">Awaiting for Approval</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label for="edit_address" class="form-label mb-1">Address</label>
+                                <input type="text" name="address" id="edit_address" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label for="edit_product" class="form-label mb-1">Product(s)</label>
+                                <input type="text" name="product" id="edit_product" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-12 mb-1">
+                                <label for="edit_message" class="form-label mb-1">Message <span class="text-danger">*</span></label>
+                                <textarea name="message" id="edit_message" rows="2" class="form-control form-control-sm" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-default btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 @endsection
@@ -187,6 +316,27 @@
                     });
                 }
             });
+
+            // Populate Edit modal from clicked row's data attributes
+            $(document).on('click', '.edit-quote-btn', function () {
+                var btn = $(this);
+
+                $('#edit_name').val(btn.data('name'));
+                $('#edit_email').val(btn.data('email'));
+                $('#edit_phone').val(btn.data('phone'));
+                $('#edit_address').val(btn.data('address'));
+                $('#edit_product').val(btn.data('product'));
+                $('#edit_message').val(btn.data('message'));
+                $('#edit_status').val(btn.data('status'));
+
+                $('#editQuoteForm').attr('action', "{{ url('quote-requests') }}/" + btn.data('encrypted_id'));
+            });
+
+            @if ($errors->any())
+                // Reopen the create modal automatically if validation failed on submit
+                var createModal = new bootstrap.Modal(document.getElementById('createQuoteModal'));
+                createModal.show();
+            @endif
         });
     </script>
 @endsection

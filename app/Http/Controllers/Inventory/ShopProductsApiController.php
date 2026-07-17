@@ -48,14 +48,23 @@ class ShopProductsApiController extends Controller
         }
     }
 
+    // public function fetchProduct(Request $request)
+    // {
+    //     $shop = Shop::find(Session::get('shop_id'));
+    //     $product = $shop->products()->where('id', $request->product_id)->select('id', 'name', 'in_stock', 'unit_cost', 'retail_price')->first();
+
+    //     return $product;
+    // }
     public function fetchProduct(Request $request)
     {
         $shop = Shop::find(Session::get('shop_id'));
         $product = $shop->products()->where('id', $request->product_id)->select('id', 'name', 'in_stock', 'unit_cost', 'retail_price')->first();
 
+        if ($product) {
+            $product->units = ProductUnit::where('product_id', $product->id)->get();
+        }
         return $product;
     }
-    
     /**
      * Show the form for creating a new resource.
      *

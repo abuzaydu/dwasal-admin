@@ -368,8 +368,8 @@
                             <button onclick="javascript:savePdf()" type="button" class="btn btn-outline-primary btn-sm">
                                 <i class="fa fa-download"></i> {{trans('navmenu.download')}} / <i class="fa fa-printer"></i>{{trans('navmenu.print')}}
                             </button>
-                            <a class="btn btn-secondary btn-sm" href="{{ route('pro-invoices.edit', encrypt($invoice->id))}}"><i class="fa fa-edit"></i>Update</a>
                             @if($invoice->status == 'Pending')
+                            <a class="btn btn-secondary btn-sm" href="{{ route('pro-invoices.edit', encrypt($invoice->id))}}"><i class="fa fa-edit"></i>Update</a>
                             <a class="btn btn-primary btn-sm" href="{{ url('create-dnote-pfi/' . encrypt($invoice->id)) }}"><i class="fa fa-file"></i> Delivery Note</a>
                             <form action="{{ url('create-invoice') }}" method="POST" style="display: inline;">
                                 @csrf

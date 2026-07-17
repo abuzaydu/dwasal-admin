@@ -341,6 +341,7 @@ class DeliveryNoteController extends Controller
         $dnote->delivery_address_id = $request['delivery_address_id'];
         $dnote->received_by = $request['received_by'];
         $dnote->comments = $request['comments'];
+        $dnote->status = 'Received';
         $dnote->save();
 
         return redirect('delivery-notes')->with('success', 'Delivery Note updated successfully');
