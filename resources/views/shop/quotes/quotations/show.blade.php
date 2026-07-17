@@ -1,5 +1,23 @@
 @extends('layouts.app')
-
+<script type="text/javascript">
+    function confirmCreateProforma(url) {
+        Swal.fire({
+            title: "Create a Proforma Invoice from this quotation?",
+            text: "This cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "Yes, Create",
+            cancelButtonText: "{{ trans('navmenu.no') }}"
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = url;
+            }
+        })
+        return false;
+    }
+</script>
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-3">
@@ -57,7 +75,7 @@
                             @endif
 
                             @if ($quotation->status === 'Accepted' && $quotation->is_proinvoice_created === 0)
-                                <a href="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}" class="btn btn-success btn-sm text-nowrap" onclick="return confirm('Create a Proforma Invoice from this quotation? This cannot be undone.')">
+                                <a href="javascript:;" class="btn btn-success btn-sm text-nowrap" data-url="{{ route('proforma.from-quotation', encrypt($quotation->id)) }}" onclick="confirmCreateProforma(this.dataset.url)">
                                     <i class="fa fa-file-invoice"></i> Create Proforma
                                 </a>
                             @endif

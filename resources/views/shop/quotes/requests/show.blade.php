@@ -1,4 +1,22 @@
 @extends('layouts.app')
+<script type="text/javascript">
+    function confirmApproveQrequest(id) {
+        Swal.fire({
+            title: "Approve this quote request?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "Yes, Approve",
+            cancelButtonText: "{{ trans('navmenu.no') }}"
+        }).then((result) => {
+            if (result.value) {
+                document.getElementById('approve-qrequest-form-' + id).submit();
+            }
+        })
+        return false;
+    }
+</script>
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-3">
@@ -22,14 +40,14 @@
                         <h5 class="mb-0 text-uppercase">Quote Request #{{ $qrequest->id }}</h5>
 
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ url('quote-requests') }}" class="btn btn-default btn-sm">
+                            <a href="{{ url('quote-requests') }}" class="btn btn-default btn-sm text-nowrap">
                                 <i class="fa fa-list"></i> Back to List
                             </a>
 
                             @if($qrequest->status == 'SENT')
-                                <form action="{{ route('quote-requests.approve', encrypt($qrequest->id)) }}" method="POST" onsubmit="return confirm('Approve this quote request?');">
+                                <form id="approve-qrequest-form-{{ $qrequest->id }}" action="{{ route('quote-requests.approve', encrypt($qrequest->id)) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="btn btn-success btn-sm">
+                                    <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="confirmApproveQrequest({{ $qrequest->id }})">
                                         <i class="fa fa-check"></i> Approve
                                     </button>
                                 </form>
@@ -39,7 +57,7 @@
                                 <form action="{{ route('quotations.from-request') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $qrequest->id }}">
-                                    <button type="submit" class="btn btn-primary btn-sm">
+                                    <button type="submit" class="btn btn-primary btn-sm text-nowrap">
                                         <i class="fa fa-file"></i> Create Quotation
                                     </button>
                                 </form>

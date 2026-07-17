@@ -7,6 +7,29 @@
     function createqrequest(index) {
         document.getElementById('create-qrequest-'+index).submit();
     }
+
+    function confirmDeleteQrequest(id) {
+        Swal.fire({
+            title: "{{ trans('navmenu.are_you_sure_delete') }}",
+            text: "{{ trans('navmenu.no_revert') }}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "{{ trans('navmenu.cancel_it') }}",
+            cancelButtonText: "{{ trans('navmenu.no') }}"
+        }).then((result) => {
+            if (result.value) {
+                document.getElementById('delete-qrequest-form-' + id).submit();
+                Swal.fire(
+                    "{{ trans('navmenu.deleted') }}",
+                    "{{ trans('navmenu.cancelled') }}",
+                    'success'
+                )
+            }
+        })
+        return false;
+    }
 </script>
 @section('content')
     <!--breadcrumb-->
@@ -101,12 +124,12 @@
                                             </a>
                                             |
                                         @endif
-                                        <form action="{{ route('quote-requests.destroy', encrypt($qrequest->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quote request?');">
+                                        <form id="delete-qrequest-form-{{ $qrequest->id }}" action="{{ route('quote-requests.destroy', encrypt($qrequest->id)) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-link p-0" title="Delete qrequest" style="border:none; background:none;">
+                                            <a href="javascript:;" title="Delete qrequest" onclick="return confirmDeleteQrequest({{ $qrequest->id }})">
                                                 <i class="fa fa-trash-o" style="color: red;"></i>
-                                            </button>
+                                            </a>
                                         </form>
     			                    </td>
                                 </tr>

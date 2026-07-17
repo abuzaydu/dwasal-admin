@@ -342,7 +342,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin'], function () {
     Route::get('permissions/destroy/{id}', [PermissionController::class, 'destroy']);
     Route::get('user-shops', [UserTransactionController::class, 'shops']);
     Route::get('act-shops', [UserTransactionController::class, 'getShops']);
-    Route::get('sh-sales', [Admin\UserTransactionController::class, 'sales']);
+    Route::get('sh-sales', [UserTransactionController::class, 'sales']);
     Route::get('sales', [UserTransactionController::class, 'getSales']);
     Route::get('sh-items', [UserTransactionController::class, 'items']);
     Route::get('items', [UserTransactionController::class, 'getItems']);

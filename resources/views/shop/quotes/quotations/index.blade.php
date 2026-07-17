@@ -3,6 +3,30 @@
     <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css') }}" rel="stylesheet" />
 @endsection
+<script type="text/javascript">
+    function confirmDeleteQuotation(id) {
+        Swal.fire({
+            title: "{{ trans('navmenu.are_you_sure_delete') }}",
+            text: "{{ trans('navmenu.no_revert') }}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "{{ trans('navmenu.cancel_it') }}",
+            cancelButtonText: "{{ trans('navmenu.no') }}"
+        }).then((result) => {
+            if (result.value) {
+                document.getElementById('delete-quotation-form-' + id).submit();
+                Swal.fire(
+                    "{{ trans('navmenu.deleted') }}",
+                    "{{ trans('navmenu.cancelled') }}",
+                    'success'
+                )
+            }
+        })
+        return false;
+    }
+</script>
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-4">
@@ -81,12 +105,12 @@
                                         @if ($quotation->status === 'Draft')
                                             |
                                             <a href="{{ route('quotations.edit', encrypt($quotation->id)) }}" title="Edit"><i class="fa fa-edit" style="color: blue;"></i></a> |
-                                            <form action="{{ route('quotations.destroy', encrypt($quotation->id)) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this quotation?');">
+                                            <form id="delete-quotation-form-{{$quotation->id}}" action="{{ route('quotations.destroy', encrypt($quotation->id)) }}" method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-link p-0" title="Delete" style="border:none; background:none;">
+                                                <a href="javascript:;" title="Delete" onclick="return confirmDeleteQuotation({{$quotation->id}})">
                                                     <i class="fa fa-trash" style="color: red;"></i>
-                                                </button>
+                                                </a>
                                             </form>
                                         @endif
                                     </td>
