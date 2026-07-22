@@ -62,7 +62,7 @@
                             </div>
                             <div class="col-sm-12">
                                 <button type="submit" class="btn btn-primary btn-sm" id="btn-submit">{{trans('navmenu.btn_save')}}</button>
-                                <button type="button" class="btn btn-warning btn-sm" data-dismiss="modal">{{trans('navmenu.btn_cancel')}}</button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="window.history.back()">{{trans('navmenu.btn_cancel')}}</button>
                             </div>         
                         </div>
                     </form>

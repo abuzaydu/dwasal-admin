@@ -1,48 +1,9 @@
 @extends('layouts.sand')
-    <script>
-        function showHideForm(elem) {
-            var newform = document.getElementById('new-form');
-            var newbtn = document.getElementById('new-btn');
-            var itemlist = document.getElementById('item-list');
-            var newtitle = document.getElementById('new-title');
-            var listtitle = document.getElementById('list-title');
-            if (elem == 'show') {
-                newform.style.display = 'block';
-                newtitle.style.display = 'block';
-                newbtn.style.display = 'none';
-                itemlist.style.display = 'none';
-                listtitle.style.display = 'none';
-            }else{
-                newform.style.display = 'none';
-                newtitle.style.display = 'none';
-                newbtn.style.display = 'block';
-                itemlist.style.display = 'block';
-                listtitle.style.display = 'block';
-            }
-        }
-
-        function confirmDelete(id){
-            Swal.fire({
-              title: "{{trans('navmenu.are_you_sure')}}",
-              text: "{{trans('navmenu.no_revert')}}",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: "{{trans('navmenu.cancel_it')}}",
-              cancelButtonText: "{{trans('navmenu.no')}}"
-            }).then((result) => {
-              if (result.value) {
-                document.getElementById('delete-form-'+id).submit();
-                Swal.fire(
-                  "{{trans('navmenu.deleted')}}",
-                  "{{trans('navmenu.cancelled')}}",
-                  'success'
-                )
-              }
-            })
-        }
-    </script>
+@section('page-styles')
+    <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/css/DatePickerX.css') }}">
+@endsection
 @section('content')
     <!--breadcrumb-->
     <div class="block-header">
@@ -53,10 +14,26 @@
                     <li class="breadcrumb-item">Washed Sand Productions</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
-            </div>            
-            <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New Storage Location</button>
-            </div>
+            </div> 
+             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
+                <form class="dashform row mb-0" action="{{url('f-storage-locations')}}" method="POST" id="dashform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="{{$start_date}}">
+                    <input type="hidden" name="end_date" id="end_input" value="{{$end_date}}">
+                    <!-- Date and time range -->
+                    <div class="col-sm-7">
+                        <div class="input-group mb-0">
+                            <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
+                        </div>
+                    </div>
+                    {{-- <div class="col-sm-5">
+                        <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New Plant</button>
+                    </div> --}}
+                    <div class="col-sm-5">
+                        <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New Storage Location</button>
+                    </div>
+                </form>
+            </div>           
         </div>
     </div>
     <!--end breadcrumb-->
@@ -155,4 +132,61 @@
         </div>
     </div>
     <!--end row-->
+@endsection
+@section('page-scripts')
+    <!-- Datatables -->
+    <script src="{{ asset('assets/vendor/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/datatables-select/js/dataTables.select.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/js/dataTables.checkboxes.js') }}"></script>
+    <script src="{{ asset('assets/js/DatePickerX.min.js') }}"></script>
+   
+    <script>
+        function showHideForm(elem) {
+            var newform = document.getElementById('new-form');
+            var newbtn = document.getElementById('new-btn');
+            var itemlist = document.getElementById('item-list');
+            var newtitle = document.getElementById('new-title');
+            var listtitle = document.getElementById('list-title');
+            if (elem == 'show') {
+                newform.style.display = 'block';
+                newtitle.style.display = 'block';
+                newbtn.style.display = 'none';
+                itemlist.style.display = 'none';
+                listtitle.style.display = 'none';
+            }else{
+                newform.style.display = 'none';
+                newtitle.style.display = 'none';
+                newbtn.style.display = 'block';
+                itemlist.style.display = 'block';
+                listtitle.style.display = 'block';
+            }
+        }
+
+        function confirmDelete(id){
+            Swal.fire({
+              title: "{{trans('navmenu.are_you_sure')}}",
+              text: "{{trans('navmenu.no_revert')}}",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: "{{trans('navmenu.cancel_it')}}",
+              cancelButtonText: "{{trans('navmenu.no')}}"
+            }).then((result) => {
+              if (result.value) {
+                document.getElementById('delete-form-'+id).submit();
+                Swal.fire(
+                  "{{trans('navmenu.deleted')}}",
+                  "{{trans('navmenu.cancelled')}}",
+                  'success'
+                )
+              }
+            })
+        }
+        $(document).ready(function(){
+            //Exportable table
+            $('#slocations').DataTable();
+        });
+    </script>
 @endsection

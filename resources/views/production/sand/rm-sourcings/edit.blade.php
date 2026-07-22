@@ -78,7 +78,7 @@
                             </div>
                             <div class="col-md-6">
                                 <button type="submit" class="btn btn-success btn-sm px-4 radius-30" id="btn-submit">Add</button>
-                                <button type="button" class="btn btn-warning btn-sm px-4 radius-30" onclick="showHideForm('hide')">Cancel</button>
+                                <button type="button" class="btn btn-warning btn-sm px-4 radius-30" onclick="window.history.back()">Cancel</button>
                             </div>
                         </form>
                     </div>

@@ -78,7 +78,12 @@ class RMSourcingController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $page = 'Sourcing Details';
+        $rmsourcing = RmSourcing::find(decrypt($id));
+        $rmsource = RawMaterialSource::find($rmsourcing->raw_material_source_id);
+        $slocation = StorageLocation::find($rmsourcing->storage_location_id);
+
+        return view('production.sand.rm-sourcings.show', compact('page', 'rmsourcing', 'rmsource', 'slocation'));
     }
 
     /**

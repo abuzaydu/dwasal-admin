@@ -1,48 +1,9 @@
 @extends('layouts.sand')
-    <script>
-        function showHideForm(elem) {
-            var newform = document.getElementById('new-form');
-            var newbtn = document.getElementById('new-btn');
-            var itemlist = document.getElementById('item-list');
-            var newtitle = document.getElementById('new-title');
-            var listtitle = document.getElementById('list-title');
-            if (elem == 'show') {
-                newform.style.display = 'block';
-                newtitle.style.display = 'block';
-                newbtn.style.display = 'none';
-                itemlist.style.display = 'none';
-                listtitle.style.display = 'none';
-            }else{
-                newform.style.display = 'none';
-                newtitle.style.display = 'none';
-                newbtn.style.display = 'block';
-                itemlist.style.display = 'block';
-                listtitle.style.display = 'block';
-            }
-        }
-
-        function confirmDelete(id){
-            Swal.fire({
-              title: "{{trans('navmenu.are_you_sure')}}",
-              text: "{{trans('navmenu.no_revert')}}",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: "{{trans('navmenu.cancel_it')}}",
-              cancelButtonText: "{{trans('navmenu.no')}}"
-            }).then((result) => {
-              if (result.value) {
-                document.getElementById('delete-form-'+id).submit();
-                Swal.fire(
-                  "{{trans('navmenu.deleted')}}",
-                  "{{trans('navmenu.cancelled')}}",
-                  'success'
-                )
-              }
-            })
-        }
-    </script>
+@section('page-styles')
+    <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/css/DatePickerX.css') }}">
+@endsection
 @section('content')
     <!--breadcrumb-->
     <div class="block-header">
@@ -53,10 +14,24 @@
                     <li class="breadcrumb-item">Washed Sand Productions</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
-            </div>            
+            </div> 
+            
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New Plant</button>
-            </div>
+                <form class="dashform row mb-0" action="{{url('f-washing-plants')}}" method="POST" id="dashform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="{{$start_date}}">
+                    <input type="hidden" name="end_date" id="end_input" value="{{$end_date}}">
+                    <!-- Date and time range -->
+                    <div class="col-sm-7">
+                        <div class="input-group mb-0">
+                            <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-sm-5">
+                        <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New Plant</button>
+                    </div>
+                </form>
+            </div>  
         </div>
     </div>
     <!--end breadcrumb-->
@@ -122,8 +97,9 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th colspan="2">Plant Name</th>
-                                    <th>Plant Location</th>
+                                    <th style="text-align: center;">Photo</th>
+                                    <th style="text-align: center;">Plant Name</th>
+                                    <th style="text-align: center;">Plant Location</th>
                                     <th style="text-align: center;">Capacity Per Day</th>
                                     <th style="text-align: center;">Unit Of Measure</th>
                                     <th style="text-align: center;">Operating Hours</th>
@@ -135,7 +111,7 @@
                                 @foreach($plants as $key => $plant)
                                 <tr>
                                     <td>{{$key+1}}</td>
-                                    <td><img src="{{ asset('storage/'.$plant->photo_url) }}" width="100"></td>
+                                    <td><img src="{{ asset('storage/'.$plant->photo_url) }}" width="80" height="50" alt="{{$plant->plant_name}}"></td>
                                     <td><a href="{{ route('washing-plants.show', encrypt($plant->id))}}">{{$plant->plant_name}}</a></td>
                                     <td>{{$plant->plant_location}}</td>
                                     <td style="text-align: center;">{{$plant->capacity_per_day+0}}</td>
@@ -165,25 +141,78 @@
     </div>
     <!--end row-->
 @endsection
+@section('page-scripts')
+    <!-- Datatables -->
+    <script src="{{ asset('assets/vendor/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/datatables-select/js/dataTables.select.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/js/dataTables.checkboxes.js') }}"></script>
+    <script src="{{ asset('assets/js/DatePickerX.min.js') }}"></script>
+    <script type="text/javascript">
+        function showHideForm(elem) {
+            var newform = document.getElementById('new-form');
+            var newbtn = document.getElementById('new-btn');
+            var itemlist = document.getElementById('item-list');
+            var newtitle = document.getElementById('new-title');
+            var listtitle = document.getElementById('list-title');
+            if (elem == 'show') {
+                newform.style.display = 'block';
+                newtitle.style.display = 'block';
+                newbtn.style.display = 'none';
+                itemlist.style.display = 'none';
+                listtitle.style.display = 'none';
+            }else{
+                newform.style.display = 'none';
+                newtitle.style.display = 'none';
+                newbtn.style.display = 'block';
+                itemlist.style.display = 'block';
+                listtitle.style.display = 'block';
+            }
+        }
 
-<link rel="stylesheet" href="{{ asset('assets/css/DatePickerX.css') }}">
-<script src="{{ asset('assets/js/DatePickerX.min.js') }}"></script>
-<script>
-    window.addEventListener('DOMContentLoaded', function() {
-        var $min = document.querySelector('[name="launch_date"]');
+        function confirmDelete(id){
+            Swal.fire({
+            title: "{{trans('navmenu.are_you_sure')}}",
+            text: "{{trans('navmenu.no_revert')}}",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: "{{trans('navmenu.cancel_it')}}",
+            cancelButtonText: "{{trans('navmenu.no')}}"
+            }).then((result) => {
+            if (result.value) {
+                document.getElementById('delete-form-'+id).submit();
+                Swal.fire(
+                "{{trans('navmenu.deleted')}}",
+                "{{trans('navmenu.cancelled')}}",
+                'success'
+                )
+            }
+            })
+        }
 
-        $min.DatePickerX.init({
-            mondayFirst: true,
-            format: 'yyyy-mm-dd',
-            maxDate: new Date()
+         window.addEventListener('DOMContentLoaded', function() {
+            var $min = document.querySelector('[name="launch_date"]');
+
+            $min.DatePickerX.init({
+                mondayFirst: true,
+                format: 'yyyy-mm-dd',
+                maxDate: new Date()
+            });
+
+            var $lmin = document.querySelector('[name="last_maintenance_date"]');
+
+            $lmin.DatePickerX.init({
+                mondayFirst: true,
+                format: 'yyyy-mm-dd',
+                maxDate: new Date()
+            });
         });
 
-        var $lmin = document.querySelector('[name="last_maintenance_date"]');
-
-        $lmin.DatePickerX.init({
-            mondayFirst: true,
-            format: 'yyyy-mm-dd',
-            maxDate: new Date()
+        $(document).ready(function(){
+            //Exportable table
+            $('#plants').DataTable();
         });
-    });
-</script>
+    </script>
+@endsection

@@ -3,25 +3,43 @@
 namespace App\Http\Controllers\SandProd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use File;
-use Session;
 use App\Models\Shop;
-use App\Models\WashingPlant;
 use App\Models\WashingEquipment;
+use App\Models\WashingPlant;
+use File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class WashingEquipmentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Washing Equipments';
+         $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        $is_post_query = false;
+        $duration = '';
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $duration = '';
         $shop = Shop::find(Session::get('shop_id'));
         $wplants = WashingPlant::where('shop_id', Session::get('shop_id'))->get();
-        $equipments = WashingEquipment::where('shop_id', $shop->id)->select('id', 'equipment_name', 'equipment_type', 'manufacturer', 'model', 'installation_date', 'photo_url', 'next_maintenance_date')->get();
-        return view('production.sand.equipments.index', compact('page', 'wplants', 'equipments'));
+        $equipments = WashingEquipment::where('shop_id', $shop->id)->whereBetween('created_at', [$start, $end])->select('id', 'equipment_name', 'equipment_type', 'manufacturer', 'model', 'installation_date', 'photo_url', 'next_maintenance_date')->get();
+        return view('production.sand.equipments.index', compact('page', 'wplants', 'equipments', 'is_post_query', 'start_date', 'end_date', 'duration'));
     }
 
     /**
@@ -37,50 +55,66 @@ class WashingEquipmentController extends Controller
      */
     public function store(Request $request)
     {
-        $shop = Shop::find(Session::get('shop_id'));
+        try {
+            $validated = $request->validate([
+                'washing_plant_id'       => 'required|integer',
+                'equipment_code'         => 'required|string|max:255',
+                'equipment_name'         => 'required|string|max:255',
+                'equipment_type'         => 'required|string|max:255',
+                'manufacturer'           => 'required|string|max:255',
+                'model'                  => 'required|string|max:255',
+                'installation_date'      => 'required|date',
+                'maintenance_schedule'   => 'nullable|string|max:50',
+                'last_maintenance_date'  => 'nullable|date',
+                'next_maintenance_date'  => 'nullable|date',
+                'image'                  => 'nullable|image|mimes:jpeg,png,webp,gif,jfif,avif|max:1024',
+            ]);
 
-        $equipment = WashingEquipment::where('shop_id', $shop->id)->where('equipment_code', $request['equipment_code'])->first();
-        if (is_null($equipment)) {
-            $equipment = new WashingEquipment();
-            $equipment->shop_id = $shop->id;
-            $equipment->washing_plant_id = $request['washing_plant_id'];
-            $equipment->equipment_code = $request['equipment_code'];
-            $equipment->equipment_name = $request['equipment_name'];
-            $equipment->equipment_type = $request['equipment_type'];
-            $equipment->manufacturer = $request['manufacturer'];
-            $equipment->model = $request['model'];
-            $equipment->installation_date = $request['installation_date'];
-            $equipment->maintenance_schedule = $request['maintenance_schedule'];
-            $equipment->last_maintenance_date = $request['last_maintenance_date'];
-            $equipment->next_maintenance_date = $request['next_maintenance_date'];
-            $equipment->save();
+            $shop = Shop::find(Session::get('shop_id'));
 
-            $location = null;
-            if ($request->hasFile('image')) {
-                //  Let's do everything here
-                if ($request->file('image')->isValid()) {
-                    //
-                    $validated = $request->validate([
-                        'image' => 'mimes:jpeg,png,webp,gif,jfif,avif|max:1014',
-                    ]);
+            $equipment = WashingEquipment::where('shop_id', $shop->id)
+                ->where('equipment_code', $request->equipment_code)
+                ->first();
 
-                    $img_path = storage_path('/equipments/'.$equipment->photo_url);
-                    if (File::exists($img_path)) {
-                        unlink($img_path);
-                    }
-
-                    $extension = $request->image->extension();
-                    $request->image->storeAs('/equipments', $equipment->id.'_equipment.'.$extension);
-                    $location = 'equipments/'.$equipment->id.'_equipment.'.$extension;
-                }
+            if (!is_null($equipment)) {
+                return redirect()->back()->with('info', 'Equipment with same Code ('.$request->equipment_code.') already exists');
             }
 
-            $equipment->photo_url = $location;
+            $equipment = new WashingEquipment();
+            $equipment->shop_id = $shop->id;
+            $equipment->washing_plant_id = $validated['washing_plant_id'];
+            $equipment->equipment_code = $validated['equipment_code'];
+            $equipment->equipment_name = $validated['equipment_name'];
+            $equipment->equipment_type = $validated['equipment_type'];
+            $equipment->manufacturer = $validated['manufacturer'];
+            $equipment->model = $validated['model'];
+            $equipment->installation_date = $validated['installation_date'];
+            $equipment->maintenance_schedule = $validated['maintenance_schedule'] ?? null;
+            $equipment->last_maintenance_date = $validated['last_maintenance_date'] ?? null;
+            $equipment->next_maintenance_date = $validated['next_maintenance_date'] ?? null;
             $equipment->save();
 
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $extension = $request->file('image')->extension();
+                $filename = $equipment->id.'_equipment.'.$extension;
+
+                $request->file('image')->storeAs('equipments', $filename, 'public');
+
+                $equipment->photo_url = 'equipments/'.$filename;
+                $equipment->save();
+            }
+
             return redirect('washing-equipments')->with('success', 'Washing Equipment added successfully');
-        }else {
-            return redirect()->back()->with('info', 'Equipment with same Code ('.$request['equipment_code'].') already exists');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $firstError = collect($e->errors())->flatten()->first();
+
+            return redirect()->back()->with('error', $firstError)->withInput();
+        } catch (\Exception $e) {
+            Log::error('WashingEquipment store failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Something went wrong: '.$e->getMessage())->withInput();
         }
     }
 
@@ -113,48 +147,65 @@ class WashingEquipmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $equipment = WashingEquipment::find(decrypt($id));
-        if (!is_null($equipment)) {
-            $equipment->washing_plant_id = $request['washing_plant_id'];
-            $equipment->equipment_code = $request['equipment_code'];
-            $equipment->equipment_name = $request['equipment_name'];
-            $equipment->equipment_type = $request['equipment_type'];
-            $equipment->manufacturer = $request['manufacturer'];
-            $equipment->model = $request['model'];
-            $equipment->installation_date = $request['installation_date'];
-            $equipment->maintenance_schedule = $request['maintenance_schedule'];
-            $equipment->last_maintenance_date = $request['last_maintenance_date'];
-            $equipment->next_maintenance_date = $request['next_maintenance_date'];
-            $equipment->save();
+        try {
+            $validated = $request->validate([
+                'washing_plant_id'       => 'required|integer',
+                'equipment_code'         => 'required|string|max:255',
+                'equipment_name'         => 'required|string|max:255',
+                'equipment_type'         => 'required|string|max:255',
+                'manufacturer'           => 'required|string|max:255',
+                'model'                  => 'required|string|max:255',
+                'installation_date'      => 'required|date',
+                'maintenance_schedule'   => 'nullable|string|max:50',
+                'last_maintenance_date'  => 'nullable|date',
+                'next_maintenance_date'  => 'nullable|date',
+                'image'                  => 'nullable|image|mimes:jpeg,png,webp,gif,jfif,avif|max:1024',
+            ]);
 
-            $location = null;
-            if ($request->hasFile('image')) {
-                //  Let's do everything here
-                if ($request->file('image')->isValid()) {
-                    //
-                    $validated = $request->validate([
-                        'image' => 'mimes:jpeg,png,webp,gif,jfif,avif|max:1014',
-                    ]);
+            $equipment = WashingEquipment::find(decrypt($id));
 
-                    $img_path = storage_path('/equipments/'.$equipment->photo_url);
-                    if (File::exists($img_path)) {
-                        unlink($img_path);
-                    }
-
-                    $extension = $request->image->extension();
-                    $request->image->storeAs('/equipments', $equipment->id.'_equipment.'.$extension);
-                    $location = 'equipments/'.$equipment->id.'_equipment.'.$extension;
-                }
-            }else{
-                $location = $equipment->photo_url;
+            if (is_null($equipment)) {
+                return redirect()->back()->with('error', 'Equipment not found');
             }
 
-            $equipment->photo_url = $location;
+            $equipment->washing_plant_id = $validated['washing_plant_id'];
+            $equipment->equipment_code = $validated['equipment_code'];
+            $equipment->equipment_name = $validated['equipment_name'];
+            $equipment->equipment_type = $validated['equipment_type'];
+            $equipment->manufacturer = $validated['manufacturer'];
+            $equipment->model = $validated['model'];
+            $equipment->installation_date = $validated['installation_date'];
+            $equipment->maintenance_schedule = $validated['maintenance_schedule'] ?? null;
+            $equipment->last_maintenance_date = $validated['last_maintenance_date'] ?? null;
+            $equipment->next_maintenance_date = $validated['next_maintenance_date'] ?? null;
+
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                if ($equipment->photo_url && Storage::disk('public')->exists($equipment->photo_url)) {
+                    Storage::disk('public')->delete($equipment->photo_url);
+                }
+
+                $extension = $request->file('image')->extension();
+                $filename = $equipment->id.'_equipment.'.$extension;
+
+                $request->file('image')->storeAs('equipments', $filename, 'public');
+
+                $equipment->photo_url = 'equipments/'.$filename;
+            }
             $equipment->save();
 
             return redirect('washing-equipments')->with('success', 'Washing Equipment updated successfully');
-        }else {
-            return redirect()->back()->with('error', 'Equipment not found');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $firstError = collect($e->errors())->flatten()->first();
+
+            return redirect()->back()
+                ->with('error', $firstError)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('WashingEquipment update failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Something went wrong: '.$e->getMessage())->withInput();
         }
     }
 
@@ -165,7 +216,8 @@ class WashingEquipmentController extends Controller
     {
         $equipment = WashingEquipment::find(decrypt($id));
         if (!is_null($equipment)) {
-            
+            $equipment->delete();
+            return redirect('washing-equipments')->with('success', 'Washing Equipment deleted successfully');
         }else{
             return redirect()->back()->with('error', 'Equipment not found');            
         }

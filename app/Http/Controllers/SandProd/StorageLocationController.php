@@ -3,26 +3,42 @@
 namespace App\Http\Controllers\SandProd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use App\Models\UnitMeasure;
-use App\Models\StorageLocation;
-use App\Models\RmSourcing;
 use App\Models\ProductionRun;
+use App\Models\RmSourcing;
 use App\Models\Stock;
+use App\Models\StorageLocation;
+use App\Models\UnitMeasure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Session;
 
 class StorageLocationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = 'Storage Locations';
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        $is_post_query = false;
+        
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $duration = '';
         $units = UnitMeasure::select('unit_name')->get();
-        $slocations = StorageLocation::where('shop_id', Session::get('shop_id'))->get();
+        $slocations = StorageLocation::where('shop_id', Session::get('shop_id'))->whereBetween('created_at', [$start, $end])->get();
 
-        return view('production.sand.storage-locations.index', compact('page', 'units', 'slocations'));
+        return view('production.sand.storage-locations.index', compact('page', 'units', 'slocations', 'is_post_query', 'start_date', 'end_date', 'duration'));
     }
 
     /**

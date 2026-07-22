@@ -3,26 +3,42 @@
 namespace App\Http\Controllers\SandProd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
 use App\Models\Company;
 use App\Models\RawMaterialSource;
 use App\Models\RMSourcing;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Session;
 
 class RawMaterialSourceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         
         $page = 'Raw Material Sources';
+        $now = Carbon::now();
+        $start = $now->startOfMonth();
+        $end = \Carbon\Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));
+        $end_date = date('Y-m-d', strtotime($end));
+        $is_post_query = false;
+        $duration = '';
+        if (!empty($request['start_date'])) {
+            $start_date = $request['start_date'];
+            $end_date = $request['end_date'];
+            $start = $request['start_date'].' 00:00:00';
+            $end = $request['end_date'].' 23:59:59';
+            $is_post_query = true;
+        }
+        $duration = '';
         $company = Company::find(Session::get('company_id'));
 
-        $rmsources = RawMaterialSource::where('company_id', $company->id)->get();
+        $rmsources = RawMaterialSource::where('company_id', $company->id)->whereBetween('created_at', [$start, $end])->get();
 
-        return view('production.sand.rm-sources.index', compact('page', 'rmsources'));
+        return view('production.sand.rm-sources.index', compact('page', 'rmsources', 'is_post_query', 'start_date', 'end_date', 'duration'));
     }
 
     /**
@@ -60,7 +76,10 @@ class RawMaterialSourceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $page = 'Source Details';
+        $rmsource = RawMaterialSource::find(decrypt($id));
+
+        return view('production.sand.rm-sources.show', compact('page', 'rmsource'));
     }
 
     /**

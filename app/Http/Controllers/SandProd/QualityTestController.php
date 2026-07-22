@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\SandProd;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Session;
-use Auth;
 use \Carbon\Carbon;
-use App\Models\Shop;
+use App\Http\Controllers\Controller;
 use App\Models\QualityTest;
+use App\Models\Shop;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class QualityTestController extends Controller
 {

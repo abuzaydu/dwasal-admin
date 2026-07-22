@@ -51,7 +51,7 @@
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('prod-dash') }}"><i class="icon-home"></i></a></li>   
                     <li class="breadcrumb-item">Washed Sand Productions</li>
-                    <li class="breadcrumb-item"><a href="{{ url('washing-equipments') }}">Washing Equipments</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('washing-plants') }}">Washing Plants</a></li>
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
             </div>            
@@ -60,11 +60,14 @@
             </div>
         </div>
     </div>
-    <!--end breadcrumb-->
 
     <div class="row mb-5">
         <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
-            <img src="{{ asset('storage/'.$equipment->photo_url) }}" width="100%">
+            @if($wplant->photo_url)
+                <img src="{{ asset('storage/'.$wplant->photo_url) }}" width="100%">
+            @else
+                <img src="{{ asset('assets/images/no-image.png') }}" width="100%">
+            @endif
         </div>
         <div class="col-xl-8 col-lg-8 col-md-4 col-sm-12">
             <div class="card">
@@ -73,59 +76,54 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th colspan="2">Equipment Details</th>
+                                    <th colspan="2">Plant Details</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Washing Plant</td>
+                                    <td>Plant Name</td>
                                     <td><b>{{$wplant->plant_name}}</b></td>
                                 </tr>
                                 <tr>
-                                    <td>Equipment Code</td>
-                                    <td><b>{{$equipment->equipment_code}}</b></td>
+                                    <td>Plant Location</td>
+                                    <td><b>{{$wplant->plant_location}}</b></td>
                                 </tr>
                                 <tr>
-                                    <td>Equipment Name</td>
-                                    <td><b>{{$equipment->equipment_name}}</b></td>
+                                    <td>Production Capacity per Day</td>
+                                    <td><b>{{$wplant->capacity_per_day+0}} {{$wplant->unit_of_measure}}</b></td>
                                 </tr>
                                 <tr>
-                                    <td>Equipment Type</td>
-                                    <td><b>{{$equipment->equipment_type}}</b></td>
+                                    <td>Operating Hours</td>
+                                    <td><b>{{$wplant->operating_hours}}</b></td>
                                 </tr>
                                 <tr>
-                                    <td>Manufacturer</td>
-                                    <td><b>{{$equipment->manufacturer}}</b></td>
-                                </tr>
-                                <tr>
-                                    <td>Model</td>
-                                    <td><b>{{$equipment->model}}</b></td>
-                                </tr>
-                                <tr>
-                                    <td>Installation Date</td>
-                                    <td><b>{{date('d/m/Y', strtotime($equipment->installation_date))}}</b></td>
-                                </tr>
-                                <tr>
-                                    <td>Maintenance Schedule</td>
-                                    <td><b>{{$equipment->maintenance_schedule}}</b></td>
+                                    <td>Launch Date</td>
+                                    <td>
+                                        <b>
+                                            @if(!is_null($wplant->launch_date))
+                                                {{date('d/m/Y', strtotime($wplant->launch_date))}}
+                                            @endif
+                                        </b>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Last Maintenance Date</td>
-                                    <td><b>{{date('d/m/Y', strtotime($equipment->last_maintenance_date))}}</b></td>
-                                </tr>
-                                <tr>
-                                    <td>Next Maintenance Date Date</td>
-                                    <td><b>{{date('d/m/Y', strtotime($equipment->next_maintenance_date))}}</b></td>
+                                    <td>
+                                        <b>
+                                            @if(!is_null($wplant->last_maintenance_date))
+                                                {{date('d/m/Y', strtotime($wplant->last_maintenance_date))}}
+                                            @endif
+                                        </b>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="col-md-12 mt-3">
-                        <button type="button" class="btn btn-warning btn-sm px-4 radius-30" onclick="window.history.back()">Back</button>   
-                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-warning btn-sm px-4 radius-30" onclick="window.history.back()">Back</button>
                 </div>
             </div>
         </div>
     </div>
-    <!--end row-->
 @endsection

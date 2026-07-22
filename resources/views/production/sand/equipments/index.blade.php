@@ -1,4 +1,9 @@
 @extends('layouts.sand')
+@section('page-styles')
+    <link href="{{ asset('assets/vendor/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('assets/css/DatePickerX.css') }}">
+@endsection
     <script>
         function showHideForm(elem) {
             var newform = document.getElementById('new-form');
@@ -53,10 +58,24 @@
                     <li class="breadcrumb-item">Washed Sand Productions</li>                         
                     <li class="breadcrumb-item active">{{$page}}</li>
                 </ul>
-            </div>            
+            </div>  
             <div class="col-lg-7 col-md-7 col-sm-12 text-right">
-                <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New equipment</button>
-            </div>
+                <form class="dashform row mb-0" action="{{url('f-washing-equipments')}}" method="POST" id="dashform">
+                    @csrf
+                    <input type="hidden" name="start_date" id="start_input" value="{{$start_date}}">
+                    <input type="hidden" name="end_date" id="end_input" value="{{$end_date}}">
+
+                    <div class="col-sm-7">
+                        <div class="input-group mb-0">
+                            <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
+                        </div>
+                    </div>
+                     <div class="col-sm-5">
+                        <button type="button" id="new-btn" class="btn btn-primary btn-sm" onclick="showHideForm('show')"><i class="bx bxs-plus-square"></i>New equipment</button>
+                    </div>
+                </form>
+            </div>          
+           
         </div>
     </div>
     <!--end breadcrumb-->
@@ -140,8 +159,9 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th colspan="2">Equipment Name</th>
-                                    <th>Equipment Type</th>
+                                    <th style="text-align: center;">Photo</th>
+                                    <th style="text-align: center;">Equipment Name</th>
+                                    <th style="text-align: center;">Equipment Type</th>
                                     <th style="text-align: center;">Manufacturer</th>
                                     <th style="text-align: center;">Model</th>
                                     <th style="text-align: center;">Installation Date</th>
@@ -153,7 +173,7 @@
                                 @foreach($equipments as $key => $equipment)
                                 <tr>
                                     <td>{{$key+1}}</td>
-                                    <td><img src="{{ asset('storage/'.$equipment->photo_url) }}" width="100"></td>
+                                    <td><img src="{{ asset('storage/'.$equipment->photo_url) }}" width="80" height="50" alt="{{$equipment->equipment_name}}"></td>
                                     <td><a href="{{ route('washing-equipments.show', encrypt($equipment->id))}}">{{$equipment->equipment_name}}</a></td>
                                     <td>{{$equipment->equipment_type}}</td>
                                     <td style="text-align: center;">{{$equipment->manufacturer}}</td>
@@ -187,9 +207,12 @@
     </div>
     <!--end row-->
 @endsection
-
-<link rel="stylesheet" href="{{ asset('assets/css/DatePickerX.css') }}">
-<script src="{{ asset('assets/js/DatePickerX.min.js') }}"></script>
+@section('page-scripts')
+    <script src="{{ asset('assets/vendor/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/jquery-datatables-checkboxes-1.2.12/js/dataTables.checkboxes.min.js') }}"></script>
+    <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+    <script src="{{ asset('assets/js/DatePickerX.min.js') }}"></script>
 <script>
     window.addEventListener('DOMContentLoaded', function() {
         var $min = document.querySelector('[name="installation_date"]');
@@ -214,4 +237,9 @@
             minDate: new Date()
         });
     });
+    $(document).ready(function(){
+            //Exportable table
+            $('#equipments').DataTable();
+        });
 </script>
+@endsection

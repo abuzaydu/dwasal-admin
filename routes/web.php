@@ -1382,17 +1382,22 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('sand-prod-dash', [SandDashController::class, 'index']);
 
     Route::resource('washing-plants', WashingPlantController::class);
+    Route::post('f-washing-plants', [WashingPlantController::class, 'index']);
     Route::resource('washing-equipments', WashingEquipmentController::class);
+    Route::post('f-washing-equipments', [WashingEquipmentController::class, 'index']);
     Route::resource('maintenance-records', MaintenanceRecordController::class);
     Route::resource('storage-locations', StorageLocationController::class);
+    Route::post('f-storage-locations', [StorageLocationController::class, 'index']);
 
     Route::resource('raw-material-sources', RawMaterialSourceController::class);
+    Route::post('f-raw-material-sources', [RawMaterialSourceController::class, 'index']);
     Route::resource('rm-sourcings', RMSourcingController::class);
     Route::post('f-rm-sourcings', [RMSourcingController::class, 'index']);
 
     Route::resource('sand-productions', ProductionRunController::class);
     Route::post('f-sand-productions', [ProductionRunController::class, 'index']);
     Route::resource('quality-tests', QualityTestController::class);
+    Route::post('f-quality-tests', [QualityTestController::class, 'index']);
 
     Route::resource('quote-requests', QuoteRequestController::class);
     Route::post('quote-requests/{id}/approve', [QuoteRequestController::class, 'approve'])->name('quote-requests.approve');    

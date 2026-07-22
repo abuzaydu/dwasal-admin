@@ -54,7 +54,7 @@
                     @csrf
                     <input type="hidden" name="start_date" id="start_input" value="{{$start_date}}">
                     <input type="hidden" name="end_date" id="end_input" value="{{$end_date}}">
-                    <!-- Date and time range -->
+
                     <div class="col-sm-7">
                         <div class="input-group mb-0">
                             <button type="button" class="btn btn-default mb-0 pull-right" id="reportrange"><span><i class="fa fa-calendar"></i></span><i class="fa fa-caret-down"></i></button>
@@ -147,7 +147,9 @@
                                 <tr>
                                     <td>{{$key+1}}</td>
                                     <td>{{$rmsourcing->sourcing_date}}</a></td>
-                                    <td>{{$rmsourcing->source_name}}</td>
+                                    <td>
+                                        <a href="{{ route('rm-sourcings.show', encrypt($rmsourcing->id)) }}">{{$rmsourcing->source_name}} </a>
+                                    </td>
                                     <td>{{$rmsourcing->qty_received+0}}</td>
                                     <td>{{$rmsourcing->unit_of_measure}}</td>
                                     <td>{{$rmsourcing->first_name}} {{$rmsourcing->last_name}}</td>
