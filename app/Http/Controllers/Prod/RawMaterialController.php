@@ -129,7 +129,7 @@ class RawMaterialController extends Controller
                 'suppliers.name as sp_name',
                 'total',
                 'qty',
-                'unit_cost',
+                'rm_items.unit_cost',
                 'rm_purchase_id',
                 'purchase_type',
                 'rm_items.date',

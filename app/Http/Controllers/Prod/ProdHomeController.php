@@ -118,7 +118,7 @@ class ProdHomeController extends Controller
             \DB::raw('pm_uses.date')
         ]);
 
-        $products = ProductionCost::where('production_costs.shop_id', $shop->id)->where('is_deleted', false)->whereBetween('production_costs.date', [$start, $end])->join('production_cost_items', 'production_cost_items.id', '=', 'production_costs.id')->join('products', 'products.id', '=', 'production_cost_items.product_id')->groupBy('production_cost_items.product_id')->get([
+        $products = ProductionCost::where('production_costs.shop_id', $shop->id)->where('production_costs.is_deleted', false)->whereBetween('production_costs.date', [$start, $end])->join('production_cost_items', 'production_cost_items.id', '=', 'production_costs.id')->join('products', 'products.id', '=', 'production_cost_items.product_id')->groupBy('production_cost_items.product_id')->get([
             \DB::raw('name as name'),
             \DB::raw('basic_uom as basic_uom'),
             \DB::raw('SUM(quantity) as quantity'),

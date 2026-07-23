@@ -271,7 +271,7 @@
         $startdate = '';
         $enddate = '';
 
-        if ($page == 'Home' || $page == 'Raw Material Sourcings' || $page == 'Production Runs' || $page == 'Quality Tests' || $page == 'Washing Plants' || $page == 'Washing Equipments' || $page == 'Storage Locations' || $page == 'Raw Material Sources') {
+        if ($page == 'Home' || $page == 'Raw Material Sourcings' || $page == 'Production Runs' || $page == 'Quality Tests' || $page == 'Washing Plants' || $page == 'Washing Equipments' || $page == 'Storage Locations' || $page == 'Raw Material Sources' || $page == 'Production Dashboard') {
             $is_post = $is_post_query;
             $startdate = $start_date;
             $enddate = $end_date;
