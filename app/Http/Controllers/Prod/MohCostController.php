@@ -110,6 +110,7 @@ class MohCostController extends Controller
             $moh->date = $date;
             $moh->amount = 0;
             $moh->remarks = $request['remarks'];
+            // $moh->production_cost_id = $request->input('production_cost_id');
             $moh->save();
             $amount = 0;
             foreach ($itemtemps as $key => $temp) {

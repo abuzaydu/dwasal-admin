@@ -36,10 +36,10 @@ class ProdReportsController extends Controller
         $packing_materials = $shop->packingMaterials()->where('is_deleted', false)->get();
 
         $now = Carbon::now();
-        $start = null;
-        $end = null;
-        $start_date = null;            
-        $end_date = null;
+        $start = Carbon::now()->startOfMonth();
+        $end = Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));            
+        $end_date = date('Y-m-d', strtotime($end));
   
         //check if user opted for date range
         $is_post_query = false;
@@ -209,7 +209,7 @@ class ProdReportsController extends Controller
         $rm_stocks = RmItem::where('rm_items.shop_id', $shop->id)->where('is_deleted', false)->join('raw_materials', 'raw_materials.id', '=', 'rm_items.raw_material_id')->groupBy('rm_items.raw_material_id')->get([
             \DB::raw('name as name'),
             \DB::raw('SUM(qty) as total_qty'),
-            \DB::raw('unit_cost as unit_cost'),
+            \DB::raw('rm_items.unit_cost as unit_cost'),
             \DB::raw('raw_material_id as raw_material_id')
         ]);
 
@@ -258,10 +258,10 @@ class ProdReportsController extends Controller
         $raw_materials = $shop->rawMaterials()->where('is_deleted', false)->get();
 
         $now = Carbon::now();
-        $start = null;
-        $end = null;
-        $start_date = null;            
-        $end_date = null;
+        $start = carbon::now()->startOfMonth();
+        $end = carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));            
+        $end_date = date('Y-m-d', strtotime($end));
       
         //check if user opted for date range
         $is_post_query = false;
@@ -315,10 +315,10 @@ class ProdReportsController extends Controller
         $packing_materials = $shop->packingMaterials()->where('is_deleted', false)->get();
 
         $now = Carbon::now();
-        $start = null;
-        $end = null;
-        $start_date = null;            
-        $end_date = null;
+        $start = Carbon::now()->startOfMonth();
+        $end = Carbon::now();
+        $start_date = date('Y-m-d', strtotime($start));            
+        $end_date = date('Y-m-d', strtotime($end));
       
         //check if user opted for date range
         $is_post_query = false;
@@ -426,7 +426,7 @@ class ProdReportsController extends Controller
             \DB::raw('SUM(total) as total')
         ]);
 
-        $prod = ProductionCost::where('is_deleted', false)->where('shop_id', $shop->id)->whereBetween('production_costs.date', [$start, $end])->join('production_cost_items', 'production_cost_items.production_cost_id', '=', 'production_costs.id')->join('products' , 'production_cost_items.product_id', '=', 'products.id');
+        $prod = ProductionCost::where('production_costs.is_deleted', false)->where('production_costs.shop_id', $shop->id)->whereBetween('production_costs.date', [$start, $end])->join('production_cost_items', 'production_cost_items.production_cost_id', '=', 'production_costs.id')->join('products' , 'production_cost_items.product_id', '=', 'products.id');
 
           
         $production_logs = $prod->orderBy('date', 'desc')->get();

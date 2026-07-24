@@ -20,7 +20,7 @@
         <div class="col-md-12 mx-auto">
             <h6 class="mb-0 text-uppercase text-center">{{$title}}</h6> 
             <hr/>
-          <form class="row g-3" action="{{url('pm-uses-report')}}" method="POST">
+          <form class="row g-3 dashform" action="{{url('pm-uses-report')}}" method="POST">
             @csrf
             
             <input type="hidden" name="start_date" id="start_input" value="">

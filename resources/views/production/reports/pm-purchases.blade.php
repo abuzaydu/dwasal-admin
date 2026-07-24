@@ -21,7 +21,7 @@
         <div class="col-md-12 mx-auto">
             <h6 class="mb-0 text-uppercase text-center">{{$title}}</h6> 
             <hr/>
-            <form class="row g-3" action="{{url('pm-purchases-report')}}" method="POST">
+            <form class="row g-3 dashform" action="{{url('pm-purchases-report')}}" method="POST">
               @csrf
               <div class="p-2 col-md-5 float-end">
                 <select name="pm_id" class="form-select form-select-sm select2">
