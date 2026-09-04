@@ -12,6 +12,7 @@ use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
 use App\Models\User;
 use App\Services\FaceEmbeddingStorage;
+use App\Services\FingerprintTemplateStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -19,13 +20,9 @@ use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
-    /** Minimum cosine similarity to accept a face match (stricter = fewer wrong employee punches). */
     private const FACE_MATCH_THRESHOLD = 0.78;
-    /** Runner-up similarity that triggers lookalike / ambiguity checks. */
     private const FACE_AMBIGUITY_RUNNER_UP_MIN = 0.68;
-    /** Required gap between 1st and 2nd match when runner-up is strong (similar-looking staff). */
     private const FACE_AMBIGUITY_MIN_GAP = 0.06;
-    /** Extra gap required when runner-up is very close to threshold (high collision risk). */
     private const FACE_AMBIGUITY_STRICT_GAP = 0.08;
     private const FACE_AMBIGUITY_STRICT_RUNNER_UP_MIN = 0.72;
     public function punchIn(Request $request)
@@ -62,7 +59,6 @@ class AttendanceController extends Controller
                 ], 401);
             }
 
-            // Get attendance setting
             $setting = AttendanceSetting::where('company_id', $employee->company_id)->first();
             if (!$setting) {
                 return response()->json([
@@ -73,7 +69,6 @@ class AttendanceController extends Controller
             $now   = now();
             $today = $now->toDateString();
 
-            // Check if already punched in today
             $attendance = EmployeeAttendance::where('employee_id', $employee->id)
                 ->whereDate('created_at', $today)
                 ->first();
@@ -134,7 +129,6 @@ class AttendanceController extends Controller
                 }
             } else {
 
-                // Calculate if late
                 $companyStartTime = Carbon::createFromFormat(
                     'Y-m-d H:i:s',
                     $today . ' ' . $setting->start_of_day
@@ -146,7 +140,6 @@ class AttendanceController extends Controller
                     $attendance->employee_id = $employee->id;
                     $attendance->save();
                 }
-                // Set punch-in
                 $attendance->start_of_day = $now;
                 $attendance->is_present   = true;
                 $attendance->status = 'Present';
@@ -224,7 +217,6 @@ class AttendanceController extends Controller
                 ], 422);
             }
 
-            // Prevent one face being enrolled under multiple employees (same company).
             $conflict = $this->findConflictingFaceOwner(
                 (int) $employee->company_id,
                 $templates,
@@ -321,10 +313,6 @@ class AttendanceController extends Controller
             ], 422);
         }
     }
-
-    /**
-     * Face-only punch-in for already enrolled employees (no QR required).
-     */
     public function punchInByFace(Request $request)
     {
         try {
@@ -413,12 +401,6 @@ class AttendanceController extends Controller
         return $ranked;
     }
 
-    /**
-     * Picks one employee or returns an error when scores are too close (lookalikes).
-     *
-     * @param list<array{employee: Employee, similarity: float}> $ranked
-     * @return array{employee?: Employee, error?: string, status?: int}
-     */
     private function selectEmployeeFromRankedMatches(array $ranked): array
     {
         $best = $ranked[0];
@@ -488,7 +470,6 @@ class AttendanceController extends Controller
         $employeeId = $request->employee_id;
         $companyId  = $request->company_id;
 
-        // Validate employee belongs to this company
         $employee = Employee::where('id', $employeeId)
             ->where('company_id', $companyId)
             ->first();
@@ -502,7 +483,6 @@ class AttendanceController extends Controller
         $now   = now();
         $today = $now->toDateString();
 
-        // Find today's attendance
         $attendance = EmployeeAttendance::where('employee_id', $employee->id)
             ->whereDate('created_at', $today)
             ->first();
@@ -519,10 +499,8 @@ class AttendanceController extends Controller
             ], 400);
         }
 
-        // Set punch out
         $attendance->end_of_day = $now;
 
-        // Get attendance setting
         $setting = AttendanceSetting::where('company_id', $companyId)->first();
         if (!$setting) {
             return response()->json([
@@ -530,7 +508,6 @@ class AttendanceController extends Controller
             ], 400);
         }
 
-        // Full-day logic
         $companyEndTime = Carbon::createFromFormat(
             'Y-m-d H:i:s',
             $today . ' ' . $setting->end_of_day
@@ -576,13 +553,6 @@ class AttendanceController extends Controller
 
         return null;
     }
-
-    /**
-     * Returns another employee (same company) who already owns this face, if any.
-     */
-    /**
-     * @param list<array<int, float>>|array<int, float> $probeTemplates
-     */
     private function findConflictingFaceOwner(
         int $companyId,
         array $probeTemplates,
@@ -620,10 +590,6 @@ class AttendanceController extends Controller
 
         return null;
     }
-
-    /**
-     * @return list<array<int, float>>
-     */
     private function extractEnrollmentTemplates(Request $request): array
     {
         $templates = [];
@@ -647,11 +613,6 @@ class AttendanceController extends Controller
         $single = $this->normalizeEmbedding($request->input('face_embedding', []));
         return empty($single) ? [] : [$single];
     }
-
-    /**
-     * @param list<array<int, float>>|array<int, float> $templates
-     * @return list<array<int, float>>
-     */
     private function coerceTemplateList(array $templates): array
     {
         if (isset($templates[0]) && is_numeric($templates[0])) {
@@ -672,12 +633,6 @@ class AttendanceController extends Controller
 
         return $out;
     }
-
-    /**
-     * Best match across all probe templates vs all stored templates for one employee.
-     *
-     * @param list<array<int, float>> $probeTemplates
-     */
     private function maxSimilarityAgainstEmployee(Employee $employee, array $probeTemplates): float
     {
         $best = 0.0;
@@ -691,10 +646,6 @@ class AttendanceController extends Controller
 
         return $best;
     }
-
-    /**
-     * Best similarity across one or more stored templates for an employee.
-     */
     private function matchProbeAgainstEmployee(Employee $employee, array $probeEmbedding): array
     {
         $templates = FaceEmbeddingStorage::templatesFromStored(
@@ -742,5 +693,91 @@ class AttendanceController extends Controller
     private function normalizeEmbedding(array $embedding): array
     {
         return FaceEmbeddingStorage::normalizeVector($embedding);
+    }
+    public function punchInByFingerprint(Request $request)
+    {
+        try {
+            $request->validate([
+                'employee_ref' => 'required|string', 
+                'fingerprint_template' => 'required|string', 
+            ]);
+
+            /** @var User|null $user */
+            $user = auth('api')->user();
+            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            if (!$companyId) {
+                return response()->json([
+                    'message' => 'No default company configured for this account'
+                ], 403);
+            }
+
+            $employee = $this->resolveEmployeeFromFingerprintRef($request->input('employee_ref'));
+            if (!$employee) {
+                return response()->json([
+                    'message' => 'Invalid employee reference'
+                ], 404);
+            }
+
+            if ((int)$employee->company_id !== (int)$companyId) {
+                return response()->json([
+                    'message' => 'Employee does not belong to your company'
+                ], 403);
+            }
+
+            if (!FingerprintTemplateStorage::hasEnrollment($employee->getRawOriginal('fingerprint_template'))) {
+                return response()->json([
+                    'message' => 'Employee has no fingerprint enrolled. Contact administrator.'
+                ], 422);
+            }
+
+            if (!$employee->fingerprint_enabled) {
+                return response()->json([
+                    'message' => 'Fingerprint access is disabled for this employee'
+                ], 403);
+            }
+
+            $employee->fingerprint_last_verified_at = now();
+            $employee->save();
+
+            Log::info('Fingerprint attendance attempt', [
+                'employee_id' => $employee->id,
+                'company_id' => $companyId,
+                'user_id' => $user->id,
+                'timestamp' => now(),
+            ]);
+
+            $qrData = encrypt($employee->id . '&' . $employee->company_id);
+            return $this->punchIn(new Request([
+                'qr_data' => $qrData,
+                'face_embedding' => [], 
+            ]));
+
+        } catch (DecryptException $e) {
+            return response()->json(['message' => 'Invalid employee reference'], 400);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Invalid request',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+    private function resolveEmployeeFromFingerprintRef(string $encryptedRef): ?Employee
+    {
+        $data = decrypt($encryptedRef);
+        $parts = explode('&', $data, 4);
+
+        $employeeId = $parts[0] ?? null;
+        $companyId = $parts[1] ?? null;
+        $type = $parts[2] ?? null;
+        $timestamp = $parts[3] ?? null;
+
+        if ($type !== 'fp') return null;
+
+        if ($timestamp && (time() - (int)$timestamp > 300)) {
+            return null; 
+        }
+        return Employee::where('id', $employeeId)
+            ->where('company_id', $companyId)
+            ->first();
     }
 }

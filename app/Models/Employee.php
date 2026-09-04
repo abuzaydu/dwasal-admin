@@ -14,6 +14,10 @@ class Employee extends Model
     protected $casts = [
         'face_embedding' => 'array',
         'face_registered_at' => 'datetime',
+        'fingerprint_template' => 'array',
+        'fingerprint_registered_at' => 'datetime',
+        'fingerprint_last_verified_at' => 'datetime',
+        'fingerprint_enabled' => 'boolean',
     ];
 
     public function  department(){
