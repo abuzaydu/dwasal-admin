@@ -242,7 +242,6 @@ class SaleController extends Controller
             $now = $request['sale_date'] . ' ' . $time;
         }
 
-
         $due_date = Carbon::now()->addDays(10);
         if (!empty($request['due_date'])) {
             $due_date = $request['due_date'];
@@ -278,7 +277,7 @@ class SaleController extends Controller
         }else{
             $invoice_no = $prefix.''.sprintf('%04d', 1);
         }
-// dd($invoice_no);
+        // dd($invoice_no);
         $pay_type = null;
         if ($request['pay_type'] == 'Cheque') {
             $pay_type = 'Bank';
@@ -343,7 +342,7 @@ class SaleController extends Controller
                         'currency' => $saletemp->currency,
                         'defcurr' => $saletemp->defcurr,
                         'ex_rate' => $saletemp->ex_rate,
-                        'comments' => $saletemp->comments,
+                        'comments' => $request['comments'],
                         'status' => 'Unpaid',
                         'time_created' => $now,
                         'sale_type' => $saletemp->sale_type,

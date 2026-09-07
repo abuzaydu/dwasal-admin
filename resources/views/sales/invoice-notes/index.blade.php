@@ -90,7 +90,7 @@
                                 </select>
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label"> Content <span style="color: red;">^</span></label>
+                                <label class="form-label"> Content <span style="color: red; font-weight: bold;">*</span></label>
                                 <div class="summernote" id="note-content"></div>
                             </div>
                             <input type="hidden" name="content" id="content">
