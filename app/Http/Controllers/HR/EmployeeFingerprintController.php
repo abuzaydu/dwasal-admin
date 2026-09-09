@@ -25,7 +25,6 @@ class EmployeeFingerprintController extends Controller
         $employees = Employee::query()
             ->where('employees.company_id', $company->id)
             ->whereNotNull('employees.fingerprint_template')
-            ->where('employees.fingerprint_enabled', true)
             ->leftJoin('positions', 'positions.id', '=', 'employees.position_id')
             ->select(
                 'employees.id',
@@ -38,6 +37,8 @@ class EmployeeFingerprintController extends Controller
                 'employees.fingerprint_algorithm_version',
                 'employees.fingerprint_finger',
                 'employees.fingerprint_last_verified_at',
+                'employees.fingerprint_enabled',
+                'employees.fingerprint_template',
                 'positions.name as position_name'
             )
             ->orderByDesc('employees.fingerprint_registered_at')
