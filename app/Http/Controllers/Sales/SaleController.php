@@ -349,12 +349,13 @@ class SaleController extends Controller
                         'invoice_no' => $invoice_no,
                         'vehicle_no' => $request['vehicle_no'],
                         'due_date' => $due_date,
+                        'note' => $request['note'],
                     ]);
 
                     $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Invoice')->where('note_type', 'Notes')->first();
-                    if (!is_null($notes)) {
-                        $sale->note = $notes->content;
-                    }
+                    // if (!is_null($notes)) {
+                    //     $sale->note = $notes->content;
+                    // }
                     if ($settings->is_rental_service) {
                         $sale->rent_end_date = $request['rent_end_date'];
                     }

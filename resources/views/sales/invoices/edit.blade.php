@@ -1,5 +1,8 @@
 @extends('layouts.app')
-
+@section('page-styles')
+  <link rel="stylesheet" href="{{ asset('side/assets/cssbundle/summernote.min.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/DatePickerX.css') }}">
+@endsection
 @section('content')
     <!--breadcrumb-->
     <div class="block-header pt-4">
@@ -22,7 +25,7 @@
         <div class="col-xl-12 mx-auto">
             <div class="card">
                 <div class="card-body">
-                    <form class="row g-3" method="POST" action="{{ route('an-sales.update', encrypt($sale->id))}}">
+                    <form class="row g-3" method="POST" action="{{ route('an-sales.update', encrypt($sale->id))}}" id="pos-form">
                         @csrf
                         {{ method_field('PATCH') }}
                         <input type="hidden" name="id" value="{{$sale->id}}">
@@ -44,7 +47,7 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">{{trans('navmenu.sales_type')}}</label>
-                            <select name="sale_type" id="sale_type" class="form-select form-select-sm mb-1" required>\
+                            <select name="sale_type" id="sale_type" class="form-select form-select-sm mb-1" required>
                                 @if($sale->sale_type == 'cash')
                                 <option value="cash">{{trans('navmenu.cash_sales')}}</option>
                                 <option value="credit">{{trans('navmenu.credit_sales')}}</option>
@@ -122,6 +125,23 @@
                             <label>{{trans('navmenu.comments')}}</label>
                             <textarea name="comments" rows="1" class="form-control form-control-sm mb-1">{{$sale->comments}}</textarea>
                         </div>
+
+                         <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label">
+                                    Invoice note
+                                    <span style="color: red; font-weight: bold;">*</span>
+                                </label>
+                                <div class="summernote" id="note-content">
+                                    @if(!empty($sale->note))
+                                        {!! $sale->note !!}
+                                    @elseif(isset($notes) && !empty($notes->content))
+                                        {!! $notes->content !!}
+                                    @endif
+                                </div>
+                                <input type="hidden" name="note" id="note" value="{{ old('note', $sale->note) }}">
+                            </div>
+                        </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-success btn-sm" id="btn-submit">{{trans('navmenu.btn_save')}}</button>
                             <a href="javascript:history.back()" class="btn btn-warning btn-sm">{{trans('navmenu.btn_cancel')}}</a> 
@@ -133,10 +153,47 @@
     </div>
     <!--end row-->
 @endsection
+@section('page-scripts')
+    <script src="{{ asset('side/assets/js/bundle/summernote.bundle.js') }}"></script>
+    <script src="{{ asset('js/DatePickerX.min.js') }}"></script>
 
-<link rel="stylesheet" href="{{asset('css/DatePickerX.css')}}">
-<script src="{{asset('js/DatePickerX.min.js')}}"></script>
     <script>
+        $(document).ready(function() {
+
+            if (typeof $.fn.summernote === 'undefined') {
+                console.error('Summernote plugin failed to load - check the <script> src path for summernote.bundle.js');
+                return;
+            }
+
+            $('#note-content').summernote({
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']]
+                ],
+                callbacks: {
+                    onChange: function(contents) {
+                        $('#note').val(contents);
+                    },
+            
+                    onInit: function() {
+                        $('#note').val($('#note-content').summernote('code'));
+                    }
+                }
+            });
+
+            $('.note-editor .note-btn').on('click', function() {
+                $(this).next().toggleClass("show");
+            });
+
+            $('#pos-form').on('submit', function() {
+                $('#note').val($('#note-content').summernote('code'));
+            });
+        });
+
         window.addEventListener('DOMContentLoaded', function()
         {
             var $min = document.querySelector('[name="sale_date"]');
@@ -170,3 +227,4 @@
             }
         });
     </script>
+@endsection
