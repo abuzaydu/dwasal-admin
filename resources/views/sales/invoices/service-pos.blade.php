@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@section('page-styles')
+  <link rel="stylesheet" href="{{ asset('side/assets/cssbundle/summernote.min.css') }}">
+@endsection
 <meta name="csrf-token" content="{{ csrf_token() }}" />
 <script type="text/javascript" src="{{asset('js/angular-1-8-3.min.js')}}"></script>
 <script type="text/javascript" src="{{ asset('js/servpos.js') }}"></script>
@@ -629,21 +632,36 @@
                                             <th style="text-align: right;"><b>@{{(sum(servsaletempitems)-sumDiscount(servsaletempitems)+sumVAT(servsaletempitems)) | number:2}}</b></th>
                                         </tr>  
                                     </table>
-
-                                    <div class="row">
-                                        <div class="col-sm-4" style="margin-top: 5px;">
-                                            <input type="checkbox" id="print_receipt" name="print_receipt">
-                                            <label for="print_receipt">Print</label>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label">
+                                            Invoice note<span style="color: red; font-weight: bold;">*</span>
+                                        </label>
+                                        <div class="summernote" id="note-content">
+                                            @if($notes)
+                                                {!! $notes->content !!}
+                                            @endif
                                         </div>
-                                        <div class="col-sm-4" style="margin-top: 5px;">
-                                            <button type="submit" id="btn-submit-inv" class="btn btn-success btn-sm">{{trans('navmenu.btn_submit')}}</button>
-                                        </div>
-                                        
-                                        <div class="col-sm-4" style="margin-top: 5px;">
-                                            <button onclick="confirmCancel()" type="button" class="btn btn-warning btn-sm">{{trans('navmenu.btn_cancel')}}</button>
-                                        </div>
+                                        <input type="hidden" name="note" id="note">
                                     </div>
                                 </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+                                            <label for="print_receipt" style="margin: 0; display: flex; align-items: center; white-space: nowrap;">
+                                                <input type="checkbox" id="print_receipt" name="print_receipt" style="margin-right: 4px;">
+                                                Print
+                                            </label>
+                                            <button type="submit" id="btn-submit-inv" class="btn btn-success btn-sm" style="width: auto;">
+                                                {{trans('navmenu.btn_submit')}}
+                                            </button>
+                                            <button onclick="confirmCancel()" type="button" class="btn btn-warning btn-sm" style="width: auto;">
+                                                {{trans('navmenu.btn_cancel')}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>                            
                             </div>
                         </form>
                         @endif
@@ -740,7 +758,32 @@
 
 
 @endsection
-    
+@section('page-scripts')
+    <script src="{{ asset('side/assets/js/bundle/summernote.bundle.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#note-content').summernote({
+              toolbar: [
+                // [groupName, [list of button]]
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']]
+              ]
+            });
+            $('.note-editor .note-btn').on('click', function() {
+                $(this).next().toggleClass("show");
+            });
+
+            $('#pos-form').on('submit', function() {
+                var content = $('#note-content').summernote('code');
+                $('#note').val(content);
+            });
+        });
+    </script>
+@endsection
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function(){

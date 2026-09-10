@@ -703,7 +703,7 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <label class="form-label">
-                                            Content
+                                            Invoice note
                                             <span style="color: red; font-weight: bold;">*</span>
                                         </label>
                                         <div class="summernote" id="note-content">
@@ -903,12 +903,10 @@
                 $(this).next().toggleClass("show");
             });
 
-            $('#btn-submit').on('click', function(e){
-                e.preventDefault();
+            $('#pos-form').on('submit', function() {
                 var content = $('#note-content').summernote('code');
-                $('#content').val(content);
-                $('#note-form').submit();
-            })
+                $('#note').val(content);
+            });
         });
     </script>
 @endsection
