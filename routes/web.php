@@ -1306,6 +1306,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('employees/face-id', [EmployeeFaceIdController::class, 'index'])->name('employees.face-id.index');
     Route::delete('employees/{id}/face-id', [EmployeeFaceIdController::class, 'destroy'])->name('employees.face-id.destroy');
     Route::get('employees/fingerprint', [EmployeeFingerprintController::class, 'index'])->name('employees.fingerprint.index');
+    Route::get('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'settings'])->name('employees.fingerprint.settings');
+    Route::put('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'updateSettings'])->name('employees.fingerprint.settings.update');
     Route::patch('employees/{id}/fingerprint/toggle', [EmployeeFingerprintController::class, 'toggle'])->name('employees.fingerprint.toggle');
     Route::delete('employees/{id}/fingerprint', [EmployeeFingerprintController::class, 'destroy'])->name('employees.fingerprint.destroy');
     Route::resource('employees', EmployeeController::class);

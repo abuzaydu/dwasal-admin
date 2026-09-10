@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\EmployeeDoc;
+use App\Services\FingerprintEnrollmentSetting;
 use App\Services\FingerprintTemplateStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -63,6 +64,40 @@ class EmployeeFingerprintController extends Controller
         });
 
         return view('hr.employees.fingerprint.index', compact('page', 'title', 'fingerprintCards'));
+    }
+
+    public function settings()
+    {
+        $page = 'Fingerprint Settings';
+        $title = 'Fingerprint Settings';
+        $company = Company::find(Session::get('company_id'));
+        if (!$company) {
+            return view('errors.401');
+        }
+
+        $allowFingerprintEnrollment = FingerprintEnrollmentSetting::isAllowed((int) $company->id);
+
+        return view(
+            'hr.employees.fingerprint.settings',
+            compact('page', 'title', 'allowFingerprintEnrollment')
+        );
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $company = Company::find(Session::get('company_id'));
+        if (!$company) {
+            return view('errors.401');
+        }
+
+        FingerprintEnrollmentSetting::setAllowed(
+            (int) $company->id,
+            $request->boolean('allow_fingerprint_enrollment')
+        );
+
+        return redirect()
+            ->route('employees.fingerprint.index')
+            ->with('success', 'Fingerprint settings saved.');
     }
 
     public function destroy(string $id)

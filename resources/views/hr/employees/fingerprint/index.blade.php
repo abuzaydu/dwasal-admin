@@ -20,10 +20,11 @@
         <div class="card-body p-0">
             <div class="d-lg-flex align-items-center mb-2">
                 <div>
-                    <h6 class="mb-0 text-uppercase">Fingerprint — Enrolled Employees</h6><span
+                    <h6 class="mb-0 text-uppercase">Fingerprint Enrolled Employees</h6><span
                         class="badge bg-primary ms-2">{{ $fingerprintCards->count() }} enrolled</span>
                 </div>
-                <div class="ms-auto text-muted small">Use the T1 Pro app and employee QR to enroll or replace fingerprints.
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <a href="{{ route('employees.fingerprint.settings') }}" class="btn btn-primary">Settings</a>
                 </div>
             </div>
             @if ($fingerprintCards->isEmpty())

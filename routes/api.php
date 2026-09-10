@@ -74,6 +74,7 @@ Route::group(['middleware' => 'cors'], function () {
             Route::post('attendance-punchin-by-face', [AttendanceController::class, 'punchInByFace'])->name('api.attendance-punchin-by-face');
             Route::post('attendance-punchin-by-fingerprint', [AttendanceController::class, 'punchInByFingerprint'])->name('api.attendance-punchin-by-fingerprint');
             Route::get('attendance-fingerprint-templates', [AttendanceController::class, 'fingerprintTemplates'])->name('api.attendance-fingerprint-templates');
+            Route::get('attendance-app-settings', [AttendanceController::class, 'attendanceAppSettings'])->name('api.attendance-app-settings');
             Route::post('attendance-punchout', [AttendanceController::class, 'punchOut'])->name('api.attendance-punchout');
             Route::post('attendance-register-face', [AttendanceController::class, 'registerFaceTemplate'])->name('api.attendance-register-face');
             Route::post('attendance-register-fingerprint', [AttendanceController::class, 'registerFingerprintTemplate'])->name('api.attendance-register-fingerprint');

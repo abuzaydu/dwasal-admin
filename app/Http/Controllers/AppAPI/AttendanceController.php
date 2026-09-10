@@ -11,6 +11,7 @@ use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
 use App\Models\User;
 use App\Services\FaceEmbeddingStorage;
+use App\Services\FingerprintEnrollmentSetting;
 use App\Services\FingerprintTemplateStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -783,6 +784,13 @@ class AttendanceController extends Controller
                 return response()->json(['message' => 'Invalid employee QR for this company'], 403);
             }
 
+            if (!FingerprintEnrollmentSetting::isAllowed((int) $companyId)) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Fingerprint enrollment is turned off for this company.',
+                ], 403);
+            }
+
             if (FingerprintTemplateStorage::hasEnrollment($employee->getRawOriginal('fingerprint_template'))) {
                 return response()->json([
                     'success' => 0,
@@ -850,6 +858,22 @@ class AttendanceController extends Controller
             'templates' => $templates,
         ]);
     }
+
+    public function attendanceAppSettings(Request $request)
+    {
+        /** @var User|null $user */
+        $user = auth('api')->user();
+        $companyId = $this->resolveCompanyIdFromAuthUser($user);
+        if (!$companyId) {
+            return response()->json(['message' => 'No default company configured for this account'], 403);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'allow_fingerprint_enrollment' => FingerprintEnrollmentSetting::isAllowed((int) $companyId),
+        ]);
+    }
+
     private function resolveEmployeeFromFingerprintRef(string $encryptedRef): ?Employee
     {
         $data = decrypt($encryptedRef);
