@@ -242,7 +242,6 @@ class SaleController extends Controller
             $now = $request['sale_date'] . ' ' . $time;
         }
 
-
         $due_date = Carbon::now()->addDays(10);
         if (!empty($request['due_date'])) {
             $due_date = $request['due_date'];
@@ -278,7 +277,7 @@ class SaleController extends Controller
         }else{
             $invoice_no = $prefix.''.sprintf('%04d', 1);
         }
-// dd($invoice_no);
+        // dd($invoice_no);
         $pay_type = null;
         if ($request['pay_type'] == 'Cheque') {
             $pay_type = 'Bank';
@@ -343,19 +342,20 @@ class SaleController extends Controller
                         'currency' => $saletemp->currency,
                         'defcurr' => $saletemp->defcurr,
                         'ex_rate' => $saletemp->ex_rate,
-                        'comments' => $saletemp->comments,
+                        'comments' => $request['comments'],
                         'status' => 'Unpaid',
                         'time_created' => $now,
                         'sale_type' => $saletemp->sale_type,
                         'invoice_no' => $invoice_no,
                         'vehicle_no' => $request['vehicle_no'],
                         'due_date' => $due_date,
+                        'note' => $request['note'],
                     ]);
 
                     $notes = InvoiceNote::where('shop_id', $shop->id)->where('used_in', 'Invoice')->where('note_type', 'Notes')->first();
-                    if (!is_null($notes)) {
-                        $sale->note = $notes->content;
-                    }
+                    // if (!is_null($notes)) {
+                    //     $sale->note = $notes->content;
+                    // }
                     if ($settings->is_rental_service) {
                         $sale->rent_end_date = $request['rent_end_date'];
                     }

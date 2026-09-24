@@ -4,14 +4,12 @@ namespace App\Services;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 
-
 class FingerprintTemplateStorage
 {
-    
     public static function packForStorage(string $template, string $modelVersion = 'zkfinger_v2.1.24', string $algorithmVersion = 'zkalg12'): array
     {
         return [
-            'enc' => base64_encode(encrypt($template)),
+            'enc' => encrypt($template),
             'model' => $modelVersion,
             'algorithm' => $algorithmVersion,
             'template_size' => strlen($template),
@@ -28,25 +26,26 @@ class FingerprintTemplateStorage
             $value = json_decode($value, true);
         }
 
-        if (!is_array($value)) {
-            return null;
-        }
-
-        if (!isset($value['enc']) || !is_string($value['enc'])) {
+        if (!is_array($value) || !isset($value['enc']) || !is_string($value['enc'])) {
             return null;
         }
 
         try {
-            $decrypted = decrypt(base64_decode($value['enc']));
-            return $decrypted;
+            return decrypt($value['enc']);
         } catch (DecryptException $e) {
-            return null;
+            try {
+                return decrypt(base64_decode($value['enc']));
+            } catch (DecryptException $ignored) {
+                return null;
+            }
         }
     }
+
     public static function hasEnrollment(mixed $raw): bool
     {
         return self::decodeFromStorage($raw) !== null;
     }
+
     public static function getMetadata(mixed $raw): ?array
     {
         if ($raw === null || $raw === '') {

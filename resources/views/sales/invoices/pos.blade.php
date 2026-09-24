@@ -698,25 +698,43 @@
                                             <td style="text-align: right;"><b>@{{saletemp.currency}}</b></td>
                                         </tr> 
                                     </table>
+                                    
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label class="form-label">
+                                            Invoice note
+                                            <span style="color: red; font-weight: bold;">*</span>
+                                        </label>
+                                        <div class="summernote" id="note-content">
+                                            @if($notes)
+                                                {!! $notes->content !!}
+                                            @endif
+                                        </div>
+                                        <input type="hidden" name="note" id="note">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-sm-12" ng-if="discapprovals > 0">
+                                        <div class="alert alert-warning alert-block">
+                                            <button type="button" class="close" data-bs-dismiss="alert">×</button>
+                                            <strong>You Have discount Requests not Approved Yet. Please contact your Manager To Complete Sale</strong>
+                                        </div>
+                                    </div>
 
-                                    <div class="row">
-                                        <div class="col-sm-12" ng-if="discapprovals > 0">
-                                            <div class="alert alert-warning alert-block">
-                                                <button type="button" class="close" data-bs-dismiss="alert">×</button>
-                                                <strong>You Have discount Requests not Approved Yet. Please contact your Manager To Complete Sale</strong>
-                                            </div>
-                                        </div>
-                                        <!-- <div class="col-sm-4" style="margin-top: 5px;">
-                                            <input type="checkbox" id="print_receipt" name="print_receipt">
-                                            <label for="print_receipt">Print</label>
-                                        </div> -->
-                                        <div class="col-sm-4" ng-if="discapprovals == 0" style="margin-top: 5px;">
-                                            <button type="submit" name="myButton" class="btn btn-success btn-sm">{{trans('navmenu.btn_submit')}}</button>
-                                        </div>
+                                    <!-- <div class="col-sm-4" style="margin-top: 5px;">
+                                        <input type="checkbox" id="print_receipt" name="print_receipt">
+                                        <label for="print_receipt">Print</label>
+                                    </div> -->
+
+                                    <div class="col-auto d-flex align-items-center gap-2">
+                                        <button ng-if="discapprovals == 0" type="submit" name="myButton" class="btn btn-success btn-sm px-3">
+                                            {{trans('navmenu.btn_submit')}}
+                                        </button>
                                         
-                                        <div class="col-sm-4" style="margin-top: 5px;">
-                                            <button onclick="confirmCancel()" type="button" class="btn btn-danger btn-sm">{{trans('navmenu.btn_cancel')}}</button>
-                                        </div>
+                                        <button onclick="confirmCancel()" type="button" class="btn btn-danger btn-sm px-3">
+                                            {{trans('navmenu.btn_cancel')}}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -870,7 +888,7 @@
     <script src="{{ asset('side/assets/js/bundle/summernote.bundle.js') }}"></script>
     <script>
         $(document).ready(function() {
-            $('#notes').summernote({
+            $('#note-content').summernote({
               toolbar: [
                 // [groupName, [list of button]]
                 ['style', ['bold', 'italic', 'underline', 'clear']],
@@ -883,6 +901,11 @@
             });
             $('.note-editor .note-btn').on('click', function() {
                 $(this).next().toggleClass("show");
+            });
+
+            $('#pos-form').on('submit', function() {
+                var content = $('#note-content').summernote('code');
+                $('#note').val(content);
             });
         });
     </script>

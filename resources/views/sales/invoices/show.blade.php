@@ -445,7 +445,7 @@
                                                         <tr style="border: 1px solid gray; border-radius: 20px;">
                                                             {{-- <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{ sprintf('%04d',$sale->invoice_no)}}</b></td> --}}
                                                             <td colspan="2" style="font-size: 20px !important; text-align: center;">Invoice No  : <b>{{$sale->invoice_no}}</b></td>
-                                                     </tr>
+                                                       </tr>
                                                         <tr>
                                                             <td style="text-align: right;">Invoice Date :</td>
                                                             <td><b>{{ date('d F, Y', strtotime($sale->time_created)) }}</b></td>
@@ -731,10 +731,10 @@
                                                             <div><b>DECLARATION</b>:</div>
                                                             <div>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</div>
                                                         </div>
-                                                        @if(!is_null($sale->notes))
+                                                        @if(!is_null($sale->note))
                                                         <div class="notice col-md-12 pt-3">
                                                             <div>NOTE:</div>
-                                                            <div>{!! $sale->notes !!}</div>
+                                                            <div>{!! $sale->note !!}</div>
                                                         </div>
                                                         @endif
                                                     </td>

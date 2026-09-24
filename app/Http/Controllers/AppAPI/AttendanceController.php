@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\AppAPI;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -12,11 +11,11 @@ use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
 use App\Models\User;
 use App\Services\FaceEmbeddingStorage;
+use App\Services\FingerprintEnrollmentSetting;
 use App\Services\FingerprintTemplateStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
 
 class AttendanceController extends Controller
 {
@@ -27,13 +26,14 @@ class AttendanceController extends Controller
     private const FACE_AMBIGUITY_STRICT_RUNNER_UP_MIN = 0.72;
     public function punchIn(Request $request)
     {
-        // Log::info($request);
+        $fingerprintVerified = $request->attributes->get('fingerprint_verified') === true;
         try {
-            $request->validate([
-                'qr_data' => 'required|string',
-                'face_embedding' => 'required|array|min:64',
-                'face_embedding.*' => 'numeric',
-            ]);
+            $rules = ['qr_data' => 'required|string'];
+            if (!$fingerprintVerified) {
+                $rules['face_embedding'] = 'required|array|min:64';
+                $rules['face_embedding.*'] = 'numeric';
+            }
+            $request->validate($rules);
 
             $employee = $this->resolveEmployeeFromQr($request->input('qr_data'));
             if (!$employee) {
@@ -42,21 +42,23 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
-            if (!FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
+            if (!$fingerprintVerified && !FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
                 return response()->json([
                     'success' => 0,
                     'message' => 'Employee has no face enrolled. Register face in the admin kiosk first.',
                 ], 422);
             }
 
-            $matchResult = $this->matchProbeAgainstEmployee(
-                $employee,
-                $request->input('face_embedding', [])
-            );
-            if (!$matchResult['matched']) {
-                return response()->json([
-                    'message' => 'Face verification failed',
-                ], 401);
+            if (!$fingerprintVerified) {
+                $matchResult = $this->matchProbeAgainstEmployee(
+                    $employee,
+                    $request->input('face_embedding', [])
+                );
+                if (!$matchResult['matched']) {
+                    return response()->json([
+                        'message' => 'Face verification failed',
+                    ], 401);
+                }
             }
 
             $setting = AttendanceSetting::where('company_id', $employee->company_id)->first();
@@ -94,7 +96,8 @@ class AttendanceController extends Controller
 
                         return response()->json([
                             'message'        => 'Punch out successful',
-                            'employee'       => $employee->name,
+                            'employee'       => $employee->fname,
+                            'employee_name'  => trim(($employee->fname ?? '') . ' ' . ($employee->lname ?? '')),
                             'time'           => $now->format('H:i:s'),
                             'is_fullday'     => $attendance->is_fullday,
                         ]);
@@ -120,12 +123,13 @@ class AttendanceController extends Controller
                     $attendance->is_fullday = $now->gte($companyEndTime);
                     $attendance->save();
 
-                    return response()->json([
-                        'message'        => 'Punch out successful',
-                        'employee'       => $employee->name,
-                        'time'           => $now->format('H:i:s'),
-                        'is_fullday'     => $attendance->is_fullday,
-                    ]);
+                        return response()->json([
+                            'message'        => 'Punch out successful',
+                            'employee'       => $employee->fname,
+                            'employee_name'  => trim(($employee->fname ?? '') . ' ' . ($employee->lname ?? '')),
+                            'time'           => $now->format('H:i:s'),
+                            'is_fullday'     => $attendance->is_fullday,
+                        ]);
                 }
             } else {
 
@@ -300,6 +304,9 @@ class AttendanceController extends Controller
                 'company_id' => $employee->company_id,
                 'face_registered' => FaceEmbeddingStorage::hasEnrollment(
                     $employee->getRawOriginal('face_embedding')
+                ),
+                'fingerprint_registered' => FingerprintTemplateStorage::hasEnrollment(
+                    $employee->getRawOriginal('fingerprint_template')
                 ),
                 'pending_token' => $pendingToken,
             ]);
@@ -698,11 +705,9 @@ class AttendanceController extends Controller
     {
         try {
             $request->validate([
-                'employee_ref' => 'required|string', 
-                'fingerprint_template' => 'required|string', 
+                'employee_ref' => 'required|string',
             ]);
 
-            /** @var User|null $user */
             $user = auth('api')->user();
             $companyId = $this->resolveCompanyIdFromAuthUser($user);
             if (!$companyId) {
@@ -747,10 +752,11 @@ class AttendanceController extends Controller
             ]);
 
             $qrData = encrypt($employee->id . '&' . $employee->company_id);
-            return $this->punchIn(new Request([
+            $punchRequest = new Request([
                 'qr_data' => $qrData,
-                'face_embedding' => [], 
-            ]));
+            ]);
+            $punchRequest->attributes->set('fingerprint_verified', true);
+            return $this->punchIn($punchRequest);
 
         } catch (DecryptException $e) {
             return response()->json(['message' => 'Invalid employee reference'], 400);
@@ -761,6 +767,113 @@ class AttendanceController extends Controller
             ], 422);
         }
     }
+    public function registerFingerprintTemplate(Request $request)
+    {
+        try {
+            $request->validate([
+                'qr_data' => 'required|string',
+                'fingerprint_template' => 'required|string|max:8192',
+                'finger' => 'nullable|string|max:40',
+                'model_version' => 'nullable|string|max:120',
+                'algorithm_version' => 'nullable|string|max:120',
+            ]);
+            $user = auth('api')->user();
+            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            $employee = $this->resolveEmployeeFromQr($request->input('qr_data'));
+            if (!$companyId || !$employee || (int) $employee->company_id !== (int) $companyId) {
+                return response()->json(['message' => 'Invalid employee QR for this company'], 403);
+            }
+
+            if (!FingerprintEnrollmentSetting::isAllowed((int) $companyId)) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Fingerprint enrollment is turned off for this company.',
+                ], 403);
+            }
+
+            if (FingerprintTemplateStorage::hasEnrollment($employee->getRawOriginal('fingerprint_template'))) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'This employee already has a fingerprint enrolled. Remove it in admin before replacing it.',
+                ], 409);
+            }
+
+            $template = $request->input('fingerprint_template');
+            if (base64_decode($template, true) === false) {
+                return response()->json(['message' => 'Invalid fingerprint template'], 422);
+            }
+            $employee->fingerprint_template = FingerprintTemplateStorage::packForStorage(
+                $template,
+                $request->input('model_version', 'zkfinger_v2.1.24'),
+                $request->input('algorithm_version', 'zkalg12')
+            );
+            $employee->fingerprint_model_version = $request->input('model_version', 'zkfinger_v2.1.24');
+            $employee->fingerprint_algorithm_version = $request->input('algorithm_version', 'zkalg12');
+            $employee->fingerprint_finger = $request->input('finger', 'Right index');
+            $employee->fingerprint_registered_at = now();
+            $employee->fingerprint_last_verified_at = null;
+            $employee->fingerprint_enabled = true;
+            $employee->save();
+
+            return response()->json(['status' => 'success', 'message' => 'Fingerprint enrolled successfully']);
+        } catch (DecryptException $e) {
+            return response()->json(['message' => 'Invalid employee QR'], 422);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Invalid enrollment request', 'errors' => $e->errors()], 422);
+        }
+    }
+
+    public function fingerprintTemplates(Request $request)
+    {
+        /** @var User|null $user */
+        $user = auth('api')->user();
+        $companyId = $this->resolveCompanyIdFromAuthUser($user);
+        if (!$companyId) {
+            return response()->json(['message' => 'No default company configured for this account'], 403);
+        }
+
+        $templates = Employee::where('company_id', $companyId)
+            ->where('fingerprint_enabled', true)
+            ->whereNotNull('fingerprint_template')
+            ->get()
+            ->map(function (Employee $employee) {
+                $template = FingerprintTemplateStorage::decodeFromStorage(
+                    $employee->getRawOriginal('fingerprint_template')
+                );
+                if ($template === null) {
+                    return null;
+                }
+
+                return [
+                    'scanner_key' => 'emp-' . $employee->id,
+                    'template' => $template,
+                    'attendance_token' => encrypt($employee->id . '&' . $employee->company_id . '&fp'),
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'status' => 'success',
+            'templates' => $templates,
+        ]);
+    }
+
+    public function attendanceAppSettings(Request $request)
+    {
+        /** @var User|null $user */
+        $user = auth('api')->user();
+        $companyId = $this->resolveCompanyIdFromAuthUser($user);
+        if (!$companyId) {
+            return response()->json(['message' => 'No default company configured for this account'], 403);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'allow_fingerprint_enrollment' => FingerprintEnrollmentSetting::isAllowed((int) $companyId),
+        ]);
+    }
+
     private function resolveEmployeeFromFingerprintRef(string $encryptedRef): ?Employee
     {
         $data = decrypt($encryptedRef);
@@ -769,12 +882,9 @@ class AttendanceController extends Controller
         $employeeId = $parts[0] ?? null;
         $companyId = $parts[1] ?? null;
         $type = $parts[2] ?? null;
-        $timestamp = $parts[3] ?? null;
 
-        if ($type !== 'fp') return null;
-
-        if ($timestamp && (time() - (int)$timestamp > 300)) {
-            return null; 
+        if ($type !== 'fp') {
+            return null;
         }
         return Employee::where('id', $employeeId)
             ->where('company_id', $companyId)

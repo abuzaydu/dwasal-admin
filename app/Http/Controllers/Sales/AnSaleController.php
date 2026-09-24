@@ -364,6 +364,7 @@ class AnSaleController extends Controller
         $sale->sale_type = $request['sale_type'];
         $sale->comments = $request['comments'];
         $sale->rent_end_date = $request['rent_end_date'];
+        $sale->note = $request->input('note');
         $sale->save();
 
         $items = AnSaleItem::where('an_sale_id', $sale->id)->get();

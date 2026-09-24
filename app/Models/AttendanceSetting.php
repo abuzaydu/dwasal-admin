@@ -8,4 +8,8 @@ class AttendanceSetting extends Model
 {
     //
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'works_on_weekend' => 'boolean',
+    ];
 }
