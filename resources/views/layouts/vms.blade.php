@@ -177,6 +177,13 @@
                 <div class="tab-content px-0">
                     <div class="tab-pane fade show active" id="hr_menu" role="tabpanel">
                         <nav class="sidebar-nav">
+                            @if(request()->is('field-operations*'))
+                            <ul class="metismenu list-unstyled">
+                                <li><a href="{{ url('/home') }}"><i class="fa fa-home"></i> Home</a></li>
+                                <li class="active"><a href="{{ route('field-operations.index') }}"><i class="fa fa-file-text-o"></i> Daily Field Operations</a></li>
+                                <li><a href="{{ route('field-operations.sample') }}"><i class="fa fa-file-pdf-o"></i> Sample Report</a></li>
+                            </ul>
+                            @else
                             <ul class="metismenu list-unstyled">
                                 @if (Auth::user()->can('view-reports'))
                                 <li class="{{ request()->is('vehicles-dash') ? 'active' : '' }}"><a href="{{ url('vehicles-dash') }}" class="has-arrow"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
@@ -190,11 +197,12 @@
                                         <li><a href="{{ url('legal-documents/status') }}" class="{{ request()->is('legal-documents/status') ? 'active' : '' }}"><i class="fa fa-check-square-o"></i> Vehicle Document Status</a></li>
                                     </ul>
                                 </li>
-                                <li class="{{ request()->is('vehicle-requisitions') || request()->is('trip-logs') ? 'active' : '' }}">
+                                <li class="{{ request()->is('vehicle-requisitions*') || request()->is('requisition-trip-logs*') || request()->is('field-operations*') ? 'active' : '' }}">
                                     <a class="has-arrow" href="#vehicle-requisition"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a>
                                     <ul class="list-unstyled">
                                         <li><a href="{{ url('vehicle-requisitions') }}" class="{{ request()->is('vehicle-requisitions' ? 'active': '') }}"><i class="fa fa-list-alt"></i> Vehicle Requisitions</a></li>
                                         <li><a href="{{ url('requisition-trip-logs') }}" class="{{ request()->is('requisition-trip-logs' ? 'active': '') }}"><i class="fa fa-road"></i>Requisition Trip Logs</a></li>
+                                        <li><a href="{{ route('field-operations.index') }}" class="{{ request()->is('field-operations*') ? 'active' : '' }}"><i class="fa fa-file-text-o"></i> Field Operations Records</a></li>
                                     </ul>
                                 </li>
                                 <li class="{{ request()->is('insurance') ? 'active' : '' }}"><a href="{{ url('insurance') }}"><i class="fa fa-file-o"></i> Insurance</a></li>
@@ -228,6 +236,7 @@
                                 <li class="{{ request()->is('vms-expenses') ? 'active' : '' }}"><a href="{{ url('vms-expenses') }}"><i class="fa fa-credit-card"></i> Expenses</a></li>
                                 <li class="{{ request()->is('vendors') ? 'active' : '' }}"><a href="{{ url('vendors') }}"><i class="fa fa-group"></i> Vendors</a></li>
                             </ul>
+                            @endif
                         </nav>
                     </div>
                     <div class="tab-pane fade" id="setting_menu" role="tabpanel">
@@ -392,7 +401,7 @@
         }
     }
 
-    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage' || $page == 'Vehicle Maintenance' || $page == 'Vehicle Refueling' || $page == 'VMS Expenses' || $page == 'Requisition Trip Logs' || $page == 'Vehicle Requisitions' || $page == 'Vendors' || $page == 'Legal Documents (Tanzania)' || $page == 'Vehicles' || $page == 'Insurance' || $page == 'Equipment Records' || $page == 'Vehicle Insurance'
+                    if ($page == 'Home' || $page == 'Reports' || $page == 'Stock Reports' || $page == 'Part Purchases' || $page == 'Vendor Account Statement' || $page == 'Parts Usage' || $page == 'Vehicle Maintenance' || $page == 'Vehicle Refueling' || $page == 'VMS Expenses' || $page == 'Requisition Trip Logs' || $page == 'Vehicle Requisitions' || $page == 'Field Operations Records' || $page == 'Vendors' || $page == 'Legal Documents (Tanzania)' || $page == 'Vehicles' || $page == 'Insurance' || $page == 'Equipment Records' || $page == 'Vehicle Insurance'
     || $page == 'VMS Dashboard') {
         $is_post = $is_post_query;
         $startdate = $start_date;

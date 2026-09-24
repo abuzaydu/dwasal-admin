@@ -257,6 +257,17 @@
                         </a>
                     </div>
                     <div class="col-md-3">
+                        <a href="{{ route('field-operations.index') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
+                                    <h2><i class="fa fa-file-text-o"></i></h2>
+                                    <h6 class="text-primary">Daily Field Operations</h6>
+                                    <small>Daily truck operations, trip totals, expenditures, cash submissions and printable reports</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
                         <a href="{{ url('visitors-dash') }}" target="_blank">
                             <div class="card">
                                 <div class="body text-center">
