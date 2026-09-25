@@ -59,7 +59,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($records as $record)
+                    <!-- @forelse($records as $record) -->
+                     @foreach($records as $record)
+                     
                         <tr>
                             <td>{{ $record->record_no }}</td>
                             <td data-order="{{ $record->record_date?->format('Y-m-d') }}">{{ $record->record_date?->format('d/m/Y') }}</td>
@@ -78,9 +80,10 @@
                                 </form>
                             </td>
                         </tr>
-                    @empty
+                        @endforeach
+                    <!-- @empty
                         <tr><td colspan="7" class="text-center text-muted py-4">No field operations records found.</td></tr>
-                    @endforelse
+                    @endforelse -->
                 </tbody>
             </table>
         </div>
