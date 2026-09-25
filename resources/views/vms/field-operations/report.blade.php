@@ -94,7 +94,7 @@
     </div>
 
     <table class="operations-table">
-        <thead><tr><th>No.</th><th>TRUCK NO</th><th>CUBIC (m3)</th><th>TRIPS</th><th>AMOUNT PER TRIP</th><th>TOTAL AMOUNT OF TRIPS</th><th>EXPENDITURE</th><th>EXPENDITURE DETAILS</th><th>CASH SUBMITTED</th></tr></thead>
+        <thead><tr><th>No.</th><th>TRUCK NO</th><th>CUBIC (m3)</th><th>TRIPS</th><th>AMOUNT PER TRIP</th><th>TOTAL AMOUNT OF TRIPS</th><th>EXPENSE</th><th>EXPENSE DETAILS</th><th>CASH SUBMITTED</th></tr></thead>
         <tbody>
             @forelse($rows as $number => $row)
                 <tr>
@@ -106,7 +106,7 @@
                     <td>{{ $money($row?->total_amount) }}</td>
                     <td>@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $money($entry['amount'] ?? 0) }}</div>@endforeach</td>
                     <td>@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $entry['details'] ?? '' }}</div>@endforeach</td>
-                    <td>@foreach($row?->cash_entries ?? [] as $entry)<div>{{ $money($entry['amount'] ?? 0) }}@if(!empty($entry['details'])): {{ $entry['details'] }}@endif</div>@endforeach</td>
+                    <td>{{ $money(max(0, ($row?->total_amount ?? 0) - ($row?->expenditure_total ?? 0))) }}</td>
                 </tr>
             @empty
                 <tr><td colspan="9" style="text-align:center;">No operation rows recorded.</td></tr>

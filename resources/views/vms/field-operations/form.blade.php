@@ -13,7 +13,7 @@
     <div class="alert alert-danger"><strong>Please correct the following:</strong><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
 @endif
 
-<form action="{{ $formAction }}" method="POST" data-draft-enabled="{{ $record->exists ? '0' : '1' }}" data-draft-key="field-operations-new-{{ $record->record_no }}" data-autosave-url="{{ $record->exists ? route('field-operations.autosave', $record) : route('field-operations.store') }}" data-autosave-create="{{ $record->exists ? '0' : '1' }}">
+<form action="{{ $formAction }}" method="POST" data-draft-enabled="0" data-draft-key="field-operations-new-{{ $record->record_no }}" data-autosave-url="{{ $record->exists ? route('field-operations.autosave', $record) : route('field-operations.store') }}" data-autosave-create="{{ $record->exists ? '0' : '1' }}">
     @csrf
     @if($formMethod !== 'POST') @method($formMethod) @endif
 
@@ -81,7 +81,7 @@
             <p class="text-muted small mb-3">Add one operation at a time. Expenditures and cash submissions can each contain multiple entries.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm align-middle mb-0" id="operationsSummary">
-                    <thead class="table-light"><tr><th>No.</th><th>Truck No.</th><th>Cubic</th><th>Trips</th><th>Amount / Trip</th><th>Total Amount of Trips</th><th>Expenditure</th><th>Cash Submitted</th><th>Action</th></tr></thead>
+                    <thead class="table-light"><tr><th>No.</th><th>Truck No.</th><th>Cubic</th><th>Trips</th><th>Amount / Trip</th><th>Total Amount of Trips</th><th>Expense</th><th>Cash Submitted</th><th>Action</th></tr></thead>
                     <tbody>
                         @foreach($formRows as $index => $row)
                             @if(collect($row)->contains(fn ($value) => is_array($value) ? count($value) > 0 : $value !== null && $value !== ''))
@@ -92,6 +92,9 @@
                                         $cashEntries = $row['cash_entries'] ?? json_decode($row['cash_entries_json'] ?? '[]', true) ?? [];
                                         $amount = (float) ($row['amount_per_trip'] ?? 0);
                                         $trips = (int) ($row['trip_count'] ?? 0);
+                                        $grandTotalRevenue = collect($formRows)->sum(fn ($item) => ((float) ($item['amount_per_trip'] ?? 0) * (int) ($item['trip_count'] ?? 0)));
+                                        $grandTotalExpense = collect($formRows)->sum(fn ($item) => collect(json_decode($item['expenditure_entries_json'] ?? '[]', true) ?? [])->sum('amount'));
+                                        $recordCashSubmitted = max(0, $grandTotalRevenue - $grandTotalExpense);
                                     @endphp
                                     <td class="summary-truck_no">{{ $row['truck_no'] ?? '' }}</td>
                                     <td class="summary-cubic">{{ number_format((float) ($row['cubic'] ?? 0), 0) }}</td>
@@ -99,7 +102,7 @@
                                     <td class="summary-amount_per_trip">{{ number_format($amount, 0) }}</td>
                                     <td class="summary-total_amount">{{ number_format($amount * $trips, 0) }}</td>
                                     <td class="summary-expenditure_entries_json">{{ number_format((float) collect($expenditureEntries)->sum('amount'), 0) }}</td>
-                                    <td class="summary-cash_entries_json">{{ number_format((float) collect($cashEntries)->sum('amount'), 0) }}</td>
+                                    <td class="summary-cash_entries_json">{{ number_format($recordCashSubmitted, 0) }}</td>
                                     <td class="text-nowrap"><button type="button" class="btn btn-sm btn-outline-secondary edit-row" title="Edit row"><i class="fa fa-pencil"></i></button> <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Remove row"><i class="fa fa-trash"></i></button>@foreach($rowFields as $field)<input type="hidden" name="rows[{{ $index }}][{{ $field }}]" value="{{ $field === 'expenditure_entries_json' ? json_encode($expenditureEntries) : ($field === 'cash_entries_json' ? json_encode($cashEntries) : ($row[$field] ?? '')) }}" data-field="{{ $field }}">@endforeach</td>
                                 </tr>
                             @endif
@@ -126,12 +129,13 @@
                     <div class="col-12 col-md-4"><label class="form-label" for="row_amount_per_trip">Amount Per Trip</label><input id="row_amount_per_trip" type="number" min="0" step="0.01" class="form-control" placeholder="0"></div>
                     <div class="col-12 col-md-8"><label class="form-label">Total Amount of Trips</label><input id="row_total_amount" class="form-control bg-light" readonly value="0"></div>
                 </div>
-                <div class="modal-section-title">Expenditure entries</div>
+                <div class="modal-section-title">Expense entries</div>
                 <div class="entry-list" id="expenditureEntryList"></div>
                 <div class="row g-2 align-items-end mb-4"><div class="col-12 col-md-4"><label class="form-label" for="new_expenditure_amount">Amount</label><input id="new_expenditure_amount" type="number" min="0" step="0.01" class="form-control" placeholder="0"></div><div class="col-12 col-md-6"><label class="form-label" for="new_expenditure_details">Details</label><input id="new_expenditure_details" class="form-control" placeholder="What was it used for?"></div><div class="col-12 col-md-2"><button type="button" class="btn btn-outline-primary btn-sm compact-action w-100" id="addExpenditureEntry"><i class="fa fa-plus"></i> Add</button></div></div>
-                <div class="modal-section-title">Cash submitted entries</div>
-                <div class="entry-list" id="cashEntryList"></div>
-                <div class="row g-2 align-items-end"><div class="col-12 col-md-4"><label class="form-label" for="new_cash_amount">Amount</label><input id="new_cash_amount" type="number" min="0" step="0.01" class="form-control" placeholder="0"></div><div class="col-12 col-md-6"><label class="form-label" for="new_cash_details">Details</label><input id="new_cash_details" class="form-control" placeholder="Submission note"></div><div class="col-12 col-md-2"><button type="button" class="btn btn-outline-primary btn-sm compact-action w-100" id="addCashEntry"><i class="fa fa-plus"></i> Add</button></div></div>
+                <div class="modal-section-title">Cash Submitted</div>
+                <div class="alert alert-light border small mb-3 mb-0">Cash Submitted is auto-calculated as: Total Amount of Trips - Expense.</div>
+                <div class="entry-list" id="cashEntryList" style="display:none;"></div>
+                <div class="row g-2 align-items-end" style="display:none;"><div class="col-12 col-md-4"><label class="form-label" for="new_cash_amount">Amount</label><input id="new_cash_amount" type="number" min="0" step="0.01" class="form-control" placeholder="0"></div><div class="col-12 col-md-6"><label class="form-label" for="new_cash_details">Details</label><input id="new_cash_details" class="form-control" placeholder="Submission note"></div><div class="col-12 col-md-2"><button type="button" class="btn btn-outline-primary btn-sm compact-action w-100" id="addCashEntry"><i class="fa fa-plus"></i> Add</button></div></div>
             </div>
             <div class="modal-footer"><span id="rowSaveStatus" class="text-muted small me-auto"></span><button type="button" class="btn btn-light compact-action" data-bs-dismiss="modal"><i class="fa fa-times me-1"></i> Close</button><button type="button" class="btn btn-primary compact-action" id="confirmOperationRow"><i class="fa fa-check me-1"></i> Confirm</button></div>
         </div></div>
@@ -187,7 +191,7 @@
     $(function () {
         const modal = $('#operationRowModal');
         const form = $('form[data-draft-key]');
-        const draftEnabled = form.data('draft-enabled') === 1 || form.data('draft-enabled') === '1';
+        const draftEnabled = false;
         const draftKey = form.data('draft-key');
         let autosaveUrl = form.data('autosave-url');
         let isNewRecord = form.data('autosave-create') === 1 || form.data('autosave-create') === '1';
@@ -203,7 +207,7 @@
         function formatValue(field, value, values) {
             if (field === 'total_amount') return ((Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0)).toLocaleString('en-US', { maximumFractionDigits: 2 });
             if (field === 'expenditure_entries_json') return expenditureTotal(values).toLocaleString('en-US', { maximumFractionDigits: 2 });
-            if (field === 'cash_entries_json') return cashTotal(values).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            if (field === 'cash_entries_json') return Math.max(0, ((Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0)) - expenditureTotal(values)).toLocaleString('en-US', { maximumFractionDigits: 2 });
             if (['cubic', 'amount_per_trip'].includes(field) && value !== '') return Number(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
             return value || '';
         }
@@ -213,7 +217,10 @@
         }
 
         function expenditureTotal(values) { return entriesFrom(values.expenditure_entries_json).reduce((sum, entry) => sum + (Number(entry.amount) || 0), 0); }
-        function cashTotal(values) { return entriesFrom(values.cash_entries_json).reduce((sum, entry) => sum + (Number(entry.amount) || 0), 0); }
+        function cashTotal(values) {
+            const totalAmount = (Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0);
+            return Math.max(0, totalAmount - expenditureTotal(values));
+        }
 
         function refreshEmptyState() {
             $('#emptyOperations').toggle($('#operationsSummary tbody tr').length === 0);
@@ -230,6 +237,10 @@
             renderEntries();
             editingIndex = null;
             $('#operationRowModalLabel').text('Add Operation Row');
+        }
+
+        function clearModalAndDraftState() {
+            clearModal();
         }
 
         function rowInput(index, field, value) {
@@ -258,29 +269,19 @@
         }
 
         function scheduleDraftSave() {
-            if (!draftEnabled) return;
-            clearTimeout(draftTimer);
-            draftTimer = setTimeout(saveDraft, 200);
+            return;
         }
 
         function saveDraft() {
-            if (!draftEnabled) return;
-            const draft = { fields: {}, rows: [] };
-            form.find('input[name], textarea[name], select[name]').each(function () {
-                const name = $(this).attr('name');
-                if (!name || name === '_token' || name === '_method' || name.indexOf('rows[') === 0) return;
-                draft.fields[name] = $(this).val();
-            });
-            draft.fields.machine_condition = $('#machine_condition').summernote ? $('#machine_condition').summernote('code') : $('#machine_condition').val();
-            $('#operationsSummary tbody tr').each(function () {
-                const row = { index: Number($(this).data('row-index')), values: {} };
-                fields.forEach(field => row.values[field] = $(this).find('[data-field="' + field + '"]').val() || '');
-                draft.rows.push(row);
-            });
-            localStorage.setItem(draftKey, JSON.stringify(draft));
+            return;
         }
 
         function autosaveRecord() {
+            if (isNewRecord) {
+                $('#rowSaveStatus').removeClass('text-success text-danger').addClass('text-muted').text('Draft disabled');
+                return Promise.resolve();
+            }
+
             if ($('#machine_condition').next('.note-editor').length) {
                 $('#machine_condition').val($('#machine_condition').summernote('code'));
             }
@@ -312,17 +313,7 @@
         }
 
         function loadDraft() {
-            if (!draftEnabled) return;
-            let draft;
-            try { draft = JSON.parse(localStorage.getItem(draftKey) || 'null'); } catch (error) { draft = null; }
-            if (!draft) return;
-            Object.entries(draft.fields || {}).forEach(([name, value]) => {
-                if (value === '' && $('[name="' + name + '"]').val()) return;
-                if (name === 'machine_condition' && $('#machine_condition').next('.note-editor').length) $('#machine_condition').summernote('code', value);
-                else $('[name="' + name + '"]').val(value);
-            });
-            (draft.rows || []).forEach(row => addSummaryRow(row.index, row.values));
-            refreshEmptyState();
+            return;
         }
 
         $('#row_amount_per_trip, #row_trip_count').on('input', updateTotalAmount);
@@ -381,9 +372,8 @@
             if (index === undefined) { alert('The report supports a maximum of 24 rows.'); return; }
             if (editingIndex !== null) $('[data-row-index="' + editingIndex + '"]').remove();
             addSummaryRow(index, values);
-            autosaveRecord();
+            clearModal();
             bootstrap.Modal.getOrCreateInstance(modal[0]).hide();
-            scheduleDraftSave();
         });
 
         $(document).on('click', '.edit-row', function () {
@@ -401,9 +391,27 @@
             bootstrap.Modal.getOrCreateInstance(modal[0]).show();
         });
 
-        $(document).on('click', '.remove-row', function () { $(this).closest('tr').remove(); refreshEmptyState(); scheduleDraftSave(); });
+        $(document).on('click', '.remove-row', function () {
+            $(this).closest('tr').remove();
+            expenditureEntries = [];
+            cashEntries = [];
+            editingIndex = null;
+            editingEntryKind = null;
+            editingEntryIndex = null;
+            clearModal();
+            refreshEmptyState();
+        });
+        form.on('submit', function () {
+            localStorage.removeItem(draftKey);
+        });
         form.on('input change', 'input, textarea, select', scheduleDraftSave);
         $('#machine_condition').on('summernote.change', scheduleDraftSave);
+        $(document).on('click', '[data-bs-target="#operationRowModal"]', function () {
+            editingIndex = null;
+            expenditureEntries = [];
+            cashEntries = [];
+            clearModal();
+        });
         if ($.fn.summernote) {
             $('#machine_condition').summernote({
                 height: 120,

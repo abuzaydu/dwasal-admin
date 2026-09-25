@@ -33,11 +33,14 @@ class FieldOperationsRecord extends Model
 
     public function total(string $column): float
     {
+        if ($column === 'cash_submitted') {
+            return max(0, $this->total('total_amount') - $this->total('expenditure'));
+        }
+
         return (float) $this->rows->sum(function (FieldOperationRow $row) use ($column) {
             return match ($column) {
                 'total_amount' => $row->total_amount,
                 'expenditure' => $row->expenditure_total,
-                'cash_submitted' => $row->cash_submitted_total,
                 default => $row->{$column},
             };
         });

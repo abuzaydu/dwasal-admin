@@ -31,6 +31,9 @@ class FieldOperationRow extends Model
 
     public function getCashSubmittedTotalAttribute(): float
     {
-        return (float) collect($this->cash_entries ?? [])->sum('amount');
+        $totalAmount = (float) $this->total_amount;
+        $expenseTotal = (float) $this->expenditure_total;
+
+        return max(0, $totalAmount - $expenseTotal);
     }
 }

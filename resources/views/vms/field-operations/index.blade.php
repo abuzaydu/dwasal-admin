@@ -59,9 +59,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- @forelse($records as $record) -->
-                     @foreach($records as $record)
-                     
+                    @forelse($records as $record)
                         <tr>
                             <td>{{ $record->record_no }}</td>
                             <td data-order="{{ $record->record_date?->format('Y-m-d') }}">{{ $record->record_date?->format('d/m/Y') }}</td>
@@ -80,34 +78,13 @@
                                 </form>
                             </td>
                         </tr>
-                        @endforeach
-                    <!-- @empty
+                    @empty
                         <tr><td colspan="7" class="text-center text-muted py-4">No field operations records found.</td></tr>
-                    @endforelse -->
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-@section('page-scripts')
-<script>
-    $(document).ready(function () {
-        $('#fieldOperationsTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            order: [[1, 'desc']],
-            columnDefs: [{ orderable: false, targets: [6] }],
-            language: {
-                search: 'Search:',
-                lengthMenu: 'Show _MENU_ entries',
-                info: 'Showing _START_ to _END_ of _TOTAL_ field operation records',
-                emptyTable: 'No field operation records found',
-                zeroRecords: 'No matching field operation records found'
-            }
-        });
-    });
-</script>
-@endsection
 @endsection
