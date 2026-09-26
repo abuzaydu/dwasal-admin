@@ -94,25 +94,25 @@
     </div>
 
     <table class="operations-table">
-        <thead><tr><th>No.</th><th>TRUCK NO</th><th>CUBIC (m3)</th><th>TRIPS</th><th>AMOUNT PER TRIP</th><th>TOTAL AMOUNT OF TRIPS</th><th>EXPENSE</th><th>EXPENSE DETAILS</th><th>CASH SUBMITTED</th></tr></thead>
+        <thead><tr><th>No.</th><th>TRUCK NO</th><th>CUBIC (m3)</th><th>TRIPS</th><th style="text-align: right;">AMOUNT PER TRIP</th><th style="text-align: right;">TOTAL AMOUNT OF TRIPS</th><th>EXPENSE DETAILS</th><th style="text-align: right;">EXPENSE AAMOUNT</th><th style="text-align: right;">CASH SUBMITTED</th></tr></thead>
         <tbody>
             @forelse($rows as $number => $row)
                 <tr>
                     <td class="text-center">{{ $number + 1 }}</td>
                     <td>{{ $row?->truck_no }}</td>
-                    <td>{{ $money($row?->cubic) }}</td>
-                    <td>{{ $row?->trip_count }}</td>
-                    <td>{{ $money($row?->amount_per_trip) }}</td>
-                    <td>{{ $money($row?->total_amount) }}</td>
-                    <td>@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $money($entry['amount'] ?? 0) }}</div>@endforeach</td>
+                    <td style="text-align: center;">{{ $money($row?->cubic) }}</td>
+                    <td style="text-align: center;">{{ $row?->trip_count }}</td>
+                    <td style="text-align: right;">{{ $money($row?->amount_per_trip) }}</td>
+                    <td style="text-align: right;">{{ $money($row?->total_amount) }}</td>
                     <td>@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $entry['details'] ?? '' }}</div>@endforeach</td>
-                    <td>{{ $money(max(0, ($row?->total_amount ?? 0) - ($row?->expenditure_total ?? 0))) }}</td>
+                    <td style="text-align: right;">@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $money($entry['amount'] ?? 0) }}</div>@endforeach</td>
+                    <td style="text-align: right;">{{ $money(max(0, ($row?->total_amount ?? 0) - ($row?->expenditure_total ?? 0))) }}</td>
                 </tr>
             @empty
                 <tr><td colspan="9" style="text-align:center;">No operation rows recorded.</td></tr>
             @endforelse
         </tbody>
-        <tfoot><tr><td colspan="2"></td><td>TOTAL: {{ $money($record->total('cubic')) }}</td><td></td><td>TOTAL: {{ $money($record->total('amount_per_trip')) }}</td><td>TOTAL: {{ $money($record->total('total_amount')) }}</td><td>TOTAL: {{ $money($record->total('expenditure')) }}</td><td></td><td>TOTAL: {{ $money($record->total('cash_submitted')) }}</td></tr></tfoot>
+        <tfoot><tr><td colspan="2" style="text-align: right;">TOTAL: </td><td style="text-align: center;">{{ $money($record->total('cubic')) }}</td><td></td><td style="text-align: right;"> {{ $money($record->total('amount_per_trip')) }}</td><td style="text-align: right;"> {{ $money($record->total('total_amount')) }}</td><td></td><td style="text-align: right;"> {{ $money($record->total('expenditure')) }}</td><td style="text-align: right;"> {{ $money($record->total('cash_submitted')) }}</td></tr></tfoot>
     </table>
 
     <div class="footer">
