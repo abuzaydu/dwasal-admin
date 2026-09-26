@@ -5,7 +5,6 @@ namespace App\Http\Controllers\VMS;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\FieldOperationsRecord;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -79,7 +78,7 @@ class FieldOperationsRecordController extends Controller
 
     public function show($id)
     {
-        $record = $this->recordQuery()->with('rows')->findOrFail($id);
+        $record = $this->recordQuery()->with(['rows', 'company'])->findOrFail($id);
 
         return view('vms.field-operations.show', compact('record') + ['page' => 'Field Operations Record']);
     }
@@ -126,37 +125,32 @@ class FieldOperationsRecordController extends Controller
 
     public function print($id)
     {
-        $record = $this->recordQuery()->with('rows')->findOrFail($id);
-        return view('vms.field-operations.report', compact('record'));
+        $record = $this->recordQuery()->with(['rows', 'company'])->findOrFail($id);
+
+        return view('vms.field-operations.print', [
+            'record' => $record,
+            'sample' => false,
+            'page' => 'Field Operations Record '.$record->record_no,
+        ]);
     }
 
     public function pdf($id)
     {
-        $record = $this->recordQuery()->with('rows')->findOrFail($id);
-        $pdf = Pdf::loadView('vms.field-operations.report', compact('record'))
-            ->setPaper('a4', 'portrait')
-            ->setOption(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
-
-        return $pdf->download('field-operations-' . $record->record_no . '.pdf');
+        return $this->print($id);
     }
 
     public function sample()
     {
-        return view('vms.field-operations.report', [
+        return view('vms.field-operations.print', [
             'record' => $this->sampleRecord(),
             'sample' => true,
+            'page' => 'Sample Field Operations Record',
         ]);
     }
 
     public function samplePdf()
     {
-        $pdf = Pdf::loadView('vms.field-operations.report', [
-            'record' => $this->sampleRecord(),
-            'sample' => true,
-        ])->setPaper('a4', 'portrait')
-            ->setOption(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
-
-        return $pdf->download('daily-field-operations-sample.pdf');
+        return $this->sample();
     }
 
     private function sampleRecord(): FieldOperationsRecord

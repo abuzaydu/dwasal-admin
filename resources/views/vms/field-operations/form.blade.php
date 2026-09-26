@@ -92,9 +92,7 @@
                                         $cashEntries = $row['cash_entries'] ?? json_decode($row['cash_entries_json'] ?? '[]', true) ?? [];
                                         $amount = (float) ($row['amount_per_trip'] ?? 0);
                                         $trips = (int) ($row['trip_count'] ?? 0);
-                                        $grandTotalRevenue = collect($formRows)->sum(fn ($item) => ((float) ($item['amount_per_trip'] ?? 0) * (int) ($item['trip_count'] ?? 0)));
-                                        $grandTotalExpense = collect($formRows)->sum(fn ($item) => collect(json_decode($item['expenditure_entries_json'] ?? '[]', true) ?? [])->sum('amount'));
-                                        $recordCashSubmitted = max(0, $grandTotalRevenue - $grandTotalExpense);
+                                        $rowCashSubmitted = ($amount * $trips) - (float) collect($expenditureEntries)->sum('amount');
                                     @endphp
                                     <td class="summary-truck_no">{{ $row['truck_no'] ?? '' }}</td>
                                     <td class="summary-cubic">{{ number_format((float) ($row['cubic'] ?? 0), 0) }}</td>
@@ -102,7 +100,7 @@
                                     <td class="summary-amount_per_trip">{{ number_format($amount, 0) }}</td>
                                     <td class="summary-total_amount">{{ number_format($amount * $trips, 0) }}</td>
                                     <td class="summary-expenditure_entries_json">{{ number_format((float) collect($expenditureEntries)->sum('amount'), 0) }}</td>
-                                    <td class="summary-cash_entries_json">{{ number_format($recordCashSubmitted, 0) }}</td>
+                                    <td class="summary-cash_entries_json">{{ number_format($rowCashSubmitted, 0) }}</td>
                                     <td class="text-nowrap"><button type="button" class="btn btn-sm btn-outline-secondary edit-row" title="Edit row"><i class="fa fa-pencil"></i></button> <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Remove row"><i class="fa fa-trash"></i></button>@foreach($rowFields as $field)<input type="hidden" name="rows[{{ $index }}][{{ $field }}]" value="{{ $field === 'expenditure_entries_json' ? json_encode($expenditureEntries) : ($field === 'cash_entries_json' ? json_encode($cashEntries) : ($row[$field] ?? '')) }}" data-field="{{ $field }}">@endforeach</td>
                                 </tr>
                             @endif
@@ -207,7 +205,7 @@
         function formatValue(field, value, values) {
             if (field === 'total_amount') return ((Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0)).toLocaleString('en-US', { maximumFractionDigits: 2 });
             if (field === 'expenditure_entries_json') return expenditureTotal(values).toLocaleString('en-US', { maximumFractionDigits: 2 });
-            if (field === 'cash_entries_json') return Math.max(0, ((Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0)) - expenditureTotal(values)).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            if (field === 'cash_entries_json') return (((Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0)) - expenditureTotal(values)).toLocaleString('en-US', { maximumFractionDigits: 2 });
             if (['cubic', 'amount_per_trip'].includes(field) && value !== '') return Number(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
             return value || '';
         }
@@ -219,7 +217,7 @@
         function expenditureTotal(values) { return entriesFrom(values.expenditure_entries_json).reduce((sum, entry) => sum + (Number(entry.amount) || 0), 0); }
         function cashTotal(values) {
             const totalAmount = (Number(values.amount_per_trip) || 0) * (Number(values.trip_count) || 0);
-            return Math.max(0, totalAmount - expenditureTotal(values));
+            return totalAmount - expenditureTotal(values);
         }
 
         function refreshEmptyState() {

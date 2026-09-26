@@ -34,6 +34,6 @@ class FieldOperationRow extends Model
         $totalAmount = (float) $this->total_amount;
         $expenseTotal = (float) $this->expenditure_total;
 
-        return max(0, $totalAmount - $expenseTotal);
+        return $totalAmount - $expenseTotal;
     }
 }

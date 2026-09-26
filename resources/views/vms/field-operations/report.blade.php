@@ -1,7 +1,7 @@
 @php
     $sample = $sample ?? false;
     $company = $record->company;
-    $rows = $sample ? collect(range(1, 24))->map(fn () => null) : $record->rows->filter(function ($row) {
+    $rows = $sample ? collect(range(1, 24))->map(function () { return null; }) : $record->rows->filter(function ($row) {
         return filled($row->truck_no)
             || $row->cubic !== null
             || $row->trip_count !== null
@@ -9,114 +9,288 @@
             || count($row->expenditure_entries ?? []) > 0
             || count($row->cash_entries ?? []) > 0;
     })->values();
-    $money = fn ($value) => $sample && (float) $value === 0 ? '' : ($value === null || $value === '' ? '' : number_format((float) $value, 0));
-    $logoPath = $company->logo_url ? public_path('storage/clogos/' . $company->logo_url) : public_path('assets/img/logo-2.png');
-    $logo = asset('assets/img/logo-2.png');
-    if (is_file($logoPath)) {
-        $logoMime = function_exists('mime_content_type') ? mime_content_type($logoPath) : 'image/png';
-        $logo = 'data:' . $logoMime . ';base64,' . base64_encode(file_get_contents($logoPath));
-    }
+    $logo = ($company->logo_url && is_file(public_path('storage/clogos/'.$company->logo_url)))
+        ? asset('storage/clogos/'.$company->logo_url)
+        : asset('assets/img/logo-2.png');
     $address = collect([$company->address, $company->postal_code, $company->city])->filter()->implode(', ');
     $contacts = collect([$company->mobile, $company->email])->filter()->implode(' | ');
+    $cell = 'border: 1px solid #000 !important; box-shadow: inset 0 0 0 1px #000; padding: 4px 5px; font-size: 11px; vertical-align: top;';
+    $label = $cell.' width: 38%; font-weight: bold; background: #f0f0f0;';
 @endphp
 <style>
-        @page { size: A4 portrait; margin: 8mm; }
-        * { box-sizing: border-box; }
-        body { margin: 0; color: #111; font-family: DejaVu Sans, sans-serif; font-size: 9px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .report { width: 100%; }
-        .report, .report-header, .metadata, .operations-table, .footer { page-break-inside: avoid; }
-        .report-header { display: flex; border: 1px solid #111; min-height: 86px; }
-        .logo-cell { width: 25%; display: flex; align-items: center; justify-content: center; border-right: 1px solid #111; padding: 8px; }
-        .logo-cell img { max-width: 100%; max-height: 62px; }
-        .company-info { width: 75%; text-align: center; padding: 8px; }
-        .company-info h1 { margin: 0 0 5px; font-size: 16px; }
-        .company-info p { margin: 2px 0; font-size: 8px; }
-        .title { margin-top: 5px; border: 1px solid #111; padding: 6px; text-align: center; font-size: 13px; font-weight: bold; }
-        .metadata { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; margin: 5px 0; }
-        .metadata-col { border-left: 1px solid #111; border-right: 1px solid #111; }
-        .metadata-row { display: flex; min-height: 20px; border-bottom: 1px solid #111; }
-        .metadata-row:first-child { border-top: 1px solid #111; }
-        .metadata-row strong { width: 38%; padding: 4px; background: #f0f0f0; }
-        .metadata-row span { flex: 1; padding: 4px; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #111; padding: 3px; vertical-align: top; word-wrap: break-word; }
-        th { background: #e9e9e9; text-align: center; font-size: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .operations-table { min-height: 0; }
-        .operations-table th:nth-child(1) { width: 4%; }
-        .operations-table th:nth-child(2) { width: 12%; }
-        .operations-table th:nth-child(3) { width: 9%; }
-        .operations-table th:nth-child(4) { width: 7%; }
-        .operations-table th:nth-child(5) { width: 11%; }
-        .operations-table th:nth-child(6) { width: 14%; }
-        .operations-table th:nth-child(7) { width: 13%; }
-        .operations-table th:nth-child(8) { width: 17%; }
-        .operations-table th:nth-child(9) { width: 13%; }
-        .operations-table tbody tr { height: 19px; }
-        .operations-table tfoot td { font-weight: bold; height: 25px; }
-        .footer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 7px; }
-        .footer-box { border: 1px solid #111; min-height: 74px; padding: 5px; }
-        .footer-box strong { display: block; margin-bottom: 8px; }
-        .signature-line { margin-top: 36px; border-top: 1px solid #111; width: 80%; }
-        .screen-actions { margin-bottom: 12px; }
-        @media print {
-            .screen-actions { display: none; }
-            body { font-size: 8px; }
-        }
+    #print-fo.row {
+        display: block !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 2px;
+    }
+    #print-fo > [class*="col-"] {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        flex: none !important;
+    }
+    #print-fo {
+        border: 2px solid #000;
+        padding: 6px;
+        background: #fff;
+        box-sizing: border-box;
+    }
+    #print-fo table {
+        width: 100%;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+        table-layout: fixed;
+    }
+    #print-fo td, #print-fo th {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    #print-fo .sig-box {
+        height: 42px;
+        position: relative;
+        padding: 3px 5px;
+        vertical-align: top;
+    }
+    #print-fo .sig-value {
+        font-size: 11px;
+        line-height: 1.15;
+        max-height: 15px;
+        overflow: hidden;
+        margin-top: 1px;
+    }
+    #print-fo .sig-line {
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        bottom: 3px;
+        border-top: 1px solid #000;
+    }
+    #print-fo .doc-no-box {
+        text-align: center;
+        vertical-align: middle;
+        background: #f0f0f0;
+        padding: 6px 5px;
+    }
+    #print-fo .doc-no-label {
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #333;
+        margin-bottom: 3px;
+    }
+    #print-fo .doc-no-value {
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        color: #000;
+        line-height: 1.2;
+    }
 </style>
-<div class="report">
-    <div class="screen-actions"><button onclick="window.print()">Print</button>@if($sample) <a href="{{ route('field-operations.sample-pdf') }}">Download Sample PDF</a>@endif</div>
-    <div class="report-header">
-        <div class="logo-cell"><img src="{{ $logo }}" alt="{{ $company->name }} logo"></div>
-        <div class="company-info">
-            <h1>{{ $company->name }}</h1>
-            @if($address)<p>{{ $address }}</p>@endif
-            <p>FIELD OPERATIONS RECORD &amp; REPORT</p>
-            @if($contacts)<p>{{ $contacts }}</p>@endif
-            <p>{{ $company->website ? 'Website: ' . $company->website : '' }}{{ $company->website && $company->tin ? ' | ' : '' }}{{ $company->tin ? 'TIN: ' . $company->tin : '' }}</p>
-        </div>
+<div class="row g-1 print_invoice" id="print-fo">
+    <div class="col-md-12">
+        <table>
+            <colgroup>
+                <col style="width:18%">
+                <col style="width:82%">
+            </colgroup>
+            <tr>
+                <td style="{{ $cell }} text-align: center; vertical-align: middle;">
+                    <img class="invoice-logo" src="{{ $logo }}" alt="" style="max-width: 100%; max-height: 70px;">
+                </td>
+                <td style="{{ $cell }} text-align: center;">
+                    <strong style="font-size: 16px;">{{ $company->name }}</strong><br>
+                    @if($address)<small>{{ $address }}</small><br>@endif
+                    @if($contacts)<small>{{ $contacts }}</small><br>@endif
+                    <small>
+                        @if($company->website)Website: {{ $company->website }}@endif
+                        @if($company->website && $company->tin) | @endif
+                        @if($company->tin)TIN: {{ $company->tin }}@endif
+                    </small>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="{{ $cell }} text-align: center; font-size: 13px; font-weight: bold; background: #e9e9e9;">FIELD OPERATIONS RECORD &amp; REPORT</td>
+            </tr>
+        </table>
     </div>
-    <div class="title">FIELD OPERATIONS RECORD &amp; REPORT</div>
-
-    <div class="metadata">
-        <div class="metadata-col">
-            <div class="metadata-row"><strong>Name</strong><span>{{ $record->name }}</span></div>
-            <div class="metadata-row"><strong>Title</strong><span>{{ $record->title }}</span></div>
-            <div class="metadata-row"><strong>Contact</strong><span>{{ $record->contact }}</span></div>
-            <div class="metadata-row"><strong>Location</strong><span>{{ $record->location }}</span></div>
-        </div>
-        <div class="metadata-col">
-            <div class="metadata-row"><strong>No.</strong><span>{{ $record->record_no }}</span></div>
-            <div class="metadata-row"><strong>Date</strong><span>{{ $record->record_date?->format('d/m/Y') }}</span></div>
-            <div class="metadata-row"><strong>Sign In / Out</strong><span>{{ $record->sign_in_time }} / {{ $record->sign_out_time }}</span></div>
-            <div class="metadata-row"><strong>Fuel In / Out</strong><span>{{ $record->fuel_in }} / {{ $record->fuel_out }}</span></div>
-            <div class="metadata-row"><strong>Quantity of Trips</strong><span>{{ $record->quantity_of_trips }}</span></div>
-        </div>
+    <div class="col-md-12" style="padding-top: 6px; padding-bottom: 6px;">
+        <table>
+            <colgroup>
+                <col style="width:35%">
+                <col style="width:30%">
+                <col style="width:35%">
+            </colgroup>
+            <tr>
+                <td style="padding-right: 6px; vertical-align: top; border: none !important;">
+                    <table>
+                        <tr>
+                            <td style="{{ $label }}">Name</td>
+                            <td style="{{ $cell }}">{{ $record->name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Title</td>
+                            <td style="{{ $cell }}">{{ $record->title }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Contact</td>
+                            <td style="{{ $cell }}">{{ $record->contact }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Location</td>
+                            <td style="{{ $cell }}">{{ $record->location }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="padding-left: 6px; padding-right: 6px; vertical-align: middle; border: none !important;">
+                    <table>
+                        <tr>
+                            <td style="{{ $cell }} doc-no-box">
+                                <div class="doc-no-label">Document No.</div>
+                                <div class="doc-no-value">{{ $record->record_no }}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="padding-left: 6px; vertical-align: top; border: none !important;">
+                    <table>
+                        <tr>
+                            <td style="{{ $label }}">Date</td>
+                            <td style="{{ $cell }}">{{ $record->record_date ? $record->record_date->format('d/m/Y') : '' }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Sign In / Out</td>
+                            <td style="{{ $cell }}">{{ $record->sign_in_time }} / {{ $record->sign_out_time }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Fuel In / Out</td>
+                            <td style="{{ $cell }}">{{ $record->fuel_in }} / {{ $record->fuel_out }}</td>
+                        </tr>
+                        <tr>
+                            <td style="{{ $label }}">Quantity of Trips</td>
+                            <td style="{{ $cell }}">{{ $record->quantity_of_trips }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div>
-
-    <table class="operations-table">
-        <thead><tr><th>No.</th><th>TRUCK NO</th><th>CUBIC (m3)</th><th>TRIPS</th><th style="text-align: right;">AMOUNT PER TRIP</th><th style="text-align: right;">TOTAL AMOUNT OF TRIPS</th><th>EXPENSE DETAILS</th><th style="text-align: right;">EXPENSE AAMOUNT</th><th style="text-align: right;">CASH SUBMITTED</th></tr></thead>
-        <tbody>
-            @forelse($rows as $number => $row)
+    <div class="col-md-12">
+        <table class="items mt-0" style="margin-top: 0;">
+            <colgroup>
+                <col style="width:4%">
+                <col style="width:11%">
+                <col style="width:8%">
+                <col style="width:6%">
+                <col style="width:10%">
+                <col style="width:12%">
+                <col style="width:20%">
+                <col style="width:13%">
+                <col style="width:16%">
+            </colgroup>
+            <thead>
                 <tr>
-                    <td class="text-center">{{ $number + 1 }}</td>
-                    <td>{{ $row?->truck_no }}</td>
-                    <td style="text-align: center;">{{ $money($row?->cubic) }}</td>
-                    <td style="text-align: center;">{{ $row?->trip_count }}</td>
-                    <td style="text-align: right;">{{ $money($row?->amount_per_trip) }}</td>
-                    <td style="text-align: right;">{{ $money($row?->total_amount) }}</td>
-                    <td>@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $entry['details'] ?? '' }}</div>@endforeach</td>
-                    <td style="text-align: right;">@foreach($row?->expenditure_entries ?? [] as $entry)<div>{{ $money($entry['amount'] ?? 0) }}</div>@endforeach</td>
-                    <td style="text-align: right;">{{ $money(max(0, ($row?->total_amount ?? 0) - ($row?->expenditure_total ?? 0))) }}</td>
+                    <th style="{{ $cell }} text-align: center; background: #e9e9e9; font-size: 8px;">No.</th>
+                    <th style="{{ $cell }} text-align: center; background: #e9e9e9; font-size: 8px;">TRUCK NO</th>
+                    <th style="{{ $cell }} text-align: center; background: #e9e9e9; font-size: 8px;">CUBIC (m3)</th>
+                    <th style="{{ $cell }} text-align: center; background: #e9e9e9; font-size: 8px;">TRIPS</th>
+                    <th style="{{ $cell }} text-align: right; background: #e9e9e9; font-size: 8px;">AMOUNT PER TRIP</th>
+                    <th style="{{ $cell }} text-align: right; background: #e9e9e9; font-size: 8px;">TOTAL AMOUNT OF TRIPS</th>
+                    <th style="{{ $cell }} text-align: center; background: #e9e9e9; font-size: 8px;">EXPENSE DETAILS</th>
+                    <th style="{{ $cell }} text-align: right; background: #e9e9e9; font-size: 8px;">EXPENSE AMOUNT</th>
+                    <th style="{{ $cell }} text-align: right; background: #e9e9e9; font-size: 8px;">CASH SUBMITTED</th>
                 </tr>
-            @empty
-                <tr><td colspan="9" style="text-align:center;">No operation rows recorded.</td></tr>
-            @endforelse
-        </tbody>
-        <tfoot><tr><td colspan="2" style="text-align: right;">TOTAL: </td><td style="text-align: center;">{{ $money($record->total('cubic')) }}</td><td></td><td style="text-align: right;"> {{ $money($record->total('amount_per_trip')) }}</td><td style="text-align: right;"> {{ $money($record->total('total_amount')) }}</td><td></td><td style="text-align: right;"> {{ $money($record->total('expenditure')) }}</td><td style="text-align: right;"> {{ $money($record->total('cash_submitted')) }}</td></tr></tfoot>
-    </table>
-
-    <div class="footer">
-        <div class="footer-box"><strong>Machine Condition</strong>{{ strip_tags($record->machine_condition ?? '') }}</div>
-        <div class="footer-box"><strong>Signature</strong>{{ $record->signature }}<div class="signature-line"></div></div>
+            </thead>
+            <tbody>
+                @forelse($rows as $number => $row)
+                    @php
+                        $cubicVal = $row->cubic ?? null;
+                        $amountVal = $row->amount_per_trip ?? null;
+                        $totalVal = $row->total_amount ?? null;
+                        $cubic = ($sample && (float) $cubicVal === 0.0) || $cubicVal === null || $cubicVal === '' ? '' : number_format((float) $cubicVal, 0);
+                        $amountPerTrip = ($sample && (float) $amountVal === 0.0) || $amountVal === null || $amountVal === '' ? '' : number_format((float) $amountVal, 0);
+                        $totalAmount = ($sample && (float) $totalVal === 0.0) || $totalVal === null || $totalVal === '' ? '' : number_format((float) $totalVal, 0);
+                        $cashSubmitted = max(0, ($totalVal ?? 0) - ($row->expenditure_total ?? 0));
+                        $cash = ($sample && (float) $cashSubmitted === 0.0) ? '' : number_format((float) $cashSubmitted, 0);
+                    @endphp
+                    <tr>
+                        <td style="{{ $cell }} text-align: center;">{{ $number + 1 }}</td>
+                        <td style="{{ $cell }}">{{ $row->truck_no ?? '' }}</td>
+                        <td style="{{ $cell }} text-align: center;">{{ $cubic }}</td>
+                        <td style="{{ $cell }} text-align: center;">{{ $row->trip_count ?? '' }}</td>
+                        <td style="{{ $cell }} text-align: right;">{{ $amountPerTrip }}</td>
+                        <td style="{{ $cell }} text-align: right;">{{ $totalAmount }}</td>
+                        <td style="{{ $cell }}">
+                            @foreach(($row->expenditure_entries ?? []) as $entry)
+                                <div>{{ $entry['details'] ?? '' }}</div>
+                            @endforeach
+                        </td>
+                        <td style="{{ $cell }} text-align: right;">
+                            @foreach(($row->expenditure_entries ?? []) as $entry)
+                                <div>{{ (($sample && (float) ($entry['amount'] ?? 0) === 0.0) || ($entry['amount'] ?? '') === '') ? '' : number_format((float) ($entry['amount'] ?? 0), 0) }}</div>
+                            @endforeach
+                        </td>
+                        <td style="{{ $cell }} text-align: right;">{{ $cash }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="9" style="{{ $cell }} text-align: center; padding: 12px;">No operation rows recorded.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            <tfoot>
+                @php
+                    $totalCubic = $record->total('cubic');
+                    $totalAmountPerTrip = $record->total('amount_per_trip');
+                    $totalTripAmount = $record->total('total_amount');
+                    $totalExpenditure = $record->total('expenditure');
+                    $totalCash = $record->total('cash_submitted');
+                @endphp
+                <tr>
+                    <td colspan="2" style="{{ $cell }} text-align: right; font-weight: bold; background: #f0f0f0;">TOTAL:</td>
+                    <td style="{{ $cell }} text-align: center; font-weight: bold; background: #f0f0f0;">{{ ($sample && (float) $totalCubic === 0.0) ? '' : number_format((float) $totalCubic, 0) }}</td>
+                    <td style="{{ $cell }} background: #f0f0f0;"></td>
+                    <td style="{{ $cell }} text-align: right; font-weight: bold; background: #f0f0f0;">{{ ($sample && (float) $totalAmountPerTrip === 0.0) ? '' : number_format((float) $totalAmountPerTrip, 0) }}</td>
+                    <td style="{{ $cell }} text-align: right; font-weight: bold; background: #f0f0f0;">{{ ($sample && (float) $totalTripAmount === 0.0) ? '' : number_format((float) $totalTripAmount, 0) }}</td>
+                    <td style="{{ $cell }} background: #f0f0f0;"></td>
+                    <td style="{{ $cell }} text-align: right; font-weight: bold; background: #f0f0f0;">{{ ($sample && (float) $totalExpenditure === 0.0) ? '' : number_format((float) $totalExpenditure, 0) }}</td>
+                    <td style="{{ $cell }} text-align: right; font-weight: bold; background: #f0f0f0;">{{ ($sample && (float) $totalCash === 0.0) ? '' : number_format((float) $totalCash, 0) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-md-12" style="padding-top: 8px;">
+        <table>
+            <colgroup>
+                <col style="width:50%">
+                <col style="width:50%">
+            </colgroup>
+            <tr>
+                <td style="padding-right: 4px; vertical-align: top; border: none !important;">
+                    <table>
+                        <tr>
+                            <td style="{{ $cell }} height: 42px;">
+                                <strong>Machine Condition</strong><br>
+                                {{ strip_tags($record->machine_condition ?? '') }}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="padding-left: 4px; vertical-align: top; border: none !important;">
+                    <table>
+                        <tr>
+                            <td style="{{ $cell }} sig-box">
+                                <strong>Signature</strong>
+                                <div class="sig-value">{{ $record->signature }}</div>
+                                <div class="sig-line"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
