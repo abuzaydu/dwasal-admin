@@ -44,7 +44,8 @@ class RoleAndPermissionSeeder extends Seeder
             'Hotel Booking',
             'Motorbike Contracts',
             'SMS Notification & Templates',
-            'Transportation Trip Logs'
+            'Transportation Trip Logs',
+            'Daily Field Operations'
         );
 
         $feat = Feature::where('name', 'Contracts')->first();
@@ -297,6 +298,12 @@ class RoleAndPermissionSeeder extends Seeder
             ['feature_id' => 27, 'name' => 'cancel-trip-invoice', 'display_name' => 'Cancel Trip Invoice'],
             ['feature_id' => 27, 'name' => 'cancel-trip-log', 'display_name' => 'Cancel Trip Logs'],
             ['feature_id' => 27, 'name' => 'delete-trip-log', 'display_name' => 'Delete Trip Logs'],
+
+            ['feature_id' => 28, 'name' => 'create-fo-record', 'display_name' => 'Create Field Operation Records'],
+            ['feature_id' => 28, 'name' => 'view-fo-records', 'display_name' => 'View Field Operation Records'],
+            ['feature_id' => 28, 'name' => 'edit-fo-record', 'display_name' => 'Edit Field Operation Records'],
+            ['feature_id' => 28, 'name' => 'delete-fo-record', 'display_name' => 'Delete Filed Operation Records'],
+            
 
         );
 

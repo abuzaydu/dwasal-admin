@@ -13,7 +13,9 @@
                 </ul>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 text-right">
+                @can('edit-fo-record')
                 <a href="{{ route('field-operations.edit', $record) }}" class="btn btn-primary btn-sm" style="margin: 5px;"><i class="fa fa-edit"></i> Update</a>
+                @endcan
                 <a href="#" onclick="javascript:savePdf()" class="btn bg-warning btn-sm" style="margin: 5px;"><i class="fa fa-download"></i> Download PDF / <i class="fa fa-printer"></i> Print</a>
             </div>
         </div>
@@ -27,7 +29,7 @@
     <div class="row clearfix">
         <div class="col-md-12 mx-auto">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body p-4">
                     @include('vms.field-operations.report', ['record' => $record])
                 </div>
             </div>

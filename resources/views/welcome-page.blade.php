@@ -256,6 +256,7 @@
                             </div>
                         </a>
                     </div>
+                    @can('view-fo-records')
                     <div class="col-md-3">
                         <a href="{{ route('field-operations.index') }}" target="_blank">
                             <div class="card">
@@ -267,6 +268,7 @@
                             </div>
                         </a>
                     </div>
+                    @endcan
                     <div class="col-md-3">
                         <a href="{{ url('visitors-dash') }}" target="_blank">
                             <div class="card">

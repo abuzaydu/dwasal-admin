@@ -44,14 +44,13 @@
                         ['sign_in_time', 'Sign In Time', 'time', false, ''],
                         ['sign_out_time', 'Sign Out Time', 'time', false, ''],
                         ['fuel_in', 'Fuel In', 'number', false, ''],
-                        ['fuel_out', 'Fuel Out', 'number', false, ''],
-                        ['quantity_of_trips', 'Quantity of Trips', 'number', false, ''],
+                        ['fuel_out', 'Fuel Out', 'number', false, '']
                     ];
                 @endphp
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">No.</label>
                     <input value="{{ $record->record_no }}" class="form-control bg-light" readonly>
-                    <div class="form-text">Generated automatically by the system.</div>
+                    <!-- <div class="form-text">Generated automatically by the system.</div> -->
                 </div>
                 @foreach($fields as [$name, $label, $type, $required, $placeholder])
                     @php
@@ -62,7 +61,7 @@
                             $inputValue = \Carbon\Carbon::parse($inputValue)->format('H:i');
                         }
                     @endphp
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="{{ $name }}" class="form-label">{{ $label }} @if($required)<span class="text-danger">*</span>@endif</label>
                         <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}" value="{{ $inputValue }}" placeholder="{{ $placeholder }}" @if(in_array($name, ['fuel_in', 'fuel_out'])) step="0.01" min="0" @elseif($name === 'quantity_of_trips') min="0" @endif class="form-control" @required($required)>
                     </div>
