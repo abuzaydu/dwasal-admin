@@ -27,6 +27,26 @@
                         </div>
                     </div>
 
+                    <div class="p-4 border rounded mb-4">
+                        <h6 class="mb-2">Company attendance API key</h6>
+                        <p class="text-muted small">
+                            Each company has a unique <code>COMPANY_API_KEY</code>. The Dwasal app sends this key
+                            on fingerprint/face attendance and enrollment requests so only this company is authorized.
+                            After login the app stores the key automatically. You can also copy it here.
+                        </p>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" id="company-api-key" readonly
+                                value="{{ $company->company_api_key }}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('company-api-key').value)">Copy</button>
+                        </div>
+                        <form method="POST"
+                            action="{{ route('employees.fingerprint.settings.regenerate-api-key') }}"
+                            onsubmit="return confirm('Regenerate this company API key? The attendance app must re-login (or be updated with the new key) or attendance requests will fail.');">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Regenerate API key</button>
+                        </form>
+                    </div>
+
                     <div class="p-4 border rounded">
                         <form class="row g-3 needs-validation" novalidate method="POST"
                             action="{{ route('employees.fingerprint.settings.update') }}">

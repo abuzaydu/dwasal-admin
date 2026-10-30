@@ -76,11 +76,28 @@ class EmployeeFingerprintController extends Controller
         }
 
         $allowFingerprintEnrollment = FingerprintEnrollmentSetting::isAllowed((int) $company->id);
+        if (empty($company->company_api_key)) {
+            $company->rotateApiKey();
+        }
 
         return view(
             'hr.employees.fingerprint.settings',
-            compact('page', 'title', 'allowFingerprintEnrollment')
+            compact('page', 'title', 'allowFingerprintEnrollment', 'company')
         );
+    }
+
+    public function regenerateApiKey(Request $request)
+    {
+        $company = Company::find(Session::get('company_id'));
+        if (!$company) {
+            return view('errors.401');
+        }
+
+        $company->rotateApiKey();
+
+        return redirect()
+            ->route('employees.fingerprint.settings')
+            ->with('success', 'Company attendance API key regenerated. Update or re-login the app so it uses the new COMPANY_API_KEY.');
     }
 
     public function updateSettings(Request $request)

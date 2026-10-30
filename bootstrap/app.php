@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.auth' => \App\Http\Middleware\VerifyJWTToken::class,
             'isAdmin' => \App\Http\Middleware\AdminMiddleware::class,
             'attendance.kiosk_or_jwt' => \App\Http\Middleware\AttendanceKioskOrJwt::class,
+            'attendance.company_api_key' => \App\Http\Middleware\AttendanceKioskOrJwt::class,
 
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
