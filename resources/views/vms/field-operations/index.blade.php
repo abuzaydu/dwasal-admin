@@ -15,7 +15,9 @@
             </ul>
         </div>
         <div class="col-md-5 text-end">
+            @can('create-fo-record')
             <a href="{{ route('field-operations.create') }}" class="btn btn-primary btn-sm" title="Create new record"><i class="fa fa-plus me-1"></i> New</a>
+            @endcan
         </div>
     </div>
 </div>
@@ -69,13 +71,17 @@
                             <td>{{ $record->quantity_of_trips ?? '-' }}</td>
                             <td class="text-end text-nowrap">
                                 <a href="{{ route('field-operations.show', $record) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="fa fa-eye"></i></a>
-                                <a href="{{ route('field-operations.edit', $record) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fa fa-pencil"></i></a>
                                 <a href="{{ route('field-operations.print', $record) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Print"><i class="fa fa-print"></i></a>
+                                @can('edit-fo-record')
+                                <a href="{{ route('field-operations.edit', $record) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fa fa-pencil"></i></a>
+                                @endcan
+                                @can('delete-fo-record')
                                 <form action="{{ route('field-operations.destroy', $record) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this field operations record?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa fa-trash"></i></button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty
