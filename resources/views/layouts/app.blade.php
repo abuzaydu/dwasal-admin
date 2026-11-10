@@ -178,41 +178,124 @@
                         <nav class="sidebar-nav">
                             <ul class="metismenu list-unstyled">
                                 @if (Auth::user()->can('view-reports'))
-                                <li class="{{ request()->is('sales-dash') ? 'active' : '' }}"><a href="{{ url('sales-dash') }}"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
+                                    <li class="{{ request()->is('sales-dash') ? 'active' : '' }}"><a href="{{ url('sales-dash') }}"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
                                 @endif
                                 <hr>
                                 <li style="padding-left: 15px;" class="text-uppercase mb-3"></li>
                                 <li class="{{ request()->is('orders') ? 'active' : '' }}"><a href="{{ url('orders')}}"><i class="fa  fa-tasks"></i><span>Sales Orders</span></a></li>
                                 @if ($shop->business_type_id == 3 || $shop->business_type_id == 4)
-                                @if($settings->enable_trip_logs)
-                                <li class="{{ request()->is('trip-logs') || request()->is('trip-logs/create') ? 'active' : '' }}"><a href="{{ url('trip-logs')}}"><i class='fa fa-list'></i><span>Vehicle Trip Logs</span></a></li>
-                                @endif
+                                    @if($settings->enable_trip_logs)
+                                        <li class="{{ request()->is('trip-logs') || request()->is('trip-logs/create') ? 'active' : '' }}"><a href="{{ url('trip-logs')}}"><i class='fa fa-list'></i><span>Vehicle Trip Logs</span></a></li>
+                                    @endif
                                 @endif
                                 @if(Auth::user()->can('create-invoice'))
-                                <li class="{{ request()->is('pos') ? 'active' : '' }}"><a href="{{ url('pos') }}"><i class='fa fa-calculator'></i><span>Point Of Sale</span></a></li>
+                                    <li class="{{ request()->is('pos') ? 'active' : '' }}"><a href="{{ url('pos') }}"><i class='fa fa-calculator'></i><span>Point Of Sale</span></a></li>
                                 @endif
                                 @if (Auth::user()->can('view-invoice') || Auth::user()->can('view-all-invoice'))
-                                <li class="{{ request()->is('an-sales') || request()->is('credit-notes') ? 'active' : '' }}"><a href="{{ url('an-sales') }}"><i class='fa fa-file'></i><span>{{ trans('navmenu.invoices') }}</span></a></li>
-                                <li class="{{ request()->is('delivery-notes') ? 'active' : '' }}"><a href="{{ url('delivery-notes') }}"><i class='fa fa-file-pdf-o'></i><span>{{ trans('navmenu.delivery_notes') }}</span></a></li>
-                                <li class="{{ request()->is('pro-invoices')  ? 'active' : '' }}"><a href="{{ url('pro-invoices') }}"><i class='fa fa-file-o'></i><span>{{ trans('navmenu.pro_invoice') }}</span></a></li>
+                                    <li class="{{ request()->is('an-sales') || request()->is('credit-notes') ? 'active' : '' }}"><a href="{{ url('an-sales') }}"><i class='fa fa-file'></i><span>{{ trans('navmenu.invoices') }}</span></a></li>
+                                    <li class="{{ request()->is('delivery-notes') ? 'active' : '' }}"><a href="{{ url('delivery-notes') }}"><i class='fa fa-file-pdf-o'></i><span>{{ trans('navmenu.delivery_notes') }}</span></a></li>
+                                    <li class="{{ request()->is('pro-invoices')  ? 'active' : '' }}"><a href="{{ url('pro-invoices') }}"><i class='fa fa-file-o'></i><span>{{ trans('navmenu.pro_invoice') }}</span></a></li>
                                 @endif
                                 @if($shop->businees_type_id != 3 && Auth::user()->can('view-sales-return'))
-                                <li class="{{ request()->is('sales-returns') ? 'active' : '' }}"><a href="{{ url('sales-returns') }}"><i class='fa fa-recycle'></i><span>{{ trans('navmenu.sales_returns') }}</span></a></li>
+                                    <li class="{{ request()->is('sales-returns') ? 'active' : '' }}"><a href="{{ url('sales-returns') }}"><i class='fa fa-recycle'></i><span>{{ trans('navmenu.sales_returns') }}</span></a></li>
                                 @endif
                                 @if(Auth::user()->can('view-sale-payment'))
-                                <li class="{{ request()->is('sale-payments') ? 'active' : '' }}"><a href="{{ url('sale-payments')}}"><i class='fa fa-money'></i><span>Sales Payments</span></a></li>
+                                    <li class="{{ request()->is('sale-payments') ? 'active' : '' }}"><a href="{{ url('sale-payments')}}"><i class='fa fa-money'></i><span>Sales Payments</span></a></li>
                                 @endif
 
                                 @if(Auth::user()->can('view-customer'))
-                                <li class="{{ request()->is('customers') ? 'active' : '' }}"><a href="{{ url('customers')}}"><i class='fa fa-group'></i><span>@if($settings->is_cm_business) Rider Accounts @else {{ trans('navmenu.customer_accounts') }}@endif</span></a></li>
+                                    <li class="{{ request()->is('customers') ? 'active' : '' }}"><a href="{{ url('customers')}}"><i class='fa fa-group'></i><span>@if($settings->is_cm_business) Rider Accounts @else {{ trans('navmenu.customer_accounts') }}@endif</span></a></li>
                                 @endif
                                 @if($settings->enable_sale_approval)
-                                @if (Auth::user()->can('approve-pro-invoice'))
-                                <li class="{{ request()->is('approval-requests') ? 'active' : '' }}"><a href="{{ url('approval-requests') }}"><i class='fa fa-list'></i><span>Approval Requests</span></a></li>
-                                @endif
+                                    @if (Auth::user()->can('approve-pro-invoice'))
+                                        <li class="{{ request()->is('approval-requests') ? 'active' : '' }}"><a href="{{ url('approval-requests') }}"><i class='fa fa-list'></i><span>Approval Requests</span></a></li>
+                                    @endif
                                 @endif
                                 <li><a href="{{ url('quote-requests') }}"><i class="fa fa-outdent"></i> Quote Requests</a></li>
                                 <li><a href="{{ url('quotations') }}"><i class="fa fa-file-pdf-o"></i> Quotations</a></li>
+                            
+                                <hr>
+                                <li style="padding-left: 15px;" class="text-uppercase mb-3">Products</li>
+                                @if ($shop->business_type_id != 3)
+                                    @if (Auth::user()->can('view-product-list'))
+                                        <li class="{{ request()->is('products') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('products') }}"><i class='fa fa-list-alt'></i><span>{{ trans('navmenu.products') }}</span></a></li>
+                                    @endif
+                                    @if(Auth::user()->can('view-stock-corrections'))
+                                        <li class="{{ request()->is('stock-corrections') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('stock-corrections') }}"><i class='fa fa-check'></i><span>Stock Corrections</span></a></li>
+                                    @endif
+                                    @if(Auth::user()->can('view-categories'))
+                                        <li class="{{ request()->is('categories') ? 'active' : '' }}"><a href="{{ url('categories') }}"><i class='fa fa-th-large'></i><span>{{ trans('navmenu.categories') }}</span></a></li>
+                                    @endif
+                                    @if (Auth::user()->can('view-stock-transfer') || Auth::user()->can('view-all-transfer'))
+                                        <li class="{{ request()->is('transfer-orders') ? 'active' : '' }}"><a href="{{ url('transfer-orders') }}"><i class='fa fa-calculator'></i><span>{{ trans('navmenu.stock_transfer') }}</span></a></li>
+                                    @endif
+                                    @if (Auth::user()->can('view-purchase'))
+                                        @if($shop->business_type_id != 1 || $settings->is_manuf_with_merch)
+                                            <li class="{{ request()->is('purchases') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('purchases') }}"><i class='fa fa-shopping-cart'></i><span>{{trans('navmenu.purchases')}}</span></a></li>
+                                        @endif
+                                        @if($shop->business_type_id == 1)
+                                            @if(!$settings->use_production_module)
+                                                <li class="{{ request()->is('productions') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('productions') }}"><i class='fa fa-list-ul'></i><span> Productions </span></a></li>
+                                            @endif
+                                        @endif
+                                    @endif
+                                    @if($shop->business_type_id != 1 || $settings->is_manuf_with_merch)
+                                        @if(Auth::user()->can('view-purchase-order'))
+                                            <li class="{{ request()->is('purchase-orders') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('purchase-orders') }}">
+                                            <i class='fa fa-list'></i><span>{{ trans('navmenu.purchase_orders') }}</span></a></li>
+                                        @endif
+                                        @if(Auth::user()->can('view-purchase-cost'))
+                                            <li class="{{ request()->is('purchase-payments') ? 'active' : '' }}"><a href="{{ url('purchase-payments')}}" class="has-arrow"><i class='fa fa-money'></i><span>Purchase Payments</span></a></li>
+                                        @endif
+                                        @if(Auth::user()->can('view-supplier'))
+                                            <li class="{{ request()->is('suppliers') ? 'active' : '' }}"><a href="{{ url('suppliers')}}" class="has-arrow">
+                                            <i class='fa fa-group'></i><span>{{ trans('navmenu.supplier_accounts') }}</span></a></li>
+                                        @endif
+                                    @endif
+                                @endif
+                                @if(!$shop->is_warehouse)
+                                    <hr>
+                                    <li style="padding-left: 15px;" class="text-uppercase mb-3"> Services</li>
+                                    @if ($shop->business_type_id == 3 || $shop->business_type_id == 4 || $settings->is_manufacturing_with_service)
+                                    @if (Auth::user()->can('view-service'))
+                                    <li class="{{ request()->is('services') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('services') }}"><i class="fa fa-cog"></i><span>{{ trans('navmenu.services') }}</span></a></li>
+                                    <li class="{{ request()->is('devices') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('devices') }}"><i class="fa fa-cog"></i><span>@if($settings->is_cm_business) Motorbikes @elseif($settings->enable_trip_logs) Vehicles @else {{trans('navmenu.devices')}} @endif</span></a></li>
+                                    @endif
+                                    @endif
+                                @endif
+
+                                <hr>
+                                @if (Auth::user()->can('view-price-list'))
+                                    <li class="{{ request()->is('price-list') ? 'active' : '' }}"><a href="{{ url('price-list') }}"><i class='fa fa-calculator'></i><span>{{ trans('navmenu.prices') }}</span></a></li>
+                                @endif
+
+                                <hr>
+                                @if(!$shop->is_warehouse)
+                                    @if (Auth::user()->can('view-reports'))
+                                        <li class="{{ request()->is('accounting-dash') ? 'active' : '' }}"><a href="{{ url('accounting-dash') }}" class="has-arrow"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
+                                    @endif
+                                    <hr>
+                                    <li style="padding-left: 15px;" class="text-uppercase mb-3">Accounting & Finance</li>
+                                    <li class="{{ request()->is('accounts') ? 'active' : '' }}"><a href="{{ url('accounts') }}" class="has-arrow"><i class="fa  fa-file-text"></i><span>Payment Accounts</span></a></li>
+                                    @if (Auth::user()->can('view-petty-cash'))
+                                        <li class="{{ request()->is('petty-cash') ? 'active' : '' }}"><a href="{{ url('petty-cash') }}" class="has-arrow"><i class="fa  fa-file-text-o"></i><span>Petty Cash Requests</span></a></li>
+                                    @endif
+                                    @if (Auth::user()->can('view-expense'))
+                                        <li class="{{ request()->is('expenses') || request()->is('filter-expenses') || request()->is('expenses/create') || request()->is('expense-payments') ? 'active' : '' }}"><a class="has-arrow" href="{{ url('expenses') }}"><i class="fa fa-list-ul"></i><span>{{ trans('navmenu.expenses') }}</span></a></li>
+                                    @endif
+                                    @if (Auth::user()->can('view-cash-flow'))
+                                        <li class="{{ request()->is('cash-flows') ? 'active' : '' }}"><a href="{{ url('cash-flows') }}" class="has-arrow"><i class="fa fa-exchange"></i><span>{{ trans('navmenu.cash_flows') }}</span></a></li>
+                                    @endif
+                                    @if (Auth::user()->can('manage-assets'))
+                                        <li class="{{ request()->is('depreciations') || request()->is('asset-records') || request()->is('dep-methods') ? 'active' : '' }}"><a href="{{ url('depreciations') }}" class="has-arrow"><i class="fa fa-building"></i><span>Assets & Depreciations</span></a></li>
+                                    @endif
+                                    @if(Auth::user()->can('modify-balance-sheet'))
+                                        <li class="{{ request()->is('balance-sheets') ? 'active' : '' }}"><a href="{{ url('balance-sheets') }}" class="has-arrow"><i class="fa fa-balance-scale"></i></i><span>Balance Sheets</span></a></li>
+                                    @endif
+                                    <li class="{{ request()->is('chart-of-accounts') ? 'active' : '' }}"><a href="{{ url('chart-of-accounts') }}" class="has-arrow"><i class="fa fa-list-alt"></i></i><span>Chart Of Accounts</span></a></li>
+                                @else
+                                    <li class="{{ request()->is('accounts') ? 'active' : '' }}"><a href="{{ url('accounts') }}" class="has-arrow"><i class="fa  fa-file-text"></i><span>Payment Accounts</span></a></li>
+                                @endif
                             </ul>
                         </nav>
                     </div>

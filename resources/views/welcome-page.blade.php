@@ -167,113 +167,100 @@
                     </div>
                 </div>
 
-                <div class="row clealfix">
-                    <div class="col-md-3">
-                        <a href="{{ url('sales-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+                <div class="row clearfix d-flex align-items-stretch">
+                    <div class="col-md-9 mb-4 d-flex">
+                        <a href="{{ url('sales-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-4">
                                     <h2><i class="fa fa-calculator"></i></h2>
-                                    <h6 class="text-primary">Sales Management</h6>
-                                    <small>Quotations, Sales Orders, Proforma Invoices, Invoices, Delivery Nots, Customer Accounts, Sales Returns</small>
+                                    <h6 class="text-primary">CORE BUSINESS OPERATION</h6>
+                                    <small class="text-muted mt-2">
+                                        Quotations, Sales Orders, Proforma Invoices, Invoices, Delivery Notes, Customer Accounts, Sales Returns, Product List, Purchase Orders, Stock Transfers Orders (STO), Supplier Accounts, Stock Corrections, Services & Devices, Payment Accounts, Petty Cash Requests, Expenses, Cash Flows, Chart Of Accounts, Assets & Depreciations
+                                    </small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('inventory-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
-                                    <h2><i class="fa fa-list-alt"></i></h2>
-                                    <h6 class="text-primary">Products & Services </h6>
-                                    <small>Product List, Purchase Orders, Stock Transfers Orders (STO), Supplier Accounts, Stock Corrections, Services & Devices</small>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('sand-prod-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('sand-prod-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-building-o"></i></h2>
                                     <h6 class="text-primary">Washed Sand Production</h6>
-                                    <small>Raw Material Sourcings, Production Records, Quality Tests, Washing Plants, Washing Equipments</small>
+                                    <small class="text-muted">Raw Material Sourcings, Production Records, Quality Tests, Washing Plants, Washing Equipments</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('prod-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('prod-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-industry"></i></h2>
                                     <h6 class="text-primary">Other Production</h6>
-                                    <small>Raw Materials, Packaging Materials, Manufacturing Overheads Costs, Labour Costs, Production Records, etc.</small>
+                                    <small class="text-muted">Raw Materials, Packaging Materials, Manufacturing Overheads Costs, Labour Costs, Production Records, etc.</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('accounting-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
-                                    <h2><i class="fa fa-money"></i></h2>
-                                    <h6 class="text-primary"> Accounting & Finance</h6>
-                                    <small>Payment Accounts, Petty Cash Requests, Expenses, Cash Flows, Chart Of Accounts, Assets & Depreciations</small>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('hr-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+                    
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('hr-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-group"></i></h2>
-                                    <h6 class="text-primary"> HR & Payroll</h6>
-                                    <small>Employees, Departments, Attendances, Leave Requests, Events, Employee Loans, Payrolls & Payroll Deductions</small>
+                                    <h6 class="text-primary">HR & Payroll</h6>
+                                    <small class="text-muted">Employees, Departments, Attendances, Leave Requests, Events, Employee Loans, Payrolls & Payroll Deductions</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('reports') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+                    
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('reports') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-bar-chart-o"></i></h2>
-                                    <h6 class="text-primary"> Reporting</h6>
-                                    <small>Sales Summary Reports, Inventory Reports, Expense Reports, Management Reports, Finacial Statements, etc.</small>
+                                    <h6 class="text-primary">Reporting</h6>
+                                    <small class="text-muted">Sales Summary Reports, Inventory Reports, Expense Reports, Management Reports, Financial Statements, etc.</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('vehicles-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+                    
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('vehicles-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-truck"></i></h2>
-                                    <h6 class="text-primary">Vehicle Management </h6>
-                                    <small>Vehicles, Legal Documents, Insurance, Maintenance, Refueling,  Trip Logs, Mileage Logs, Cost Logs</small>
+                                    <h6 class="text-primary">Vehicle Management</h6>
+                                    <small class="text-muted">Vehicles, Legal Documents, Insurance, Maintenance, Refueling, Trip Logs, Mileage Logs, Cost Logs</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('visitors-dash') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('visitors-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-group"></i></h2>
-                                    <h6 class="text-primary">Visitors Management </h6>
-                                    <small>Visitors Logs & Analysis </small>
+                                    <h6 class="text-primary">Visitors Management</h6>
+                                    <small class="text-muted">Visitors Logs & Analysis</small>
                                 </div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{{ url('settings') }}" target="_blank">
-                            <div class="card">
-                                <div class="body text-center">
+
+                    <div class="col-md-3 mb-4 d-flex">
+                        <a href="{{ url('settings') }}" target="_blank" class="text-decoration-none w-100 d-flex">
+                            <div class="card h-100 w-100 mb-0">
+                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
                                     <h2><i class="fa fa-cog"></i></h2>
-                                    <h6 class="text-primary"> Account Settings</h6>
-                                    <small>General Settings, User Profile, Companies, Branches, Users & Roles, Delivery Settings, Invoice Settings, Recyclebin</small>
+                                    <h6 class="text-primary">Account Settings</h6>
+                                    <small class="text-muted">General Settings, User Profile, Companies, Branches, Users & Roles, Delivery Settings, Invoice Settings, Recyclebin</small>
                                 </div>
                             </div>
                         </a>
