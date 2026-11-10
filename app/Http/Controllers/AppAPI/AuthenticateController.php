@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AppAPI;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -40,11 +41,20 @@ class AuthenticateController extends Controller
 
             if (!is_null($shop)) {
                 $company = $user->companies()->wherePivot('is_default', true)->first();
+                if ($company && empty($company->company_api_key)) {
+                    $company->company_api_key = Company::generateUniqueApiKey();
+                    $company->save();
+                }
+                $companyPayload = $company ? $company->toArray() : null;
+                if ($companyPayload !== null) {
+                    $companyPayload['company_api_key'] = $company->company_api_key;
+                }
                 return response()->json([
                     'status' => 'success',
                     'user' => $user,
                     'shop' => $shop,
-                    'company' => $company,
+                    'company' => $companyPayload,
+                    'company_api_key' => $company?->company_api_key,
                     'authorisation' => [
                         'token' => $token,
                         'type' => 'bearer',

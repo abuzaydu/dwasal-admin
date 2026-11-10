@@ -241,11 +241,23 @@
                             </div>
                         </a>
                     </div>
-
-                    <div class="col-md-3 mb-4 d-flex">
-                        <a href="{{ url('visitors-dash') }}" target="_blank" class="text-decoration-none w-100 d-flex">
-                            <div class="card h-100 w-100 mb-0">
-                                <div class="body text-center d-flex flex-column justify-content-center h-100 p-3">
+                    @can('view-fo-records')
+                    <div class="col-md-3">
+                        <a href="{{ route('field-operations.index') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
+                                    <h2><i class="fa fa-file-text-o"></i></h2>
+                                    <h6 class="text-primary">Daily Field Operations</h6>
+                                    <small>Daily truck operations, trip totals, expenditures, cash submissions and printable reports</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endcan
+                    <div class="col-md-3">
+                        <a href="{{ url('visitors-dash') }}" target="_blank">
+                            <div class="card">
+                                <div class="body text-center">
                                     <h2><i class="fa fa-group"></i></h2>
                                     <h6 class="text-primary">Visitors Management</h6>
                                     <small class="text-muted">Visitors Logs & Analysis</small>

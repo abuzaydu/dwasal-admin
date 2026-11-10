@@ -219,6 +219,7 @@ use App\Http\Controllers\VML\VisitorController;
 use App\Http\Controllers\VML\VisitorExportController;
 use App\Http\Controllers\VMS\DocumentTypeController;
 use App\Http\Controllers\VMS\DriverController;
+use App\Http\Controllers\VMS\FieldOperationsRecordController;
 use App\Http\Controllers\VMS\ExpenseAjaxController;
 use App\Http\Controllers\VMS\ExpenseTypeController;
 use App\Http\Controllers\VMS\FuelStation;
@@ -1306,6 +1307,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('employees/face-id', [EmployeeFaceIdController::class, 'index'])->name('employees.face-id.index');
     Route::delete('employees/{id}/face-id', [EmployeeFaceIdController::class, 'destroy'])->name('employees.face-id.destroy');
     Route::get('employees/fingerprint', [EmployeeFingerprintController::class, 'index'])->name('employees.fingerprint.index');
+    Route::get('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'settings'])->name('employees.fingerprint.settings');
+    Route::put('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'updateSettings'])->name('employees.fingerprint.settings.update');
+    Route::post('employees/fingerprint/settings/regenerate-api-key', [EmployeeFingerprintController::class, 'regenerateApiKey'])->name('employees.fingerprint.settings.regenerate-api-key');
     Route::patch('employees/{id}/fingerprint/toggle', [EmployeeFingerprintController::class, 'toggle'])->name('employees.fingerprint.toggle');
     Route::delete('employees/{id}/fingerprint', [EmployeeFingerprintController::class, 'destroy'])->name('employees.fingerprint.destroy');
     Route::resource('employees', EmployeeController::class);
@@ -1467,6 +1471,12 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('f-requisition-trip-logs', [RequisitionTripLogController::class, 'index'])->name('requisition-trip-logs.filter');
     Route::post('trip-start/{id}',[RequisitionTripLogController::class, 'tripStart'])->name('trip.start');
     Route::post('trip-end/{id}',[RequisitionTripLogController::class, 'endTrip'])->name('trip.end');
+    Route::get('field-operations/sample', [FieldOperationsRecordController::class, 'sample'])->name('field-operations.sample');
+    Route::get('field-operations/sample-pdf', [FieldOperationsRecordController::class, 'samplePdf'])->name('field-operations.sample-pdf');
+    Route::resource('field-operations', FieldOperationsRecordController::class);
+    Route::match(['post', 'put'], 'field-operations/{id}/autosave', [FieldOperationsRecordController::class, 'update'])->name('field-operations.autosave');
+    Route::get('field-operations/{id}/print', [FieldOperationsRecordController::class, 'print'])->name('field-operations.print');
+    Route::get('field-operations/{id}/pdf', [FieldOperationsRecordController::class, 'pdf'])->name('field-operations.pdf');
 
     Route::post('maintenace-approve/{id}', [MaintenanceController::class,'approve'])->name('maintenance.approve');
     Route::post('maintenance-reject/{id}', [MaintenanceController::class,'reject'])->name('maintenance.reject');

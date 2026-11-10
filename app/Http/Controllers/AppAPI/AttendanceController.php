@@ -11,6 +11,7 @@ use App\Models\EmployeeAttendance;
 use App\Models\AttendanceEntry;
 use App\Models\User;
 use App\Services\FaceEmbeddingStorage;
+use App\Services\FingerprintEnrollmentSetting;
 use App\Services\FingerprintTemplateStorage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -192,6 +193,13 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
+            $companyId = $this->resolveAttendanceCompanyId($request, auth('api')->user());
+            if ($companyId && (int) $employee->company_id !== (int) $companyId) {
+                return response()->json([
+                    'message' => 'Employee does not belong to your company',
+                ], 403);
+            }
+
             if (FaceEmbeddingStorage::hasEnrollment($employee->getRawOriginal('face_embedding'))) {
                 return response()->json([
                     'success' => 0,
@@ -288,7 +296,7 @@ class AttendanceController extends Controller
 
             /** @var User|null $user */
             $user = auth('api')->user();
-            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            $companyId = $this->resolveAttendanceCompanyId($request, $user);
             if ($companyId && (int)$employee->company_id !== (int)$companyId) {
                 return response()->json([
                     'message' => 'Employee does not belong to your company'
@@ -329,10 +337,10 @@ class AttendanceController extends Controller
 
             /** @var User|null $user */
             $user = auth('api')->user();
-            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            $companyId = $this->resolveAttendanceCompanyId($request, $user);
             if (!$companyId) {
                 return response()->json([
-                    'message' => 'No default company configured for this account'
+                    'message' => 'No company API key or default company configured for this account'
                 ], 403);
             }
 
@@ -451,6 +459,16 @@ class AttendanceController extends Controller
         }
 
         return ['employee' => $best['employee']];
+    }
+
+    private function resolveAttendanceCompanyId(Request $request, ?User $user): ?int
+    {
+        $fromKey = $request->attributes->get('attendance_company_id');
+        if ($fromKey) {
+            return (int) $fromKey;
+        }
+
+        return $this->resolveCompanyIdFromAuthUser($user);
     }
 
     private function resolveCompanyIdFromAuthUser(?User $user): ?int
@@ -708,10 +726,10 @@ class AttendanceController extends Controller
             ]);
 
             $user = auth('api')->user();
-            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            $companyId = $this->resolveAttendanceCompanyId($request, $user);
             if (!$companyId) {
                 return response()->json([
-                    'message' => 'No default company configured for this account'
+                    'message' => 'No company API key or default company configured for this account'
                 ], 403);
             }
 
@@ -746,7 +764,7 @@ class AttendanceController extends Controller
             Log::info('Fingerprint attendance attempt', [
                 'employee_id' => $employee->id,
                 'company_id' => $companyId,
-                'user_id' => $user->id,
+                'user_id' => $user?->id,
                 'timestamp' => now(),
             ]);
 
@@ -777,10 +795,17 @@ class AttendanceController extends Controller
                 'algorithm_version' => 'nullable|string|max:120',
             ]);
             $user = auth('api')->user();
-            $companyId = $this->resolveCompanyIdFromAuthUser($user);
+            $companyId = $this->resolveAttendanceCompanyId($request, $user);
             $employee = $this->resolveEmployeeFromQr($request->input('qr_data'));
             if (!$companyId || !$employee || (int) $employee->company_id !== (int) $companyId) {
                 return response()->json(['message' => 'Invalid employee QR for this company'], 403);
+            }
+
+            if (!FingerprintEnrollmentSetting::isAllowed((int) $companyId)) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Fingerprint enrollment is turned off for this company.',
+                ], 403);
             }
 
             if (FingerprintTemplateStorage::hasEnrollment($employee->getRawOriginal('fingerprint_template'))) {
@@ -819,9 +844,9 @@ class AttendanceController extends Controller
     {
         /** @var User|null $user */
         $user = auth('api')->user();
-        $companyId = $this->resolveCompanyIdFromAuthUser($user);
+        $companyId = $this->resolveAttendanceCompanyId($request, $user);
         if (!$companyId) {
-            return response()->json(['message' => 'No default company configured for this account'], 403);
+            return response()->json(['message' => 'No company API key or default company configured for this account'], 403);
         }
 
         $templates = Employee::where('company_id', $companyId)
@@ -850,6 +875,22 @@ class AttendanceController extends Controller
             'templates' => $templates,
         ]);
     }
+
+    public function attendanceAppSettings(Request $request)
+    {
+        /** @var User|null $user */
+        $user = auth('api')->user();
+        $companyId = $this->resolveAttendanceCompanyId($request, $user);
+        if (!$companyId) {
+            return response()->json(['message' => 'No company API key or default company configured for this account'], 403);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'allow_fingerprint_enrollment' => FingerprintEnrollmentSetting::isAllowed((int) $companyId),
+        ]);
+    }
+
     private function resolveEmployeeFromFingerprintRef(string $encryptedRef): ?Employee
     {
         $data = decrypt($encryptedRef);

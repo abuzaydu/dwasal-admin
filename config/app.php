@@ -126,9 +126,8 @@ return [
     ],
 
     /*
-    | Optional shared secret for scanner/kiosk devices. When set, the app can send
-    | header X-Attendance-Kiosk-Key with this value instead of a user JWT for
-    | attendance-* API routes (must match Flutter AppConfig.ATTENDANCE_KIOSK_KEY).
+    | Legacy global kiosk secret. Attendance now uses a unique COMPANY_API_KEY
+    | per company (companies.company_api_key), sent as X-Company-Api-Key.
     */
     'attendance_kiosk_key' => env('ATTENDANCE_KIOSK_KEY', ''),
 

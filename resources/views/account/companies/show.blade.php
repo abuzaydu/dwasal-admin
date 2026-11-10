@@ -217,6 +217,13 @@
                                         <tr>
                                             <th>Country</th><td>{{$company->country}}</td>
                                         </tr>
+                                        <tr>
+                                            <th>Attendance API key</th>
+                                            <td>
+                                                <code>{{ $company->company_api_key ?: '—' }}</code>
+                                                <div class="text-muted small">Used by the app as COMPANY_API_KEY for attendance requests. Manage from Fingerprint Settings.</div>
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
