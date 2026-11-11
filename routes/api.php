@@ -68,8 +68,8 @@ Route::group(['middleware' => 'cors'], function () {
     // QR Code API
         Route::post('/qr/decrypt',[QrCodeController::class, 'decrypt']);
 
-        // Attendance API — JWT (logged-in Entrance Admin)
-        Route::middleware(['auth:api', 'throttle:10,1'])->group(function () {
+        // Attendance API — per-company COMPANY_API_KEY (JWT still accepted as fallback)
+        Route::middleware(['attendance.company_api_key', 'throttle:10,1'])->group(function () {
             Route::post('attendance-punchin', [AttendanceController::class, 'punchIn'])->name('api.attendance-punchin');
             Route::post('attendance-punchin-by-face', [AttendanceController::class, 'punchInByFace'])->name('api.attendance-punchin-by-face');
             Route::post('attendance-punchin-by-fingerprint', [AttendanceController::class, 'punchInByFingerprint'])->name('api.attendance-punchin-by-fingerprint');

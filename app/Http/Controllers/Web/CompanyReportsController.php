@@ -58,7 +58,7 @@ class CompanyReportsController extends Controller
         return view('reports.company.index', compact('page', 'title'));
     }
 
-    public function managementReport(Request $request)
+ public function managementReport(Request $request)   
     {
         $page = 'Management Report';
         $title = 'Management Report';

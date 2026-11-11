@@ -1309,6 +1309,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('employees/fingerprint', [EmployeeFingerprintController::class, 'index'])->name('employees.fingerprint.index');
     Route::get('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'settings'])->name('employees.fingerprint.settings');
     Route::put('employees/fingerprint/settings', [EmployeeFingerprintController::class, 'updateSettings'])->name('employees.fingerprint.settings.update');
+    Route::post('employees/fingerprint/settings/regenerate-api-key', [EmployeeFingerprintController::class, 'regenerateApiKey'])->name('employees.fingerprint.settings.regenerate-api-key');
     Route::patch('employees/{id}/fingerprint/toggle', [EmployeeFingerprintController::class, 'toggle'])->name('employees.fingerprint.toggle');
     Route::delete('employees/{id}/fingerprint', [EmployeeFingerprintController::class, 'destroy'])->name('employees.fingerprint.destroy');
     Route::resource('employees', EmployeeController::class);
