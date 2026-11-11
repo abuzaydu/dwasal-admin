@@ -31,6 +31,10 @@
     <!-- project css file  -->
     <link rel="stylesheet" href="{{ asset('assets/css/lucid-style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
+    <!-- Apache will automatically match this token variable and authorize execution -->
+    <script nonce="{{ $_SERVER['UNIQUE_ID'] ?? '' }}">
+        console.log("This inline script is securely authorized by Apache!");
+    </script>
 </head>
 
 <body id="layout" data-lucid="theme-blue">

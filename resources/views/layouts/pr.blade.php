@@ -24,6 +24,10 @@
     <link rel="stylesheet" href="{{ asset('hr/assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('hr/assets/cssbundle/tuicalendar.min.css')}}">
     <link rel="stylesheet" href="{{ asset('side/assets/css/custom.css') }}">
+    <!-- Apache will automatically match this token variable and authorize execution -->
+    <script nonce="{{ $_SERVER['UNIQUE_ID'] ?? '' }}">
+        console.log("This inline script is securely authorized by Apache!");
+    </script>
 </head>
 
 <?php
